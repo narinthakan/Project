@@ -1,0 +1,255 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ผลิตภัณฑ์</title>
+    <!-- ใช้ฟอนต์ Kanit -->
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * {
+            font-family: "Kanit", sans-serif;
+        }
+
+        body {
+            background-color: #f9fafb; /* พื้นหลังสีเทาอ่อน */
+            color: #111827; /* สีดำเข้มสำหรับข้อความ */
+        }
+
+        /* Navbar */
+        nav {
+            background-color: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Search Bar */
+        #searchInput {
+            width: 250px;
+            padding: 0.5rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 30px;
+            background-color: #f1f5f9;
+        }
+
+        #searchInput:focus {
+            border-color: #60a5fa;
+            outline: none;
+        }
+
+        button {
+            padding: 0.5rem 1rem;
+            border-radius: 30px;
+            border: none;
+            background-color: #60a5fa;
+            color: white;
+            cursor: pointer;
+        }
+
+        /* Active Link Style */
+        .nav-link {
+            padding-bottom: 0.25rem;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link-active {
+            border-bottom: 2px solid #2563eb;
+            color: #2563eb;
+        }
+
+        .nav-link:hover {
+            color: #2563eb;
+        }
+
+        /* Main Content */
+        main {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 1rem;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        /* Add Product Button */
+        .add-product-button {
+            display: inline-block;
+            background-color: #10b981;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 30px;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            transition: background-color 0.3s ease;
+            font style Kanit;
+        }
+
+        .add-product-button:hover {
+            background-color: #059669;
+        }
+
+        /* Product Grid */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* Product Card */
+        .product-card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .product-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .product-card h3 {
+            font-size: 1.25rem;
+            margin-top: 1rem;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .product-card p {
+            font-size: 1rem;
+            color: #6b7280;
+            margin-top: 0.5rem;
+        }
+
+        .price {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #34d399;
+            margin-top: 0.5rem;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1rem;
+        }
+
+        .action-buttons a {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: bold;
+            text-align: center;
+            transition: background-color 0.3s ease;
+        }
+
+        .edit-btn {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        .edit-btn:hover {
+            background-color: #2563eb;
+        }
+
+        .delete-btn {
+            background-color: #ef4444;
+            color: white;
+        }
+
+        .delete-btn:hover {
+            background-color: #dc2626;
+        }
+    </style>
+</head>
+<body>
+<!-- Navbar -->
+<nav>
+    <!-- Left Section: Search -->
+    <div class="flex items-center">
+        <input id="searchInput" type="text" placeholder="ค้นหา">
+        <button onclick="searchFunction()">ค้นหา</button>
+    </div>
+
+    <!-- Middle Section: Logo -->
+    <div class="flex justify-center items-center">
+        <img src="{% static 'images/EssenceTheBeauty_Logo.png' %}" alt="Essence The Beauty Logo" class="w-32">
+    </div>
+
+    <!-- Right Section: ชื่อผู้ใช้หรือปุ่มเข้าสู่ระบบ -->
+    <div class="flex items-center space-x-4">
+        {% if user.is_authenticated %}
+            <a href="{% url 'user_profile' %}" class="text-black hover:underline">{{ user.username }}</a>
+            <a href="{% url 'logout' %}" class="user-link">ออกจากระบบ</a>
+        {% else %}
+            <button onclick="window.location.href='{% url 'login' %}'" class="bg-white text-black px-6 py-2 rounded-full border border-gray-300">เข้าสู่ระบบ</button>
+        {% endif %}
+    </div>
+</nav>
+
+<!-- Navigation Links -->
+<div class="flex justify-center space-x-16 py-6">
+    <a href="{% url 'home' %}" class="nav-link {% if request.resolver_match.url_name == 'home' %}nav-link-active{% endif %}">หน้าหลัก</a>
+    <a href="{% url 'products' %}" class="nav-link {% if request.resolver_match.url_name == 'products' %}nav-link-active{% endif %}">ผลิตภัณฑ์</a>
+    <a href="{% url 'analysis' %}" class="nav-link {% if request.resolver_match.url_name == 'analysis' %}nav-link-active{% endif %}">วิเคราะห์</a>
+    <a href="{% url 'reviews' %}" class="nav-link {% if request.resolver_match.url_name == 'reviews' %}nav-link-active{% endif %}">รีวิว</a>
+</div>
+
+<!-- Main Content -->
+<main class="p-6">
+    <!-- ปุ่มเพิ่มผลิตภัณฑ์สำหรับแอดมินและผู้เชี่ยวชาญ -->
+    {% if user.is_authenticated %}
+        {% if user.is_staff or user.profile.is_expert %}
+            <a href="{% url 'add_product' %}" class="add-product-button">เพิ่มผลิตภัณฑ์</a>
+        {% endif %}
+    {% endif %}
+
+    <!-- Product Grid -->
+    <section class="mb-8">
+        <h2 class="text-lg font-bold mb-4">ผลิตภัณฑ์</h2>
+        <div class="product-grid">
+            <!-- Product Loop -->
+            {% for i in products %}
+            <div class="product-card">
+                <img src="{{ i.image.url }}" alt="{{ i.name }}">
+                <div class="p-4">
+                    <h3>{{ i.name }}</h3>
+                    <p>{{ i.category }}</p>
+                    <p class="price">${{ i.price }}</p>
+
+                    <!-- ปุ่มแก้ไขและลบ (เฉพาะแอดมินและผู้เชี่ยวชาญ) -->
+                    {% if user.is_authenticated and (user.is_staff or user.profile.is_expert) %}
+                        <div class="action-buttons">
+                            <a href="{% url 'edit_product' i.id %}" class="edit-btn">แก้ไข</a>
+                            <a href="{% url 'delete_product' i.id %}" class="delete-btn" onclick="return confirm('คุณต้องการลบผลิตภัณฑ์นี้หรือไม่?');">ลบ</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+</main>
+</body>
+</html>
+
+
+
+

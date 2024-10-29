@@ -1,0 +1,235 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แก้ไขโปรไฟล์</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@100;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * {
+            font-family: "Kanit", sans-serif;
+        }
+
+        body {
+            background-color: #E0F2FE; /* สีฟ้าอ่อน */
+        }
+
+        .form-container {
+            background-color: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 600px;
+            margin: 40px auto;
+            text-align: center;
+            position: relative;
+        }
+
+        .profile-picture {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin: 0 auto 20px;
+            border: 3px solid #A0AEC0;
+            background-color: #E2E8F0;
+        }
+
+        .profile-picture img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-upload-button {
+            background-color: #3182CE;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            margin-top: 10px;
+            transition: background-color 0.3s ease;
+        }
+
+        .profile-upload-button:hover {
+            background-color: #2B6CB0;
+        }
+
+        .form-container label {
+            color: #4A5568;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .form-container input, .form-container select, .form-container textarea {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #CBD5E1;
+            margin-bottom: 16px;
+            font-size: 1rem;
+            background-color: #F1F5F9;
+        }
+
+        .form-container input:focus, .form-container select:focus, .form-container textarea:focus {
+            outline: none;
+            border-color: #3182CE;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.3);
+        }
+
+        .save-button {
+            background-color: #3182CE;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+            display: block;
+            width: 200px;
+            text-align: center;
+            cursor: pointer;
+            margin: 20px auto; /* ปรับให้ปุ่มอยู่กลาง */
+        }
+
+        .save-button:hover {
+            background-color: #2B6CB0;
+        }
+
+        .back-button {
+            color: #3182CE;
+            text-decoration: none;
+            margin-bottom: 20px;
+            display: inline-block;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .back-button:hover {
+            text-decoration: underline;
+        }
+
+        /* Success Message */
+        .success-message {
+            color: #38A169; /* สีเขียว */
+            font-size: 1rem;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+    </style>
+</head>
+<body>
+    <!-- Back Button -->
+    <div class="p-4">
+        <a href="{% url 'user_profile' %}" class="back-button">&lt; กลับ</a>
+    </div>
+
+    <!-- Success Message -->
+    {% if messages %}
+        <div class="success-message">
+            {% for message in messages %}
+                {{ message }}
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Edit Profile Section -->
+    <div class="form-container">
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <!-- Profile Picture -->
+            <div class="profile-picture">
+                {% if user.profile.image %}
+                    <img id="profileImage" src="{{ user.profile.image.url }}" alt="Profile Picture">
+                {% else %}
+                    <img id="profileImage" src="{% static 'images/default-profile.png' %}" alt="Default Profile Picture">
+                {% endif %}
+            </div>
+
+            <!-- Upload Button -->
+            <div>
+                <label for="profile_image" class="block">อัปโหลดรูปภาพโปรไฟล์</label>
+                <input type="file" id="profileImageInput" name="image" accept="image/*" class="hidden">
+                <label for="profileImageInput" class="profile-upload-button">เลือกไฟล์รูปภาพ</label>
+            </div>
+
+            <!-- Other Fields -->
+            <div class="grid grid-cols-2 gap-6 mt-6">
+                <div>
+                    <label for="first_name">ชื่อ</label>
+                    <input type="text" name="first_name" value="{{ user.first_name }}" class="bg-white p-3 rounded-lg text-center">
+                </div>
+                <div>
+                    <label for="last_name">สกุล</label>
+                    <input type="text" name="last_name" value="{{ user.last_name }}" class="bg-white p-3 rounded-lg text-center">
+                </div>
+                <div>
+                    <label for="gender">เพศ</label>
+                    {{ form.gender }}
+                </div>
+                <div>
+                    <label for="age">อายุ</label>
+                    {{ form.age }}
+                </div>
+                <div>
+                    <label for="address">ที่อยู่</label>
+                    {{ form.address }}
+                </div>
+                <div>
+                    <label for="phone_number">เบอร์โทร</label>
+                    {{ form.phone_number }}
+                </div>
+                <div>
+                    <label for="email">อีเมล์</label>
+                    <input type="email" name="email" value="{{ user.email }}" class="bg-white p-3 rounded-lg text-center">
+                </div>
+                <div>
+                    <label for="skin_problem">ปัญหาผิว</label>
+                    {{ form.skin_problem }}
+                </div>
+
+                <!-- Save Button (must be inside the form) -->
+                <div class="col-span-2">
+                    <button type="submit" class="save-button">บันทึก</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // แสดงตัวอย่างรูปภาพที่ผู้ใช้เลือก
+        const profileImageInput = document.getElementById('profileImageInput');
+        const profileImage = document.getElementById('profileImage');
+
+        profileImageInput.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    profileImage.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,90 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Home - Essence the Beauty</title>
+    <!-- เพิ่มฟอนต์ Kanit -->
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@100;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * {
+            font-family: "Kanit", sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-blue-100">
+
+<!-- Navbar -->
+<nav class="flex justify-between items-center p-6">
+    <!-- Left Section: Search -->
+    <div class="flex items-center">
+        <input id="searchInput" type="text" placeholder="ค้นหา" class="w-60 p-2 rounded-full border border-gray-300 focus:outline-none">
+        <button onclick="searchFunction()" class="ml-2 bg-gray-200 px-4 py-2 rounded-full">ค้นหา</button>
+    </div>
+
+    <!-- Middle Section: Logo -->
+    <div class="flex justify-center items-center">
+        <img src="{% static 'images/EssenceTheBeauty_Logo.png' %}" alt="Essence The Beauty Logo" class="w-48 h-auto">
+    </div>
+
+    <!-- Right Section: ชื่อผู้ใช้และลิงก์ออกจากระบบ -->
+    <div class="flex items-center space-x-4">
+        <a href="{% url 'edit_profile' %}" class="user-link">AUM</a>
+        <a href="{% url 'logout' %}" class="user-link">ออกจากระบบ</a>
+    </div>
+</nav>
+
+<!-- Navigation Links -->
+<div class="flex justify-center space-x-16 py-6">
+    <a href="{% url 'home' %}" class="nav-link-active">หน้าหลัก</a>
+    <a href="{% url 'products' %}" class="nav-link">ผลิตภัณฑ์</a>
+    <a href="{% url 'analysis' %}" class="nav-link">วิเคราะห์</a>
+    <a href="{% url 'reviews' %}" class="nav-link">รีวิว</a>
+</div>
+
+<!-- Main Content -->
+<main class="p-6">
+    <!-- Image Section -->
+    <div class="relative">
+        <img src="https://mediwelle.com/wp-content/uploads/2024/05/8.%E0%B8%9B%E0%B8%B1%E0%B8%8D%E0%B8%AB%E0%B8%B2%E0%B8%9C%E0%B8%B4%E0%B8%A7%E0%B8%AB%E0%B8%99%E0%B9%89%E0%B8%B2%E0%B8%AA%E0%B8%A3%E0%B9%89%E0%B8%B2%E0%B8%87%E0%B8%84%E0%B8%A7%E0%B8%B2%E0%B8%A1%E0%B8%AB%E0%B8%99%E0%B8%B1%E0%B8%81%E0%B9%83%E0%B8%88%E0%B9%83%E0%B8%AB%E0%B9%89%E0%B8%AA%E0%B8%B2%E0%B8%A7%E0%B9%84%E0%B8%97%E0%B8%A2%E0%B9%80%E0%B8%9B%E0%B9%87%E0%B8%99%E0%B8%AD%E0%B8%A2%E0%B9%88%E0%B8%B2%E0%B8%87%E0%B8%A1%E0%B8%B2%E0%B8%81.webp" alt="Woman Skincare" class="w-full h-auto max-h-96 object-cover">
+    </div>
+
+    <!-- Content Section: Skin Types -->
+    <div class="bg-blue-100 py-10">
+        <h2 class="text-center text-lg mb-6">บทความเกี่ยวกับการดูแลผิวหน้า</h2>
+        <div class="grid grid-cols-2 gap-4 max-w-2xl mx-auto">
+            <a href="{% url 'normal_skin' %}" class="bg-gray-300 text-center py-3 rounded-full">ผิวธรรมดา (Normal Skin)</a>
+            <a href="{% url 'oily_skin' %}" class="bg-gray-300 text-center py-3 rounded-full">ผิวมัน (Oily Skin)</a>
+            <a href="{% url 'dry_skin' %}" class="bg-gray-300 text-center py-3 rounded-full">ผิวแห้ง (Dry Skin)</a>
+            <a href="{% url 'combination_skin' %}" class="bg-gray-300 text-center py-3 rounded-full">ผิวผสม (Combination Skin)</a>
+            <a href="{% url 'sensitive_skin' %}" class="bg-gray-300 text-center py-3 rounded-full">ผิวแพ้ง่าย (Sensitive Skin)</a>
+        </div>
+    </div>
+</main>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

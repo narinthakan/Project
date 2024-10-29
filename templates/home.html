@@ -1,0 +1,124 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Essence the Beauty - Home</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@100;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * {
+            font-family: "Kanit", sans-serif;
+        }
+
+        .nav-link {
+            padding-bottom: 0.5rem;
+            border-bottom: 4px solid transparent; /* ขีดล่างลิงก์ปกติ */
+            color: #4A5568; /* สีลิงก์ปกติ */
+            text-decoration: none;
+        }
+
+        .nav-link-active {
+            padding-bottom: 0.5rem;
+            border-bottom: 4px solid #000000; /* ขีดล่างลิงก์ที่ active */
+            color: #000000; /* สีลิงก์ที่ active */
+        }
+
+        .nav-link:hover {
+            color: #000000;
+            border-bottom-color: #A0AEC0; /* ขีดล่างสีเทาเมื่อ hover */
+        }
+    </style>
+    <script>
+        function searchFunction() {
+            var query = document.getElementById('searchInput').value;
+            if (query) {
+                window.location.href = "/search/?q=" + encodeURIComponent(query);
+            } else {
+                alert("กรุณาใส่คำค้นหา");
+            }
+        }
+    </script>
+</head>
+<body class="bg-blue-100">
+
+    <!-- Navbar -->
+    <nav class="flex justify-between items-center p-6">
+        <!-- Left Section: Search -->
+        <div class="flex items-center">
+            <input id="searchInput" type="text" placeholder="ค้นหา" class="w-60 p-2 rounded-full border border-gray-300 focus:outline-none">
+            <button onclick="searchFunction()" class="ml-2 bg-gray-200 px-4 py-2 rounded-full">ค้นหา</button>
+        </div>
+
+        <!-- Middle Section: Logo -->
+        <div class="flex justify-center items-center">
+            <img src="{% static 'images/EssenceTheBeauty_Logo.png' %}" alt="Essence The Beauty Logo" class="w-48 h-auto">
+        </div>
+
+        <!-- Right Section: ชื่อผู้ใช้หรือปุ่มเข้าสู่ระบบ -->
+        <div class="flex items-center space-x-4">
+            {% if user.is_authenticated %}
+                <!-- ทำให้ชื่อผู้ใช้คลิกได้และลิงก์ไปยังหน้าโปรไฟล์ -->
+                <a href="{% url 'user_profile' %}" class="text-black hover:underline">{{ user.username }}</a>
+                <a href="{% url 'logout' %}" class="user-link">ออกจากระบบ</a>
+            {% else %}
+                <!-- แสดงปุ่มเข้าสู่ระบบถ้ายังไม่เข้าสู่ระบบ -->
+                <button onclick="window.location.href='{% url 'login' %}'" class="bg-white text-black px-6 py-2 rounded-full border border-gray-300">เข้าสู่ระบบ</button>
+            {% endif %}
+        </div>
+    </nav>
+
+    <!-- Navigation Links -->
+    <div class="flex justify-center space-x-16 py-6">
+        <a href="{% url 'home' %}" class="{% if request.resolver_match.url_name == 'home' %}nav-link-active{% else %}nav-link{% endif %}">หน้าหลัก</a>
+        <a href="{% url 'products' %}" class="{% if request.resolver_match.url_name == 'products' %}nav-link-active{% else %}nav-link{% endif %}">ผลิตภัณฑ์</a>
+        <a href="{% url 'analysis' %}" class="{% if request.resolver_match.url_name == 'analysis' %}nav-link-active{% else %}nav-link{% endif %}">วิเคราะห์</a>
+        <a href="{% url 'reviews' %}" class="{% if request.resolver_match.url_name == 'reviews' %}nav-link-active{% else %}nav-link{% endif %}">รีวิว</a>
+    </div>
+
+    <!-- Image Section -->
+    <div class="relative">
+        <img src="https://mediwelle.com/wp-content/uploads/2024/05/8.%E0%B8%9B%E0%B8%B1%E0%B8%8D%E0%B8%AB%E0%B8%B2%E0%B8%9C%E0%B8%B4%E0%B8%A7%E0%B8%AB%E0%B8%99%E0%B9%89%E0%B8%B2%E0%B8%AA%E0%B8%A3%E0%B9%89%E0%B8%B2%E0%B8%87%E0%B8%84%E0%B8%A7%E0%B8%B2%E0%B8%A1%E0%B8%AB%E0%B8%99%E0%B8%B1%E0%B8%81%E0%B9%83%E0%B8%88%E0%B9%83%E0%B8%AB%E0%B9%89%E0%B8%AA%E0%B8%B2%E0%B8%A7%E0%B9%84%E0%B8%97%E0%B8%A2%E0%B9%80%E0%B8%9B%E0%B9%87%E0%B8%99%E0%B8%AD%E0%B8%A2%E0%B9%88%E0%B8%B2%E0%B8%87%E0%B8%A1%E0%B8%B2%E0%B8%81.webp" alt="Woman Skincare" class="w-full h-auto max-h-96 object-cover">
+    </div>
+
+    <!-- Content Section -->
+    <div class="bg-blue-100 py-10">
+        <h2 class="text-center text-lg mb-6">บทความเกี่ยวกับการดูแลผิวหน้า</h2>
+        <div class="grid grid-cols-2 gap-4 max-w-2xl mx-auto">
+            <a href="{% url 'normal_skin' %}" class="bg-gray-300 text-center py-3 rounded-full">ผิวธรรมดา (Normal Skin)</a>
+            <a href="{% url 'oily_skin' %}" class="bg-gray-300 text-center py-3 rounded-full">ผิวมัน (Oily Skin)</a>
+            <a href="{% url 'dry_skin' %}" class="bg-gray-300 text-center py-3 rounded-full">ผิวแห้ง (Dry Skin)</a>
+            <a href="{% url 'combination_skin' %}" class="bg-gray-300 text-center py-3 rounded-full">ผิวผสม (Combination Skin)</a>
+            <a href="{% url 'sensitive_skin' %}" class="bg-gray-300 text-center py-3 rounded-full">ผิวแพ้ง่าย (Sensitive Skin)</a>
+        </div>
+    </div>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

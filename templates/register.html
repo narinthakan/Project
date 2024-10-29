@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>สมัครสมาชิก</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@100;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * {
+            font-family: "Kanit", sans-serif;
+        }
+    </style>
+  </head>
+  <body class="bg-blue-100 flex items-center justify-center min-h-screen">
+    <div class="bg-white rounded-lg shadow-lg p-10 max-w-md w-full">
+      <h1 class="text-3xl font-bold text-center mb-8">สมัครสมาชิก</h1>
+
+      <!-- แทรกฟอร์มที่เชื่อมโยงกับ Django -->
+      <form method="POST" action="">
+        {% csrf_token %}
+        <!-- ชื่อ-สกุล -->
+        <div class="mb-4">
+            <label for="first_name" class="block text-gray-700">ชื่อ-สกุล</label>
+            <input type="text" name="first_name" class="w-full p-2 border border-gray-300 rounded-lg" required />
+        </div>
+    
+        <!-- ชื่อผู้ใช้ -->
+        <div class="mb-4">
+            <label for="username" class="block text-gray-700">ชื่อผู้ใช้</label>
+            <input type="text" name="username" class="w-full p-2 border border-gray-300 rounded-lg" required />
+        </div>
+    
+        <!-- อีเมล์ -->
+        <div class="mb-4">
+            <label for="email" class="block text-gray-700">อีเมล์</label>
+            <input type="email" name="email" class="w-full p-2 border border-gray-300 rounded-lg" required />
+        </div>
+    
+        <!-- รหัสผ่าน -->
+        <div class="mb-4">
+            <label for="password1" class="block text-gray-700">รหัสผ่าน</label>
+            <input type="password" name="password1" class="w-full p-2 border border-gray-300 rounded-lg" required />
+        </div>
+    
+        <!-- ยืนยันรหัสผ่าน -->
+        <div class="mb-4">
+            <label for="password2" class="block text-gray-700">ยืนยันรหัสผ่าน</label>
+            <input type="password" name="password2" class="w-full p-2 border border-gray-300 rounded-lg" required />
+        </div>
+    
+        <!-- ปุ่มสมัครสมาชิก -->
+        <div class="flex justify-center">
+            <button type="submit" class="py-3 px-6 bg-black text-white font-bold rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                สมัครสมาชิก
+            </button>
+        </div>
+    </form>    
+    </div>
+  </body>
+
+</html>
+
+
+

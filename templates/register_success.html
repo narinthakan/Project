@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ลงทะเบียนสมาชิกใหม่</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@100;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * {
+            font-family: "Kanit", sans-serif;
+        }
+    </style>
+  </head>
+  <body class="bg-blue-100 flex items-center justify-center min-h-screen">
+    <div class="bg-white rounded-lg shadow-lg p-10 max-w-md w-full">
+      <h1 class="text-3xl font-bold text-center mb-8">ลงทะเบียนสมาชิกใหม่</h1>
+
+      <form method="POST" action="{% url 'submit_profile_view' %}">
+        {% csrf_token %}
+        
+        <!-- ชื่อ -->
+        <div class="mb-4">
+            <label for="first_name" class="block text-gray-700">ชื่อ-สกุล</label>
+            <input type="text" id="first_name" name="first_name" value="{{ request.user.first_name }}" class="w-full p-2 border border-gray-300 rounded-lg" required />
+        </div>
+    
+
+        <!-- ชื่อผู้ใช้ -->
+        <div class="mb-4">
+            <label for="username" class="block text-gray-700">ชื่อผู้ใช้</label>
+            <input type="text" id="username" name="username" value="{{ user.username }}" class="w-full p-2 border border-gray-300 rounded-lg" required />
+        </div>
+    
+        <!-- เพศ -->
+        <div class="mb-4">
+            <label for="gender" class="block text-gray-700">เพศ</label>
+            <select id="gender" name="gender" class="w-full p-2 border border-gray-300 rounded-lg">
+                <option value="ชาย">ชาย</option>
+                <option value="หญิง">หญิง</option>
+                <option value="อื่นๆ">อื่นๆ</option>
+            </select>
+        </div>
+    
+        <!-- อายุ -->
+        <div class="mb-4">
+            <label for="age" class="block text-gray-700">อายุ</label>
+            <input type="number" id="age" name="age" class="w-full p-2 border border-gray-300 rounded-lg" required />
+        </div>
+    
+        <!-- โทรศัพท์ -->
+        <div class="mb-4">
+            <label for="phone" class="block text-gray-700">โทรศัพท์</label>
+            <input type="tel" id="phone" name="phone" class="w-full p-2 border border-gray-300 rounded-lg" required />
+        </div>
+    
+        <!-- อีเมล์ -->
+        <div class="mb-4">
+            <label for="email" class="block text-gray-700">อีเมล์</label>
+            <input type="email" id="email" name="email" value="{{ user.email }}" class="w-full p-2 border border-gray-300 rounded-lg" required />
+        </div>
+    
+        <!-- ปุ่มสมัครสมาชิก -->
+        <div class="flex justify-center">
+            <button type="submit" class="py-3 px-6 bg-black text-white font-bold rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                ลงทะเบียน
+            </button>
+        </div>
+    </form>
+    
+
+      <!-- ปุ่มไปหน้าหลักของผู้ใช้ -->
+      <form method="POST">
+        {% csrf_token %}
+        <div class="flex justify-center">
+        </div>
+      </form>
+    </div>
+  </body>
+</html>
+
+
