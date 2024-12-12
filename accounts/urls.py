@@ -3,6 +3,7 @@ from . import views
 from django.contrib.auth import views as auth_views  # นำเข้าฟังก์ชันการเข้าสู่ระบบและออกจากระบบจาก Django
 from django.conf import settings
 from django.conf.urls.static import static
+from .views import expert_login
 
 urlpatterns = [
     # เส้นทางสำหรับการสมัครสมาชิก
@@ -19,6 +20,19 @@ urlpatterns = [
     # เส้นทางหน้าสมาชิก
     path('member/', views.member_home, name='member_home'),
     path('user_home/', views.member_home, name='user_home'),
+    path('expert-login/', views.expert_login, name='expert_login'),  # ผู้เชี่ยวชาญ
+    
+    # เส้นทางสำหรับการสมัครสมาชิกผู้เชี่ยวชาญ
+    path('register-expert/', views.register_expert, name='register_expert'),
+    
+    # เส้นทางสำหรับหน้าโปรไฟล์ผู้เชี่ยวชาญ
+    path('expert-profile/', views.expert_profile, name='expert_profile'),
+    
+    # เส้นทางสำหรับตรวจสอบผู้เชี่ยวชาญ
+    path('verify_expert/', views.verify_expert_list, name='verify_expert_list'),  # รายการผู้เชี่ยวชาญที่ต้องการการตรวจสอบ
+    path('verify_expert/<int:expert_id>/', views.verify_expert, name='verify_expert'),  # หน้า ตรวจสอบผู้เชี่ยวชาญ
+    
+
 
     # เส้นทางสำหรับแสดงหน้าโปรไฟล์และแก้ไขโปรไฟล์
     path('user_profile/', views.user_profile, name='user_profile'),  # ดูโปรไฟล์
@@ -48,7 +62,7 @@ urlpatterns = [
     path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('reset/done/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
 
-     # สำหรับการแสดงหน้ารายละเอียดของผลิตภัณฑ์
+    # สำหรับการแสดงหน้ารายละเอียดของผลิตภัณฑ์
     path('product/<int:product_id>/', views.product_detail, name='product_detail'),
 
     # สำหรับการเพิ่มรีวิวและลบรีวิว
@@ -61,8 +75,6 @@ urlpatterns = [
     # เส้นทางสำหรับการแก้ไขและลบผลิตภัณฑ์
     path('product/edit/<int:product_id>/', views.edit_product, name='edit_product'),  # แก้ไขผลิตภัณฑ์
     path('product/delete/<int:product_id>/', views.delete_product, name='delete_product'),  # ลบผลิตภัณฑ์
-
-    
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

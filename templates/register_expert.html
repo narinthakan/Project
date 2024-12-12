@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ลงทะเบียนผู้เชี่ยวชาญ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@100;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * {
+            font-family: "Kanit", sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-blue-100 flex items-center justify-center min-h-screen">
+    <div class="bg-white rounded-lg shadow-lg p-10 max-w-md w-full">
+        <h1 class="text-3xl font-bold text-center mb-8">ลงทะเบียนผู้เชี่ยวชาญ</h1>
+        <form method="POST" enctype="multipart/form-data">
+            <!-- อัปโหลดรูปโปรไฟล์ -->
+            <div class="mb-6 flex flex-col items-center">
+                <label class="block text-lg font-bold mb-2">อัปโหลกรูปโปรไฟล์</label>
+                <div class="w-32 h-32 bg-gray-200 rounded-full overflow-hidden border border-gray-300 mb-4">
+                    <img id="profilePreview" src="#" alt="โปรไฟล์" class="w-full h-full object-cover hidden">
+                </div>
+                <input 
+                    type="file" 
+                    id="profileImage" 
+                    name="profile_image" 
+                    accept="image/*" 
+                    class="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                    onchange="previewImage(event)">
+            </div>
+
+            <!-- ชื่อ-สกุล -->
+            <div class="mb-6">
+                <label for="full_name" class="block text-lg font-bold mb-2">ชื่อ-สกุล</label>
+                <input id="full_name" name="full_name" type="text" placeholder="กรอกชื่อ-สกุล" required
+                       class="w-full p-4 text-base rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            </div>
+
+            <!-- ชื่อผู้ใช้ -->
+            <div class="mb-6">
+                <label for="username" class="block text-lg font-bold mb-2">ชื่อผู้ใช้</label>
+                <input id="username" name="username" type="text" placeholder="กรอกชื่อผู้ใช้" required
+                       class="w-full p-4 text-base rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            </div>
+
+            <!-- เลขใบประกอบวิชาชีพ -->
+            <div class="mb-6">
+                <label for="license_number" class="block text-lg font-bold mb-2">เลขใบประกอบวิชาชีพ</label>
+                <input id="license_number" name="license_number" type="text" placeholder="กรอกเลขใบประกอบวิชาชีพ" required
+                       class="w-full p-4 text-base rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            </div>
+
+            <!-- ความเชี่ยวชาญ -->
+            <div class="mb-6">
+                <label for="expertise" class="block text-lg font-bold mb-2">ความเชี่ยวชาญ</label>
+                <input id="expertise" name="expertise" type="text" placeholder="กรอกความเชี่ยวชาญ" required
+                       class="w-full p-4 text-base rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            </div>
+
+            <!-- สถานที่ทำงานปัจจุบัน -->
+            <div class="mb-6">
+                <label for="workplace" class="block text-lg font-bold mb-2">สถานที่ทำงานปัจจุบัน</label>
+                <input id="workplace" name="workplace" type="text" placeholder="กรอกสถานที่ทำงาน" required
+                       class="w-full p-4 text-base rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            </div>
+
+            <!-- ประสบการณ์การทำงาน -->
+            <div class="mb-6">
+                <label for="experience" class="block text-lg font-bold mb-2">ประสบการณ์การทำงาน</label>
+                <textarea id="experience" name="experience" placeholder="กรอกประสบการณ์การทำงาน" required
+                          class="w-full p-4 text-base rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"></textarea>
+            </div>
+
+            <!-- อีเมล์ -->
+            <div class="mb-6">
+                <label for="email" class="block text-lg font-bold mb-2">อีเมล์</label>
+                <input id="email" name="email" type="email" placeholder="กรอกอีเมล์" required
+                       class="w-full p-4 text-base rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            </div>
+
+            <!-- รหัสผ่าน -->
+            <div class="mb-6">
+                <label for="password" class="block text-lg font-bold mb-2">รหัสผ่าน</label>
+                <input id="password" name="password" type="password" placeholder="กรอกรหัสผ่าน" required
+                       class="w-full p-4 text-base rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            </div>
+
+            <!-- ปุ่มเข้าสู่ระบบ -->
+            <div class="flex justify-center">
+                <button type="submit" class="w-1/2 py-4 bg-black text-white font-bold rounded-full focus:outline-none hover:bg-gray-800">
+                    ลงทะเบียน
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // แสดงภาพตัวอย่างเมื่ออัปโหลดรูปภาพ
+        function previewImage(event) {
+            const reader = new FileReader();
+            const preview = document.getElementById('profilePreview');
+            reader.onload = function () {
+                preview.src = reader.result;
+                preview.classList.remove('hidden');
+            };
+            reader.readAsDataURL(event.target.files[0]);
+        }
+    </script>
+</body>
+</html>
+
+      <!-- ปุ่มไปหน้าหลักของผู้ใช้ -->
+      <form method="POST">
+        {% csrf_token %}
+        <div class="flex justify-center">
+        </div>
+      </form>
+    </div>
+  </body>
+</html>
+
+
+

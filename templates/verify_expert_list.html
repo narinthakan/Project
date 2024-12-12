@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>รายการผู้เชี่ยวชาญที่ต้องการการตรวจสอบ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@100;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-blue-100 py-10">
+
+    <div class="container mx-auto px-4">
+        <h1 class="text-3xl font-bold text-center mb-6">รายการผู้เชี่ยวชาญที่ต้องการการตรวจสอบ</h1>
+
+        {% if experts_to_verify %}
+        <ul>
+            {% for expert in experts_to_verify %}
+            <li class="mb-4 p-4 bg-white rounded-lg shadow-md">
+                <p><strong>ชื่อ: </strong>{{ expert.full_name }}</p>
+                <p><strong>ใบประกอบวิชาชีพ: </strong>{{ expert.license_number }}</p>
+                <a href="{% url 'verify_expert' expert.id %}">
+                    <button class="bg-green-500 text-white px-4 py-2 rounded-full">ตรวจสอบ</button>
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>ไม่มีผู้เชี่ยวชาญที่ต้องการการตรวจสอบในขณะนี้</p>
+        {% endif %}
+    </div>
+
+</body>
+</html>

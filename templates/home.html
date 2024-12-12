@@ -92,33 +92,18 @@
             <a href="{% url 'combination_skin' %}" class="bg-gray-300 text-center py-3 rounded-full">ผิวผสม (Combination Skin)</a>
             <a href="{% url 'sensitive_skin' %}" class="bg-gray-300 text-center py-3 rounded-full">ผิวแพ้ง่าย (Sensitive Skin)</a>
         </div>
+        
+        <!-- เพิ่มปุ่ม "ตรวจสอบผู้เชี่ยวชาญ" -->
+        {% if user.is_staff %}
+        <div class="flex justify-center mt-10">
+            <a href="{% url 'verify_expert_list' %}">
+                <button class="bg-blue-500 text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-700">
+                    ตรวจสอบผู้เชี่ยวชาญ
+                </button>
+            </a>
+        </div>
+        {% endif %}
     </div>
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

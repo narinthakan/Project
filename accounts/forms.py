@@ -1,7 +1,8 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import Profile,Product  # ใช้ Profile จาก models.py
+from .models import Profile,Product,Expert  # ใช้ Profile จาก models.py
+
 
 # ฟอร์มสำหรับการลงทะเบียน
 class RegistrationForm(UserCreationForm):
@@ -28,6 +29,11 @@ class LoginForm(forms.Form):
     username = forms.CharField(label="Username")
     password = forms.CharField(widget=forms.PasswordInput, label="Password")
 
+class ExpertLoginForm(forms.Form):
+    nm = forms.CharField(label="ชื่อ", max_length=100, required=True)
+    lp = forms.CharField(label="นามสกุล", max_length=100, required=True)
+    codepce = forms.CharField(label="เลขใบประกอบวิชาชีพ", max_length=10, required=True)
+
 # ฟอร์มแก้ไขโปรไฟล์ รวมทั้งการอัปโหลดรูปภาพและข้อมูลอื่น ๆ
 class ProfileForm(forms.ModelForm):
     first_name = forms.CharField(max_length=30, required=True, label="ชื่อ")
@@ -53,6 +59,29 @@ class ProfileForm(forms.ModelForm):
         user.email = self.cleaned_data.get('email')
         user.save()  # บันทึกข้อมูลของ User
         return super().save(*args, **kwargs)
+    
+    #ฟอร์มผู้เชี่ยวชาญ
+class ExpertRegistrationForm(forms.Form):
+    full_name = forms.CharField(max_length=100, required=True, label="ชื่อ-สกุล")
+    username = forms.CharField(max_length=50, required=True, label="ชื่อผู้ใช้")
+    email = forms.EmailField(required=True, label="อีเมล")
+    password = forms.CharField(widget=forms.PasswordInput, required=True, label="รหัสผ่าน")
+    license_number = forms.CharField(max_length=20, required=True, label="เลขใบประกอบวิชาชีพ")
+    expertise = forms.CharField(max_length=100, required=True, label="ความเชี่ยวชาญ")
+    workplace = forms.CharField(max_length=100, required=True, label="สถานที่ทำงานปัจจุบัน")
+    experience = forms.CharField(widget=forms.Textarea, required=True, label="ประสบการณ์การทำงาน")
+    profile_image = forms.ImageField(required=False, label="รูปโปรไฟล์") 
+    
+    
+#ตรวจสอบผู้เชี่ยวชาญ
+class ExpertVerificationForm(forms.ModelForm):
+    class Meta:
+        model = Expert
+        fields = ['is_verified']
+
+    
+    
+
 
 
   

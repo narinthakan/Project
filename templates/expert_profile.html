@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ข้อมูลผู้เชี่ยวชาญ</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .profile-container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            width: 400px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .profile-container img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+        }
+        h1 {
+            margin: 20px 0;
+        }
+        p {
+            margin: 5px 0;
+        }
+        .register-button {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .register-button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="profile-container">
+        {% if expert_data %}
+            <img src="https://via.placeholder.com/150" alt="รูปผู้เชี่ยวชาญ">
+            <h1>{{ expert_data.name }}</h1>
+            <p>เลขใบประกอบวิชาชีพ: {{ expert_data.license_number }}</p>
+            <p>อีเมล: {{ expert_data.email }}</p>
+            <p>สาขา: {{ expert_data.specialty }}</p>
+            <button class="register-button">สมัครสมาชิก</button>
+        {% else %}
+            <p>ไม่พบข้อมูลผู้เชี่ยวชาญ</p>
+        {% endif %}
+    </div>
+</body>
+</html>
+
+
+
+

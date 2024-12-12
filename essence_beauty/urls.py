@@ -25,7 +25,7 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),  # เส้นทางสำหรับหน้าแอดมิน
     path('', include('accounts.urls')),  # รวม URL ของแอป accounts
-   
+    path('accounts/', include('accounts.urls')),  # รวม URL ของแอป accounts
     
         
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

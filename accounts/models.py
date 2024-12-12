@@ -1,9 +1,36 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.db.models import Avg  # ใช้สำหรับการคำนวณค่าเฉลี่ยใน Product
 
-# Create your models here.
+class Product(models.Model):
+    name = models.CharField(max_length=100)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
 
-# models.py
+    class Meta:
+        permissions = [
+            ("add_product", "Can add a product"),
+            ("change_product", "Can change a product"),
+            ("delete_product", "Can delete a product"),
+            ("view_product", "Can view a product"),
+        ]
+
+#ตรวจสอบสถานะของผู้เชี่ยวชาญ
+class Expert(models.Model):
+    full_name = models.CharField(max_length=255)
+    username = models.CharField(max_length=255, unique=True)
+    license_number = models.CharField(max_length=255)
+    expertise = models.CharField(max_length=255)
+    workplace = models.CharField(max_length=255)
+    experience = models.TextField()
+    email = models.EmailField()
+    password = models.CharField(max_length=255)
+    profile_image = models.ImageField(upload_to='profiles/', blank=True, null=True)
+    is_verified = models.BooleanField(default=False)  # สถานะการตรวจสอบ
+
+    def __str__(self):
+        return self.full_name
 
 # โมเดลสำหรับข้อมูลสินค้า
 class Product(models.Model):
@@ -18,9 +45,24 @@ class Product(models.Model):
     def __str__(self):
         return self.name
 
-# โมเดลสำหรับข้อมูลโปรไฟล์ผู้ใช้ รวมทุกฟิลด์ที่ต้องการไว้ในโมเดลเดียว
+    # ฟังก์ชันคำนวณคะแนนเฉลี่ยของรีวิว
+    def average_rating(self):
+        reviews = self.reviews.all()
+        if reviews.exists():
+            return reviews.aggregate(Avg('rating'))['rating__avg']  # คำนวณค่าเฉลี่ยจากฟิลด์ rating ใน Review
+        return 0  # ถ้าไม่มีรีวิวใดๆ ให้ค่าเฉลี่ยเป็น 0
+
+# โมเดลสำหรับข้อมูลโปรไฟล์ผู้ใช้ รวมฟิลด์ role เพื่อกำหนดสิทธิ์
 class Profile(models.Model):
+    ROLE_CHOICES = [
+        ('User', 'User'),
+        ('Member', 'Member'),
+        ('Admin', 'Admin'),
+        ('Expert', 'Expert'),
+    ]
+
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')  # เชื่อมโยงกับ User
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='User')  # ระบุ Role ของผู้ใช้
     address = models.CharField(max_length=255, blank=True, null=True)  # ที่อยู่
     phone_number = models.CharField(max_length=20, blank=True, null=True)  # เบอร์โทรศัพท์
     skin_problem = models.TextField(blank=True, null=True)  # ปัญหาผิว
@@ -31,13 +73,40 @@ class Profile(models.Model):
     def __str__(self):
         return f'{self.user.username} Profile'
 
+    # Methods สำหรับตรวจสอบบทบาท (Role) ของผู้ใช้
+    def is_user(self):
+        return self.role == 'User'
+
+    def is_member(self):
+        return self.role == 'Member'
+
+    def is_admin(self):
+        return self.role == 'Admin'
+
+    def is_expert(self):
+        return self.role == 'Expert'
+
 # โมเดลสำหรับรีวิวที่เชื่อมโยงกับผู้ใช้ (User) และผลิตภัณฑ์ (Product)
 class Review(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reviews')
-    comment = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)  # ผู้ใช้ที่เขียนรีวิว
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reviews')  # เชื่อมโยงกับผลิตภัณฑ์ที่รีวิว
+    comment = models.TextField()  # ข้อความรีวิว
+    rating = models.DecimalField(max_digits=2, decimal_places=1, null=True)  # คะแนนรีวิว
+    created_at = models.DateTimeField(auto_now_add=True)  # เวลาที่สร้างรีวิว
 
     def __str__(self):
         return f'Review by {self.user.username} on {self.product.name}'
+
+# สร้าง Profile อัตโนมัติเมื่อ User ใหม่ถูกสร้าง
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        Profile.objects.create(user=instance)
+
+# บันทึก Profile เมื่อมีการอัปเดต User
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    instance.profile.save()
+
+
     
