@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ลงทะเบียนผู้เชี่ยวชาญ</title>
+    <title>ลงทะเบียนผู้ขาย</title>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@100;400;600&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -14,8 +14,10 @@
 </head>
 <body class="bg-blue-100 flex items-center justify-center min-h-screen">
     <div class="bg-white rounded-lg shadow-lg p-10 max-w-md w-full">
-        <h1 class="text-3xl font-bold text-center mb-8">ลงทะเบียนผู้เชี่ยวชาญ</h1>
+        <h1 class="text-3xl font-bold text-center mb-8">ลงทะเบียนผู้ขาย</h1>
         <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            
             <!-- อัปโหลดรูปโปรไฟล์ -->
             <div class="mb-6 flex flex-col items-center">
                 <label class="block text-lg font-bold mb-2">อัปโหลดรูปโปรไฟล์</label>
@@ -25,7 +27,7 @@
                 <input 
                     type="file" 
                     id="profileImage" 
-                    name="profile_image" 
+                    name="profile_picture" 
                     accept="image/*" 
                     class="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                     onchange="previewImage(event)">
@@ -38,45 +40,38 @@
                        class="w-full p-4 text-base rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none">
             </div>
 
-            <!-- ชื่อผู้ใช้ -->
+            <!-- ชื่อธุรกิจ/แบรนด์ -->
             <div class="mb-6">
-                <label for="username" class="block text-lg font-bold mb-2">ชื่อผู้ใช้</label>
-                <input id="username" name="username" type="text" placeholder="กรอกชื่อผู้ใช้" required
+                <label for="business_name" class="block text-lg font-bold mb-2">ชื่อธุรกิจ/แบรนด์</label>
+                <input id="business_name" name="business_name" type="text" placeholder="กรอกชื่อธุรกิจ/แบรนด์" required
                        class="w-full p-4 text-base rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none">
             </div>
 
-            <!-- เลขใบประกอบวิชาชีพ -->
+            <!-- หมวดหมู่สินค้า -->
             <div class="mb-6">
-                <label for="license_number" class="block text-lg font-bold mb-2">เลขใบประกอบวิชาชีพ</label>
-                <input id="license_number" name="license_number" type="text" placeholder="กรอกเลขใบประกอบวิชาชีพ" required
+                <label for="product_category" class="block text-lg font-bold mb-2">หมวดหมู่สินค้า</label>
+                <input id="product_category" name="product_category" type="text" placeholder="กรอกหมวดหมู่สินค้า" required
                        class="w-full p-4 text-base rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none">
             </div>
 
-            <!-- ความเชี่ยวชาญ -->
+            <!-- ลิงค์เว็บไซต์/โซเชียลมีเดีย -->
             <div class="mb-6">
-                <label for="expertise" class="block text-lg font-bold mb-2">ความเชี่ยวชาญ</label>
-                <input id="expertise" name="expertise" type="text" placeholder="กรอกความเชี่ยวชาญ" required
+                <label for="social_media" class="block text-lg font-bold mb-2">โซเชียลมีเดีย</label>
+                <input id="social_media" name="social_media" type="url" placeholder="กรอกลิงก์เว็บไซต์หรือโซเชียลมีเดีย" required
                        class="w-full p-4 text-base rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none">
             </div>
 
-            <!-- สถานที่ทำงานปัจจุบัน -->
+            <!-- เบอร์โทรศัพท์ -->
             <div class="mb-6">
-                <label for="workplace" class="block text-lg font-bold mb-2">สถานที่ทำงานปัจจุบัน</label>
-                <input id="workplace" name="workplace" type="text" placeholder="กรอกสถานที่ทำงาน" required
+                <label for="phone_number" class="block text-lg font-bold mb-2">เบอร์โทรศัพท์</label>
+                <input id="phone_number" name="phone_number" type="tel" placeholder="กรอกเบอร์โทรศัพท์" required
                        class="w-full p-4 text-base rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none">
             </div>
 
-            <!-- ประสบการณ์การทำงาน -->
+            <!-- อีเมล -->
             <div class="mb-6">
-                <label for="experience" class="block text-lg font-bold mb-2">ประสบการณ์การทำงาน</label>
-                <textarea id="experience" name="experience" placeholder="กรอกประสบการณ์การทำงาน" required
-                          class="w-full p-4 text-base rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"></textarea>
-            </div>
-
-            <!-- อีเมล์ -->
-            <div class="mb-6">
-                <label for="email" class="block text-lg font-bold mb-2">อีเมล์</label>
-                <input id="email" name="email" type="email" placeholder="กรอกอีเมล์" required
+                <label for="email" class="block text-lg font-bold mb-2">อีเมล</label>
+                <input id="email" name="email" type="email" placeholder="กรอกอีเมล" required
                        class="w-full p-4 text-base rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none">
             </div>
 
@@ -87,8 +82,8 @@
                        class="w-full p-4 text-base rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none">
             </div>
 
-            <!-- ปุ่มเข้าสู่ระบบ -->
-            <div class="flex justify-center">
+            <!-- ปุ่มลงทะเบียน -->
+            <div class="flex justify-center mt-8">
                 <button type="submit" class="w-1/2 py-4 bg-black text-white font-bold rounded-full focus:outline-none hover:bg-gray-800">
                     ลงทะเบียน
                 </button>
@@ -97,7 +92,6 @@
     </div>
 
     <script>
-        // แสดงภาพตัวอย่างเมื่ออัปโหลดรูปภาพ
         function previewImage(event) {
             const reader = new FileReader();
             const preview = document.getElementById('profilePreview');
@@ -110,16 +104,3 @@
     </script>
 </body>
 </html>
-
-      <!-- ปุ่มไปหน้าหลักของผู้ใช้ -->
-      <form method="POST">
-        {% csrf_token %}
-        <div class="flex justify-center">
-        </div>
-      </form>
-    </div>
-  </body>
-</html>
-
-
-

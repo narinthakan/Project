@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ผิวธรรมดา</title>
+    <title>ผิวมัน</title>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@100;400;600&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -59,8 +59,50 @@
     <a href="{% url 'analysis' %}" class="{% if request.resolver_match.url_name == 'analysis' %}nav-link-active{% else %}nav-link{% endif %}">วิเคราะห์</a>
     <a href="{% url 'reviews' %}" class="{% if request.resolver_match.url_name == 'reviews' %}nav-link-active{% else %}nav-link{% endif %}">รีวิว</a>
 </div>
+
 <!-- Product Grid -->
-<section class="mb-8">
-    <h2 class="text-lg font-bold mb-4">ผิวมัน(oily skin)</h2>
-    <div class="grid grid-cols-2 gap-6">
+<section class="flex flex-col items-center min-h-screen">
+    <!-- Title -->
+    <h2 class="text-lg font-bold mb-8 text-center">ผิวมัน (Oily Skin)</h2>
+
+    <!-- Image -->
+    <div class="flex justify-center items-center mb-8">
+        <img src="/static/images/ผิวมัน.jpg" alt="ผิวมัน (Oily Skin)" class="rounded-lg shadow-lg">
+    </div>
+
+    <!-- Description -->
+    <div class="w-3/4 text-gray-700 leading-relaxed text-left">
+        <!-- Introduction -->
+        <p class="mb-4">
+            <strong>ผิวมัน (Oily Skin)</strong> ผิวมีลักษณะ เงา มันวาว มีการผลิตน้ำมันในปริมานที่มากเกินไป
+            คนผิวมันจะมีผิวที่ค่อนข้างหยาบ รูขุมขนใหญ่ และมองเห็นรูขุมขนได้ชัดเจน
+            มีแนวโน้มที่เป็นสิวร่วมด้วย
+        </p>
+
+        <!-- ลักษณะของผิวมัน -->
+        <h3 class="font-bold text-lg mb-2">ลักษณะของผิวมัน:</h3>
+        <ul class="list-disc list-inside mb-4">
+            <li>น้ำมันหล่อเลี้ยงผิวมากเกินไป</li>
+            <li>หน้ามันเยิ้มสมปรกง่าย</li>
+            <li>มีสิวเสี้ยน สิวหัวดำ</li>
+            <li>ผิวเงา มันวาว รูขุมขนกว้าง</li>
+        </ul>
+
+        <!-- วิธีเช็ค -->
+        <h3 class="font-bold text-lg mt-6 mb-2">วิธีเช็ค:</h3>
+        <p>
+             เมื่อซับหน้าด้วยกระดาษซับมัน จะเห็นน้ำมันอย่างชัดเจนเป็นดวงๆ
+ส่วนใหญ่มาจากบริเวณจมูก หน้าผากและโหนกแก้ม ผิวดูหนา อาจมองเห็นเส้นเลือดไม่ชัดเจน
+        </p>
+        <!--อ้างอิง-->
+        <h4 class="font-bold text-lg mt-6 mb-2">อ้างอิง:</h4>
+        <p>
+            <a href=https://www.theiconclinic789.com/th/site/review/view/22/%E0%B9%81%E0%B8%99%E0%B9%88%E0%B9%83%E0%B8%88%E0%B9%81%E0%B8%A5%E0%B9%89%E0%B8%A7%E0%B8%AB%E0%B8%A3%E0%B8%AD%E0%B8%A7%E0%B9%88%E0%B8%B2%E0%B8%A3%E0%B8%B9%E0%B9%89%E0%B8%88%E0%B8%B1%E0%B8%81%E0%B8%AA%E0%B8%A0%E0%B8%B2%E0%B8%9E%E0%B8%9C%E0%B8%B4%E0%B8%A7%E0%B8%95%E0%B8%B1%E0%B8%A7%E0%B9%80%E0%B8%AD%E0%B8%87%3F"
+               target="_blank"
+               class="text-blue-500 hover:underline">
+               แหล่งที่มา: The Icon Clinic
+            </a>
+        </p>        
+    </div>
+</section>
         

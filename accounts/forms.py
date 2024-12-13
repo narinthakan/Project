@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import Profile,Product,Expert  # ใช้ Profile จาก models.py
+from .models import Profile,Product,Expert,Seller  # ใช้ Profile จาก models.py
 
 
 # ฟอร์มสำหรับการลงทะเบียน
@@ -78,6 +78,33 @@ class ExpertVerificationForm(forms.ModelForm):
     class Meta:
         model = Expert
         fields = ['is_verified']
+        
+#ฟอร์มSeller/ผู้ขาย
+class SellerRegistrationForm(forms.ModelForm):
+    class Meta:
+        model = Seller
+        fields = [
+            'full_name',
+            'email',
+            'phone_number',
+            'business_name',
+            'product_category',
+            'website',
+            'product_samples',
+            'profile_picture',  # เพิ่มฟิลด์รูปโปรไฟล์
+        ]
+
+        widgets = {
+            'full_name': forms.TextInput(attrs={'placeholder': 'ชื่อ-สกุล', 'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'placeholder': 'อีเมล', 'class': 'form-control'}),
+            'phone_number': forms.TextInput(attrs={'placeholder': 'เบอร์โทรศัพท์', 'class': 'form-control'}),
+            'business_name': forms.TextInput(attrs={'placeholder': 'ชื่อธุรกิจ/แบรนด์', 'class': 'form-control'}),
+            'product_category': forms.TextInput(attrs={'placeholder': 'หมวดหมู่สินค้า', 'class': 'form-control'}),
+            'website': forms.URLInput(attrs={'placeholder': 'ลิงก์เว็บไซต์/โซเชียลมีเดีย', 'class': 'form-control'}),
+        }
+
+
+
 
     
     

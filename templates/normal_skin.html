@@ -60,7 +60,50 @@
     <a href="{% url 'reviews' %}" class="{% if request.resolver_match.url_name == 'reviews' %}nav-link-active{% else %}nav-link{% endif %}">รีวิว</a>
 </div>
 <!-- Product Grid -->
-<section class="mb-8">
-    <h2 class="text-lg font-bold mb-4">ผิวธรรมดา(Normal Skin)</h2>
-    <div class="grid grid-cols-2 gap-6">
-        
+<section class="flex flex-col items-center min-h-screen">
+    <!-- Title -->
+    <h2 class="text-lg font-bold mb-8 text-center">ผิวธรรมดา (Normal Skin)</h2>
+
+    <!-- Image -->
+    <div class="flex justify-center items-center mb-8">
+        <img src="/static/images/ผิวธรรมดา.jpg" alt="ผิวธรรมดา (Normal Skin)" class="rounded-lg shadow-lg">
+    </div>
+
+    <!-- Description -->
+    <div class="w-3/4 text-gray-700 leading-relaxed text-left">
+        <!-- Introduction -->
+        <p class="mb-4">
+            <strong>ผิวธรรมดา (Normal Skin)</strong> ถือว่าเป็นผิวที่มีความสมดุลที่สุด 
+            ไม่มันและไม่แห้งจนเกินไป เพราะผิวมีการผลิตน้ำมันได้สมดุล 
+            ผิวเนียนเรียบ อ่อนนุ่ม รูขุมขนเล็ก ไม่มีปัญหาเรื่องริ้วรอยหรือสิว
+        </p>
+
+        <!-- ลักษณะของผิวธรรมดา -->
+        <h3 class="font-bold text-lg mb-2">ลักษณะของผิวธรรมดา:</h3>
+        <ul class="list-disc list-inside mb-4">
+            <li>ผิวไม่มันและไม่แห้งจนเกินไป</li>
+            <li>ผลิตน้ำมันได้สมดุล</li>
+            <li>รูขุมขนเล็ก</li>
+            <li>ไม่มีปัญหาเรื่องริ้วรอยหรือสิว</li>
+            <li>มีการไหลเวียนโลหิตที่ดี</li>
+            <li>ผิวเรียบเนียน</li>
+        </ul>
+
+        <!-- วิธีเช็ค -->
+        <h3 class="font-bold text-lg mt-6 mb-2">วิธีเช็ค:</h3>
+        <p>
+            เคยเห็นผิวของเด็กใช่ไหมคะ: นั่นแหละค่ะ 
+            เพราะผิวของเด็กเป็นตัวแทนของผิวธรรมดาที่สามารถสังเกตได้ง่ายที่สุด
+        </p>
+        <!--อ้างอิง-->
+        <h4 class="font-bold text-lg mt-6 mb-2">อ้างอิง:</h4>
+        <p>
+            <a href=https://www.theiconclinic789.com/th/site/review/view/22/%E0%B9%81%E0%B8%99%E0%B9%88%E0%B9%83%E0%B8%88%E0%B9%81%E0%B8%A5%E0%B9%89%E0%B8%A7%E0%B8%AB%E0%B8%A3%E0%B8%AD%E0%B8%A7%E0%B9%88%E0%B8%B2%E0%B8%A3%E0%B8%B9%E0%B9%89%E0%B8%88%E0%B8%B1%E0%B8%81%E0%B8%AA%E0%B8%A0%E0%B8%B2%E0%B8%9E%E0%B8%9C%E0%B8%B4%E0%B8%A7%E0%B8%95%E0%B8%B1%E0%B8%A7%E0%B9%80%E0%B8%AD%E0%B8%87%3F"
+               target="_blank"
+               class="text-blue-500 hover:underline">
+               แหล่งที่มา: The Icon Clinic
+            </a>
+        </p>        
+    </div>
+</section>
+

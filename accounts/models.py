@@ -109,4 +109,19 @@ def save_user_profile(sender, instance, **kwargs):
     instance.profile.save()
 
 
+#สำหรับเก็บข้อมูลผู้ขาย
+class Seller(models.Model):
+    full_name = models.CharField(max_length=255)  # ชื่อ-สกุล
+    email = models.EmailField(unique=True)  # อีเมล
+    phone_number = models.CharField(max_length=15, blank=True, null=True)  # เบอร์โทรศัพท์
+    business_name = models.CharField(max_length=255)  # ชื่อธุรกิจ/แบรนด์
+    product_category = models.CharField(max_length=255)  # หมวดหมู่สินค้า
+    website = models.URLField(blank=True, null=True)  # ลิงก์เว็บไซต์หรือโซเชียลมีเดีย
+    product_samples = models.ImageField(upload_to='seller_product_samples/', blank=True, null=True)  # ตัวอย่างสินค้า
+    profile_picture = models.ImageField(upload_to='seller_profiles/', blank=True, null=True)  # รูปโปรไฟล์
+    created_at = models.DateTimeField(auto_now_add=True)  # วันที่สมัคร
+
+    def __str__(self):
+        return self.business_name
+
     

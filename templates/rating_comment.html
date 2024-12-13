@@ -1,0 +1,10 @@
+<form method="POST" action="{% url 'add_review' product.id %}">
+    {% csrf_token %}
+    <label for="rating">คะแนน:</label>
+    <input type="number" name="rating" min="1" max="5" step="0.1" required>
+    
+    <label for="comment">ความคิดเห็น:</label>
+    <textarea name="comment" rows="3" placeholder="แสดงความคิดเห็นของคุณ"></textarea>
+    
+    <button type="submit">เพิ่มรีวิว</button>
+</form>

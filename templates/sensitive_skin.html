@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ผิวธรรมดา</title>
+    <title>ผิวแพ้ง่าย</title>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@100;400;600&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -59,8 +59,51 @@
     <a href="{% url 'analysis' %}" class="{% if request.resolver_match.url_name == 'analysis' %}nav-link-active{% else %}nav-link{% endif %}">วิเคราะห์</a>
     <a href="{% url 'reviews' %}" class="{% if request.resolver_match.url_name == 'reviews' %}nav-link-active{% else %}nav-link{% endif %}">รีวิว</a>
 </div>
+        
 <!-- Product Grid -->
-<section class="mb-8">
-    <h2 class="text-lg font-bold mb-4">ผิวแพ้ง่าย(sensitive skin)</h2>
-    <div class="grid grid-cols-2 gap-6">
+<section class="flex flex-col items-center min-h-screen">
+    <!-- Title -->
+    <h2 class="text-lg font-bold mb-8 text-center">ผิวแพ้ง่าย(Sensitive Skin)</h2>
+
+    <!-- Image -->
+    <div class="flex justify-center items-center mb-8">
+        <img src="/static/images/ผิวแพ้ง่าย.jpg" alt="ผิวแพ้ง่าย(sensitive skin)" class="rounded-lg shadow-lg">
+    </div>
+
+    <!-- Description -->
+    <div class="w-3/4 text-gray-700 leading-relaxed text-left">
+        <!-- Introduction -->
+        <p class="mb-4">
+            <strong>ผิวแพ้ง่าย(sensitive skin)</strong> ผิวที่ระคายเคืองง่ายและบอบบางมากๆ เช่น กระดาษทิชชู อากาศร้อน
+            หรือแม้แต่ฝุ่น มีปัญหาแพ้ง่าย แดง ระคายเคืองง่ายต่อผลิตภัณฑ์ทั่วไป มักเกิดอาการ แห้งลอก
+            บวมแดง เป็นผื่นแพ้ แสบรวมถึงคันลักษณะของผิวแพ้ง่าย
+        </p>
+
+        <!-- ลักษณะของผิวแพ้ง่าย -->
+        <h3 class="font-bold text-lg mb-2">ลักษณะของผิวแพ้ง่าย:</h3>
+        <ul class="list-disc list-inside mb-4">
+            <li>ผิวหน้าตีง แพ้ง่าย</li>
+            <li>ผื่นขึ้นและอักเสบง่าย</li>
+            <li>ระคายเคืองต่อผลิตภัณฑ์ทั่วไป</li>
+            <li>สุขภาพผิวไม่แข็งแรง</li>
+        </ul>
+
+        <!-- วิธีเช็ค -->
+        <h3 class="font-bold text-lg mt-6 mb-2">วิธีเช็ค:</h3>
+        <p>
+            ผิวที่ระคายเคืองง่ายต่อผลิตภัณฑ์ทั่วไป มักเกิดอาการแพ้บ่อยๆ สุขภาพผิวไม่แข็งแรง
+
+
+        </p>
+        <!--อ้างอิง-->
+        <h4 class="font-bold text-lg mt-6 mb-2">อ้างอิง:</h4>
+        <p>
+            <a href=https://www.theiconclinic789.com/th/site/review/view/22/%E0%B9%81%E0%B8%99%E0%B9%88%E0%B9%83%E0%B8%88%E0%B9%81%E0%B8%A5%E0%B9%89%E0%B8%A7%E0%B8%AB%E0%B8%A3%E0%B8%AD%E0%B8%A7%E0%B9%88%E0%B8%B2%E0%B8%A3%E0%B8%B9%E0%B9%89%E0%B8%88%E0%B8%B1%E0%B8%81%E0%B8%AA%E0%B8%A0%E0%B8%B2%E0%B8%9E%E0%B8%9C%E0%B8%B4%E0%B8%A7%E0%B8%95%E0%B8%B1%E0%B8%A7%E0%B9%80%E0%B8%AD%E0%B8%87%3F"
+               target="_blank"
+               class="text-blue-500 hover:underline">
+               แหล่งที่มา: The Icon Clinic
+            </a>
+        </p>        
+    </div>
+</section>
         

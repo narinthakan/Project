@@ -2,8 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test,  permission_required
 from django.contrib import messages
-from .forms import RegistrationForm, LoginForm, ProfileForm, ProductForm, ExpertLoginForm, ExpertVerificationForm
-from .models import Product, Profile, Review, Expert
+from .forms import RegistrationForm, LoginForm, ProfileForm, ProductForm, ExpertLoginForm, ExpertVerificationForm, SellerRegistrationForm
+from .models import Product, Profile, Review, Expert, Seller
 from django.contrib.auth.models import User
 
 
@@ -184,6 +184,45 @@ def edit_profile(request):
     
     return render(request, 'edit_profile.html', {'form': form})
 
+#ฟังก์ชันเข้าสู่ระบบSeller/ผู้ขาย
+def register_seller(request):
+    if request.method == 'POST':
+        form = SellerRegistrationForm(request.POST, request.FILES)  # รองรับไฟล์อัปโหลด
+        if form.is_valid():
+            form.save()  # บันทึกข้อมูลลงฐานข้อมูล
+            messages.success(request, "สมัครสมาชิกสำเร็จ!")
+            return redirect('seller_login')  #หลังสมัครสำเร็จ ให้กลับไปหน้าล็อคอินผู้ขาย
+        else:
+            messages.error(request, "กรุณากรอกข้อมูลให้ถูกต้อง")
+    else:
+        form = SellerRegistrationForm()
+
+    return render(request, 'register_seller.html', {'form': form})
+
+def seller_login(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')  # รับอีเมลจากฟอร์ม
+        password = request.POST.get('password')  # รับรหัสผ่านจากฟอร์ม
+
+        # ตรวจสอบว่า Seller มีอยู่ในระบบหรือไม่
+        try:
+            seller = Seller.objects.get(email=email)
+        except Seller.DoesNotExist:
+            messages.error(request, "ไม่พบบัญชีผู้ขายในระบบ")
+            return redirect('seller_login')
+
+        # ตรวจสอบรหัสผ่าน (กำหนดรหัสผ่านในโมเดล Seller เองหรือใช้ระบบ Auth ของ Django)
+        if seller and seller.phone_number == password:  # ใช้ phone_number เป็น password (ควรใช้ hashing แทน)
+            request.session['seller_id'] = seller.id  # บันทึกข้อมูล session ของ Seller
+            messages.success(request, "เข้าสู่ระบบสำเร็จ")
+            return redirect('seller_dashboard')  # เปลี่ยนไปหน้า Dashboard
+        else:
+            messages.error(request, "อีเมลหรือรหัสผ่านไม่ถูกต้อง")
+            return redirect('seller_login')
+
+    return render(request, 'seller_login.html')
+
+
 # ฟังก์ชันเข้าสู่ระบบ
 def login_view(request):
     if request.method == 'POST':
@@ -203,6 +242,7 @@ def login_view(request):
     else:
         form = LoginForm()
     return render(request, 'login.html', {'form': form})
+
 
 # ฟังก์ชันออกจากระบบ
 def logout_view(request):
@@ -289,15 +329,34 @@ def add_review(request, product_id):
 # ฟังก์ชันลบรีวิว
 @login_required
 def delete_review(request, review_id):
-    review = get_object_or_404(Review, id=review_id)
+    review = get_object_or_404(Review, id=review_id, user=request.user) #ตรวจสอบว่าเป็นเจ้าของรีวิว
     if request.user == review.user:
         product_id = review.product.id
-        review.delete()
+        review.delete()  #ลบรีวิว
         messages.success(request, 'ความคิดเห็นของคุณถูกลบแล้ว')
         return redirect('product_detail', product_id=product_id)
     else:
         messages.error(request, 'คุณไม่สามารถลบความคิดเห็นนี้ได้')
         return redirect('product_detail', product_id=review.product.id)
+    
+#เพิ่มรีวิวในฐานข้อมูล    
+@login_required
+def add_review(request, product_id):
+    product = get_object_or_404(Product, id=product_id)  # ดึงข้อมูลสินค้า
+    if request.method == 'POST':
+        rating = request.POST.get('rating')  # คะแนนที่ส่งมาจากฟอร์ม
+        comment = request.POST.get('comment')  # ข้อความรีวิว
+        # สร้างรีวิวใหม่และเพิ่มลงฐานข้อมูล
+        Review.objects.create(
+            user=request.user,  # ผู้ใช้ปัจจุบัน
+            product=product,  # สินค้าที่รีวิว
+            rating=rating,  # คะแนนรีวิว
+            comment=comment  # ข้อความรีวิว
+        )
+        # อัปเดตคะแนนเฉลี่ยสินค้า
+        product.rating = product.average_rating()
+        product.save()
+        return redirect('product_detail', product_id=product.id)  # กลับไปยังหน้ารายละเอียดสินค้า    
 
 # ฟังก์ชันสำหรับแสดงหน้ารายละเอียดสินค้า
 def product_detail(request, product_id):

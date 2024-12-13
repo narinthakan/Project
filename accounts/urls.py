@@ -3,7 +3,7 @@ from . import views
 from django.contrib.auth import views as auth_views  # นำเข้าฟังก์ชันการเข้าสู่ระบบและออกจากระบบจาก Django
 from django.conf import settings
 from django.conf.urls.static import static
-from .views import expert_login
+from .views import expert_login, seller_login, register_seller
 
 urlpatterns = [
     # เส้นทางสำหรับการสมัครสมาชิก
@@ -32,7 +32,10 @@ urlpatterns = [
     path('verify_expert/', views.verify_expert_list, name='verify_expert_list'),  # รายการผู้เชี่ยวชาญที่ต้องการการตรวจสอบ
     path('verify_expert/<int:expert_id>/', views.verify_expert, name='verify_expert'),  # หน้า ตรวจสอบผู้เชี่ยวชาญ
     
-
+    #เส้นทางสำหรับเข้าสู่ระบบผู้ขาย
+    path('seller-login/', seller_login, name='seller_login'),
+    #เส้นทางสำหรับหน้าลงทะเบียนผู้ขาย
+    path('register-seller/', register_seller, name='register_seller'),
 
     # เส้นทางสำหรับแสดงหน้าโปรไฟล์และแก้ไขโปรไฟล์
     path('user_profile/', views.user_profile, name='user_profile'),  # ดูโปรไฟล์

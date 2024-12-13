@@ -1,0 +1,153 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>โปรไฟล์ Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@100;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * {
+            font-family: "Kanit", sans-serif;
+        }
+
+        /* Profile Container */
+        .profile-container {
+            background-color: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            max-width: 500px;
+            margin: 40px auto;
+            text-align: center;
+        }
+
+        /* Profile Picture Section */
+        .profile-picture {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin: 0 auto 20px;
+            border: 3px solid #A0AEC0;
+            background-color: #E2E8F0;
+        }
+
+        .profile-picture img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-upload-button {
+            background-color: #3182CE;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            margin-top: 20px;
+            transition: background-color 0.3s ease;
+            display: inline-block;
+        }
+
+        .profile-upload-button:hover {
+            background-color: #2B6CB0;
+        }
+
+        /* User Info */
+        .user-info label {
+            color: #4A5568;
+            font-weight: 600;
+            display: inline-block;
+            width: 100px;
+        }
+
+        .user-info div {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        /* Back Button */
+        .back-button {
+            color: #3182CE;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        .back-button:hover {
+            text-decoration: underline;
+        }
+
+        /* Edit Profile Button */
+        .edit-button {
+            margin-top: 20px;
+            background-color: #3182CE;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .edit-button:hover {
+            background-color: #2B6CB0;
+        }
+    </style>
+</head>
+<body class="bg-blue-100">
+    <!-- Back Button -->
+    <div class="p-4">
+        <a href="{% url 'user_home' %}" class="back-button">&lt; กลับหน้าหลัก</a>
+    </div>
+    
+    <!-- Profile Section -->
+    <div class="profile-container">
+        <div class="flex flex-col items-center">
+            <div class="profile-picture relative">
+                <!-- รูปโปรไฟล์ -->
+                {% if user.profile.profile_picture %}
+                    <img src="{{ user.profile.profile_picture.url }}" alt="Profile Picture">
+                {% else %}
+                    <img src="{% static 'images/user-icon.png' %}" alt="Default Profile Picture">
+                {% endif %}
+            </div>
+
+            <!-- User Info -->
+            <div class="user-info mt-6">
+                <div>
+                    <label>ชื่อ-สกุล:</label>
+                    <span>{{ user.first_name }} {{ user.last_name }}</span>
+                </div>
+                <div>
+                    <label>ชื่อผู้ใช้:</label>
+                    <span>{{ user.username }}</span>
+                </div>
+                <div>
+                    <label>ตำแหน่ง:</label>
+                    <span>{{ user.position }}</span>
+                </div>
+                <div>
+                    <label>อายุ:</label>
+                    <span>{{ user.profile.age }}</span>
+                </div>
+                <div>
+                    <label>โทรศัพท์:</label>
+                    <span>{{ user.profile.phone_number }}</span>
+                </div>
+                <div>
+                    <label>อีเมล์:</label>
+                    <span>{{ user.email }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ปุ่มแก้ไขข้อมูลส่วนตัว ข้างล่างช่องสี่เหลี่ยม -->
+    <div class="text-center mt-4">
+        <a href="{% url 'edit_profile' %}" class="edit-button">แก้ไขข้อมูลส่วนตัว</a>
+    </div>
+</body>
+</html>
