@@ -16,9 +16,11 @@
     <div class="bg-white rounded-lg shadow-lg p-10 max-w-md w-full">
         <h1 class="text-3xl font-bold text-center mb-8">ลงทะเบียนผู้เชี่ยวชาญ</h1>
         <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            
             <!-- อัปโหลดรูปโปรไฟล์ -->
             <div class="mb-6 flex flex-col items-center">
-                <label class="block text-lg font-bold mb-2">อัปโหลดรูปโปรไฟล์</label>
+                <label for="profileImage" class="block text-lg font-bold mb-2">อัปโหลดรูปโปรไฟล์</label>
                 <div class="w-32 h-32 bg-gray-200 rounded-full overflow-hidden border border-gray-300 mb-4">
                     <img id="profilePreview" src="#" alt="โปรไฟล์" class="w-full h-full object-cover hidden">
                 </div>
@@ -87,7 +89,14 @@
                        class="w-full p-4 text-base rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none">
             </div>
 
-            <!-- ปุ่มเข้าสู่ระบบ -->
+            <!-- ยืนยันรหัสผ่าน -->
+            <div class="mb-6">
+                <label for="confirm_password" class="block text-lg font-bold mb-2">ยืนยันรหัสผ่าน</label>
+                <input id="confirm_password" name="confirm_password" type="password" placeholder="ยืนยันรหัสผ่าน" required
+                       class="w-full p-4 text-base rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            </div>
+
+            <!-- ปุ่มลงทะเบียน -->
             <div class="flex justify-center">
                 <button type="submit" class="w-1/2 py-4 bg-black text-white font-bold rounded-full focus:outline-none hover:bg-gray-800">
                     ลงทะเบียน
@@ -107,19 +116,17 @@
             };
             reader.readAsDataURL(event.target.files[0]);
         }
+        
+        // การตรวจสอบรหัสผ่านและยืนยันรหัสผ่าน
+        document.querySelector('form').onsubmit = function (event) {
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm_password').value;
+            
+            if (password !== confirmPassword) {
+                event.preventDefault(); // หยุดการส่งฟอร์ม
+                alert("รหัสผ่านและยืนยันรหัสผ่านไม่ตรงกัน");
+            }
+        };
     </script>
 </body>
 </html>
-
-      <!-- ปุ่มไปหน้าหลักของผู้ใช้ -->
-      <form method="POST">
-        {% csrf_token %}
-        <div class="flex justify-center">
-        </div>
-      </form>
-    </div>
-  </body>
-</html>
-
-
-

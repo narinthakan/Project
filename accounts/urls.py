@@ -16,6 +16,9 @@ urlpatterns = [
     # เส้นทางหน้าหลัก
     path('', views.home, name='home'),
     path('home/', views.home, name='home'),
+    
+    #เส้นทางค้นหาผลิตภัณฑ์
+    path('search/', views.search_products, name='search_products'),
 
     # เส้นทางหน้าสมาชิก
     path('member/', views.member_home, name='member_home'),
@@ -23,7 +26,9 @@ urlpatterns = [
     path('expert-login/', views.expert_login, name='expert_login'),  # ผู้เชี่ยวชาญ
     
     # เส้นทางสำหรับการสมัครสมาชิกผู้เชี่ยวชาญ
+    path('expert-login/', views.expert_login, name='expert_login'),
     path('register-expert/', views.register_expert, name='register_expert'),
+    path('home/', views.home, name='home'),
     
     # เส้นทางสำหรับหน้าโปรไฟล์ผู้เชี่ยวชาญ
     path('expert-profile/', views.expert_profile, name='expert_profile'),
@@ -33,9 +38,10 @@ urlpatterns = [
     path('verify_expert/<int:expert_id>/', views.verify_expert, name='verify_expert'),  # หน้า ตรวจสอบผู้เชี่ยวชาญ
     
     #เส้นทางสำหรับเข้าสู่ระบบผู้ขาย
-    path('seller-login/', seller_login, name='seller_login'),
+    path('seller_login/', seller_login, name='seller_login'),
     #เส้นทางสำหรับหน้าลงทะเบียนผู้ขาย
-    path('register-seller/', register_seller, name='register_seller'),
+    path('register_seller/', views.register_seller, name='register_seller'),
+    
 
     # เส้นทางสำหรับแสดงหน้าโปรไฟล์และแก้ไขโปรไฟล์
     path('user_profile/', views.user_profile, name='user_profile'),  # ดูโปรไฟล์
@@ -55,7 +61,13 @@ urlpatterns = [
     # เส้นทางหน้าวิเคราะห์และรีวิว
     path('analysis/', views.analysis_view, name='analysis'),
     path('reviews/', views.reviews_view, name='reviews'),
-
+    
+    #เส้นทางสำหรับกรอกข้อมูลผิวหน้าของคุณ
+    path('skin-data/', views.skin_data_form, name='skin_data_form'),
+    
+    #เส้นทางสำหรับอัปโหลดผิวหน้า
+    path('upload/', views.upload_skin_view, name='upload_skin'),
+    
     # เส้นทางสำหรับส่งข้อมูลโปรไฟล์เพิ่มเติมหลังจากสมัครสมาชิก
     path('submit-profile/', views.submit_profile_view, name='submit_profile_view'),
 

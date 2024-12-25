@@ -1,0 +1,101 @@
+Table logentry {
+  id integer
+  action_time timestamp
+  user_id integer [note: 'foreign key to user']
+  content_type_id integer [note: 'foreign key to contenttype']
+  object_id text
+  object_repr varchar
+  action_flag integer
+  change_message text
+}
+
+Table permission {
+  id integer
+  name varchar
+  content_type_id integer [note: 'foreign key to contenttype']
+  codename varchar
+}
+
+Table group {
+  id integer
+  name varchar
+}
+
+Table user {
+  id integer
+  password varchar
+  last_login timestamp
+  username varchar
+  first_name varchar
+  last_name varchar
+  email varchar
+  date_joined timestamp
+}
+
+Table contenttype {
+  id integer
+  app_label varchar
+  model varchar
+}
+
+Table session {
+  session_key varchar
+  session_data text
+  expire_date timestamp
+}
+
+Table expert {
+  id integer
+  full_name varchar
+  username varchar
+  email varchar
+  password varchar
+  license_number varchar
+  expertise varchar
+  workplace varchar
+  experience text
+}
+
+Table seller {
+  id integer
+  full_name varchar
+  email varchar
+  phone_number varchar
+  business_name varchar
+  product_category varchar
+  website varchar
+  created_at timestamp
+}
+
+Table product {
+  id integer
+  name varchar
+  description text
+  category varchar
+}
+
+Table review {
+  id integer
+  user_id integer [note: 'foreign key to user']
+  product_id integer [note: 'foreign key to product']
+  comment text
+  created_at timestamp
+}
+
+Table profile {
+  id integer
+  user_id integer [note: 'foreign key to user']
+  role varchar
+  address varchar
+  phone_number varchar
+  skin_problem text
+  age integer
+  gender varchar
+}
+
+Ref: logentry.user_id > user.id // many-to-one
+Ref: logentry.content_type_id > contenttype.id // many-to-one
+Ref: permission.content_type_id > contenttype.id // many-to-one
+Ref: review.user_id > user.id // many-to-one
+Ref: review.product_id > product.id // many-to-one
+Ref: profile.user_id > user.id // many-to-one

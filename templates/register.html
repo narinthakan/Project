@@ -15,10 +15,12 @@
   <body class="bg-blue-100 flex items-center justify-center min-h-screen">
     <div class="bg-white rounded-lg shadow-lg p-10 max-w-md w-full">
       <h1 class="text-3xl font-bold text-center mb-8">สมัครสมาชิก</h1>
+      
 
       <!-- แทรกฟอร์มที่เชื่อมโยงกับ Django -->
-      <form method="POST" action="">
+      <form method="POST" action="{% url 'register' %}">
         {% csrf_token %}
+        
         <!-- ชื่อ-สกุล -->
         <div class="mb-4">
             <label for="first_name" class="block text-gray-700">ชื่อ-สกุล</label>
@@ -58,7 +60,6 @@
     </form>    
     </div>
   </body>
-
 </html>
 
 

@@ -24,10 +24,6 @@
             padding: 40px;
             border-radius: 16px;
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-        }
-        .container:hover {
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
         }
         h1 {
             font-size: 2rem;
@@ -72,20 +68,6 @@
         button:hover {
             background-color: #2f855a;
         }
-        .container form {
-            margin-top: 20px;
-        }
-        @media (max-width: 768px) {
-            .container {
-                padding: 20px;
-            }
-            h1 {
-                font-size: 1.5rem;
-            }
-            button {
-                width: 100%;
-            }
-        }
     </style>
 </head>
 <body>
@@ -93,12 +75,43 @@
         <h1>เพิ่มผลิตภัณฑ์ใหม่</h1>
         <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
-            {{ form.as_p }}
+            <!-- ชื่อสินค้า -->
+            <label for="name">ชื่อสินค้า</label>
+            <input type="text" id="name" name="name" placeholder="กรอกชื่อผลิตภัณฑ์" required>
+            
+            <!-- ภาพสินค้า -->
+            <label for="image">ภาพสินค้า</label>
+            <input type="file" id="image" name="image" accept="image/*" required>
+            
+            <!-- ราคา -->
+            <label for="price">ราคา</label>
+            <input type="number" id="price" name="price" placeholder="กรอกราคา (บาท)" required>
+            
+            <!-- หมวดหมู่ -->
+            <label for="category">หมวดหมู่</label>
+            <select id="category" name="category" required>
+                <option value="">-- เลือกหมวดหมู่ --</option>
+                <option value="moisturizer">มอยเจอไรเซอร์</option>
+                <option value="serum">เซรั่ม</option>
+                <option value="sunscreen">ครีมกันแดด</option>
+                <option value="cleanser">คลีนเซอร์</option>
+            </select>
+
+            <!-- รายละเอียดสินค้า -->
+            <label for="description">รายละเอียดสินค้า</label>
+            <textarea id="description" name="description" rows="4" placeholder="กรอกรายละเอียดผลิตภัณฑ์" required></textarea>
+
+            <!-- วิธีใช้ -->
+            <label for="usage">วิธีใช้</label>
+            <textarea id="usage" name="usage" rows="3" placeholder="ระบุวิธีการใช้งาน" required></textarea>
+            
+            <!-- ลิ้งค์สั่งซื้อ -->
+            <label for="link">ลิ้งค์สั่งซื้อสินค้า</label>
+            <input type="url" id="link" name="link" placeholder="วางลิ้งค์สั่งซื้อสินค้า" required>
+            
+            <!-- ปุ่มบันทึก -->
             <button type="submit">บันทึกผลิตภัณฑ์</button>
         </form>
     </div>
 </body>
 </html>
-
-
-

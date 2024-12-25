@@ -1,10 +1,15 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test,  permission_required
+from django.contrib.auth.hashers import make_password, check_password
 from django.contrib import messages
-from .forms import RegistrationForm, LoginForm, ProfileForm, ProductForm, ExpertLoginForm, ExpertVerificationForm, SellerRegistrationForm
+from .forms import RegistrationForm, LoginForm, ProfileForm, ProductForm, ExpertLoginForm, ExpertVerificationForm, SellerRegistrationForm, ExpertRegistrationForm, SkinUploadForm 
 from .models import Product, Profile, Review, Expert, Seller
 from django.contrib.auth.models import User
+# ฟังก์ชันจัดการข้อมูลโปรไฟล์เพิ่มเติม
+from django.contrib import messages
+from django.shortcuts import redirect, render
+from .models import Profile
 
 
 
@@ -46,6 +51,9 @@ def add_product(request):
         Product.objects.create(name=product_name, price=product_price)
     return render(request, 'add_product.html')
 
+def home(request):
+    return render(request, 'home.html', {'message': "ยินดีต้อนรับสู่หน้าหลัก"})
+
 # ฟังก์ชันสำหรับหน้า Home
 def home(request):
     # ตรวจสอบว่าเป็นแอดมินหรือไม่
@@ -58,7 +66,16 @@ def home(request):
     
     return render(request, 'home.html', {'experts_to_verify': experts_to_verify})
 
-
+#ฟังก์ชันสำหรับการค้นหาเพราะผลิตภัณฑ์
+def search_products(request):
+    query = request.GET.get('q', '')  # ดึงค่าคำค้นหาจากฟอร์ม
+    results = Product.objects.filter(name__icontains=query) if query else Product.objects.none()
+    
+    return render(request, 'products.html', {
+        'products': results,  # ส่งผลลัพธ์ไปที่เทมเพลต
+        'query': query,  # ส่งคำค้นไปเพื่อแสดงผล
+    })
+    
 # ฟังก์ชันสำหรับการสมัครสมาชิก
 def register_view(request):
     if request.method == 'POST':
@@ -97,38 +114,80 @@ def verify_expert(request, expert_id):
     return render(request, 'verify_expert.html', {'expert': expert})
 
 
-# ฟังก์ชันสำหรับการเข้าสู่ระบบผู้เชี่ยวชาญ
+# ฟังก์ชันเข้าสู่ระบบผู้เชี่ยวชาญ
 def expert_login(request):
-    error_message = None  # ใช้สำหรับเก็บข้อความข้อผิดพลาด
-
     if request.method == 'POST':
-        form = ExpertLoginForm(request.POST)
-        if form.is_valid():
-            # ตรวจสอบข้อมูลในระบบ (คุณสามารถเปลี่ยนแปลงเพื่อตรวจสอบข้อมูลในฐานข้อมูลได้)
-            # ตัวอย่างนี้แสดงผลสำเร็จโดยไม่เชื่อมต่อ API
-            messages.success(request, "เข้าสู่ระบบสำเร็จ")
-            return redirect('expert_profile')  # เปลี่ยนไปที่หน้าโปรไฟล์ผู้เชี่ยวชาญ
-        else:
-            error_message = "กรุณาตรวจสอบข้อมูลที่กรอก"
-    else:
-        form = ExpertLoginForm()
-
-    return render(request, 'expert_login.html', {'form': form, 'error_message': error_message})
+        # รับข้อมูลจากฟอร์ม
+        name = request.POST.get('nm', '').strip()
+        surname = request.POST.get('lp', '').strip()
+        license_number = request.POST.get('codepce', '').strip()
 
 
-# ฟังก์ชันสำหรับสมัครสมาชิกผู้เชี่ยวชาญ
+        try:
+            # ตรวจสอบผู้เชี่ยวชาญในฐานข้อมูล โดยแยก full_name และ license_number
+            expert = Expert.objects.get(license_number=license_number)
+            full_name_parts = expert.full_name.split()  # แยกชื่อกับนามสกุลออกจาก full_name
+
+            # ตรวจสอบชื่อและนามสกุล
+            if name == full_name_parts[0] and surname == full_name_parts[-1]:
+                request.session['expert_id'] = expert.id  # เซ็ตค่า Session
+                messages.success(request, "เข้าสู่ระบบสำเร็จ!")
+                return redirect('home')  # ไปที่หน้าหลัก
+            else:
+                messages.error(request, "ชื่อหรือนามสกุลไม่ถูกต้อง")
+            
+
+        except Expert.DoesNotExist:
+            messages.error(request, "ไม่พบข้อมูลผู้เชี่ยวชาญในระบบ")
+
+    return render(request, 'expert_login.html')
+
+# ฟังก์ชันลงทะเบียนผู้เชี่ยวชาญ
 def register_expert(request):
-    if request.method == 'POST':
-        # ประมวลผลข้อมูลที่กรอกในฟอร์ม
-        form = ExpertLoginForm(request.POST)
+    if request.method == "POST":
+        form = ExpertRegistrationForm(request.POST, request.FILES)
         if form.is_valid():
-            # เก็บข้อมูลในระบบหรือแสดงข้อความสำเร็จ
-            messages.success(request, "สมัครสมาชิกผู้เชี่ยวชาญสำเร็จ!")
-            return redirect('expert_login')  # เปลี่ยนเส้นทางกลับไปที่หน้าล็อกอิน
-        else:
-            messages.error(request, "กรุณาตรวจสอบข้อมูล")
+            username = form.cleaned_data['username']
+            email = form.cleaned_data['email']
+            password = form.cleaned_data['password']
+            full_name = form.cleaned_data['full_name']
+
+            # ตรวจสอบว่ามี username หรือ email ซ้ำหรือไม่
+            if User.objects.filter(username=username).exists():
+                messages.error(request, "ชื่อผู้ใช้นี้ถูกใช้ไปแล้ว")
+                return render(request, 'register_expert.html', {'form': form})
+
+            if User.objects.filter(email=email).exists():
+                messages.error(request, "อีเมลนี้ถูกใช้ไปแล้ว")
+                return render(request, 'register_expert.html', {'form': form})
+
+            # ตรวจสอบ username ใน Expert อีกชั้น
+            if Expert.objects.filter(user__username=username).exists():
+                messages.error(request, "ชื่อผู้ใช้นี้ถูกใช้ไปแล้วในระบบผู้เชี่ยวชาญ")
+                return render(request, 'register_expert.html', {'form': form})
+
+            # สร้าง User
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                password=password
+            )
+
+            # สร้าง Expert ที่เชื่อมกับ User
+            Expert.objects.create(
+                user=user,
+                full_name=full_name,
+                license_number=form.cleaned_data['license_number'],
+                expertise=form.cleaned_data['expertise'],
+                workplace=form.cleaned_data['workplace'],
+                experience=form.cleaned_data['experience'],
+                profile_image=form.cleaned_data['profile_image']
+            )
+
+            messages.success(request, "ลงทะเบียนผู้เชี่ยวชาญสำเร็จ!")
+            return redirect('login')  # เปลี่ยนไปยังหน้า login
     else:
-        form = ExpertLoginForm()
+        form = ExpertRegistrationForm()
 
     return render(request, 'register_expert.html', {'form': form})
 
@@ -145,22 +204,61 @@ def expert_profile(request):
     # ส่งข้อมูลไปยังเทมเพลต
     return render(request, 'expert_profile.html', {'expert_data': expert_data})
 
+def home(request):
+    context = {}
+    
+    # ตรวจสอบผู้เชี่ยวชาญที่เข้าสู่ระบบ
+    expert_id = request.session.get('expert_id')
+    if expert_id:
+        try:
+            expert = Expert.objects.get(id=expert_id)
+            context['user_name'] = expert.full_name  # ชื่อของผู้เชี่ยวชาญ
+            context['is_expert'] = True  # สถานะ Expert
+        except Expert.DoesNotExist:
+            del request.session['expert_id']  # ลบ session ถ้าไม่มีข้อมูล
+            context['user_name'] = "Guest"
+            context['is_expert'] = False
+    # ตรวจสอบ User ปกติที่เข้าสู่ระบบ
+    elif request.user.is_authenticated:
+        context['user_name'] = request.user.username  # ชื่อของ User ปกติ
+        context['is_expert'] = False
+    else:
+        context['user_name'] = "Guest"  # ยังไม่เข้าสู่ระบบ
+        context['is_expert'] = False
 
-# ฟังก์ชันจัดการข้อมูลโปรไฟล์เพิ่มเติม
+    return render(request, 'home.html', context)
+
+def expert_logout(request):
+    if 'expert_id' in request.session:  # ตรวจสอบว่ามี session ของ expert หรือไม่
+        del request.session['expert_id']  # ลบค่า expert_id ออกจาก session
+        messages.success(request, "ออกจากระบบสำเร็จ!")
+    return redirect('home')  # กลับไปที่หน้าหลัก
+
+
 @login_required
 def submit_profile_view(request):
     if request.method == 'POST':
-        profile = Profile.objects.create(
-            user=request.user,
-            phone_number=request.POST.get('phone'),
-            address=request.POST.get('address'),
-            skin_problem=request.POST.get('skin_problem'),
-            age=request.POST.get('age'),
-            gender=request.POST.get('gender')
-        )
-        messages.success(request, 'ลงทะเบียนโปรไฟล์สำเร็จ!')
-        return redirect('user_home')
+        # ตรวจสอบว่า Profile มีอยู่แล้วหรือไม่
+        profile, created = Profile.objects.get_or_create(user=request.user)
+        
+        # อัปเดตข้อมูลใน Profile
+        profile.phone_number = request.POST.get('phone')
+        profile.address = request.POST.get('address')
+        profile.skin_problem = request.POST.get('skin_problem')
+        profile.age = request.POST.get('age')
+        profile.gender = request.POST.get('gender')
+        profile.save()
+        
+        # ส่งข้อความแจ้งเตือนสำเร็จ
+        if created:
+            messages.success(request, 'ลงทะเบียนโปรไฟล์สำเร็จ!')
+        else:
+            messages.success(request, 'อัปเดตโปรไฟล์สำเร็จ!')
+        
+        return redirect('home')
+    
     return render(request, 'register_success.html')
+
 
 # ฟังก์ชันแก้ไขโปรไฟล์สำหรับการอัปโหลดรูปภาพและอัปเดตข้อมูล
 @login_required
@@ -184,44 +282,59 @@ def edit_profile(request):
     
     return render(request, 'edit_profile.html', {'form': form})
 
+#ฟังก์ชันกรอกข้อมูลผิวหน้า
+def skin_data_form(request):
+    return render(request, 'skin_data_form.html')
+
+#ฟังก์ชันสำหรับอัปโหลดผิวหน้า
+@login_required
+def upload_skin_view(request):
+    if request.method == 'POST':  # ตรวจสอบว่าใช้ POST Method
+        form = SkinUploadForm(request.POST, request.FILES)  # ใช้ request.FILES สำหรับไฟล์
+        if form.is_valid():  # ตรวจสอบว่าฟอร์ม valid
+            skin_upload = form.save(commit=False)
+            skin_upload.user = request.user  # ผูกกับ user ที่ล็อกอิน
+            skin_upload.save()
+            return redirect('skin_upload_success')  # เปลี่ยนไปหน้าสำเร็จ
+    else:
+        form = SkinUploadForm()
+    return render(request, 'upload_skin.html', {'form': form})
+
 #ฟังก์ชันเข้าสู่ระบบSeller/ผู้ขาย
+def seller_login(request):
+    if request.method == 'POST':
+        email = request.POST.get('email', '').strip()
+        password = request.POST.get('password', '').strip()
+
+        seller = Seller.objects.filter(email=email).first()
+        if seller:
+            if check_password(password, seller.password):
+                request.session['seller_id'] = seller.id  # บันทึกข้อมูลผู้ขายใน session
+                messages.success(request, "เข้าสู่ระบบสำเร็จ")
+                return redirect('seller_dashboard')  # ไปยังหน้า Dashboard
+            else:
+                messages.error(request, "รหัสผ่านไม่ถูกต้อง")
+        else:
+            messages.error(request, "ไม่พบผู้ขายในระบบ")
+
+    return render(request, 'seller_login.html')
+
+# ฟังก์ชันสำหรับสมัครสมาชิกผู้ขาย
 def register_seller(request):
     if request.method == 'POST':
-        form = SellerRegistrationForm(request.POST, request.FILES)  # รองรับไฟล์อัปโหลด
+        form = SellerRegistrationForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()  # บันทึกข้อมูลลงฐานข้อมูล
-            messages.success(request, "สมัครสมาชิกสำเร็จ!")
-            return redirect('seller_login')  #หลังสมัครสำเร็จ ให้กลับไปหน้าล็อคอินผู้ขาย
+            seller = form.save(commit=False)
+            seller.password = make_password(form.cleaned_data['password'].strip())  # เข้ารหัสรหัสผ่าน
+            seller.save()
+            messages.success(request, "สมัครสมาชิกผู้ขายสำเร็จ! กรุณาเข้าสู่ระบบ.")
+            return redirect('seller_login')  # เปลี่ยนเส้นทางไปที่หน้าล็อกอิน
         else:
             messages.error(request, "กรุณากรอกข้อมูลให้ถูกต้อง")
     else:
         form = SellerRegistrationForm()
 
     return render(request, 'register_seller.html', {'form': form})
-
-def seller_login(request):
-    if request.method == 'POST':
-        email = request.POST.get('email')  # รับอีเมลจากฟอร์ม
-        password = request.POST.get('password')  # รับรหัสผ่านจากฟอร์ม
-
-        # ตรวจสอบว่า Seller มีอยู่ในระบบหรือไม่
-        try:
-            seller = Seller.objects.get(email=email)
-        except Seller.DoesNotExist:
-            messages.error(request, "ไม่พบบัญชีผู้ขายในระบบ")
-            return redirect('seller_login')
-
-        # ตรวจสอบรหัสผ่าน (กำหนดรหัสผ่านในโมเดล Seller เองหรือใช้ระบบ Auth ของ Django)
-        if seller and seller.phone_number == password:  # ใช้ phone_number เป็น password (ควรใช้ hashing แทน)
-            request.session['seller_id'] = seller.id  # บันทึกข้อมูล session ของ Seller
-            messages.success(request, "เข้าสู่ระบบสำเร็จ")
-            return redirect('seller_dashboard')  # เปลี่ยนไปหน้า Dashboard
-        else:
-            messages.error(request, "อีเมลหรือรหัสผ่านไม่ถูกต้อง")
-            return redirect('seller_login')
-
-    return render(request, 'seller_login.html')
-
 
 # ฟังก์ชันเข้าสู่ระบบ
 def login_view(request):
@@ -263,7 +376,7 @@ def user_dashboard(request):
 # ฟังก์ชันหน้าสมาชิกหลัก
 @login_required
 def member_home(request):
-    return render(request, 'user_home.html')
+    return render(request, 'home.html')
 
 # ฟังก์ชันหน้าแรกของแอป
 def home(request):
@@ -394,10 +507,3 @@ def analysis_view(request):
 
 def reviews_view(request):
     return render(request, 'reviews.html')
-
-
-
-
-
-
-

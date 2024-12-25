@@ -1,0 +1,67 @@
+Metadata-Version: 2.1
+Name: dbml
+Version: 0.1.0
+Summary: Convert SQLAlchemy/SQLModel into DBML, and the other way around! 🎉
+Home-page: https://github.com/Kludex/dbml
+License: MIT
+Author: Marcelo Trylesinski
+Author-email: marcelotryle@gmail.com
+Requires-Python: >=3.8,<4.0
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Requires-Dist: SQLAlchemy (>=1.4.27,<2.0.0)
+Requires-Dist: rich (>=10.15.0,<11.0.0)
+Requires-Dist: sqlmodel (>=0.0.4,<0.0.5)
+Requires-Dist: typer (>=0.4.0,<0.5.0)
+Project-URL: Repository, https://github.com/Kludex/dbml
+Description-Content-Type: text/markdown
+
+<h1 align="center">
+    <strong>dbml</strong>
+</h1>
+<p align="center">
+    <a href="https://github.com/Kludex/dbml" target="_blank">
+        <img src="https://img.shields.io/github/last-commit/Kludex/dbml" alt="Latest Commit">
+    </a>
+        <img src="https://img.shields.io/github/workflow/status/Kludex/dbml/Test">
+        <img src="https://img.shields.io/codecov/c/github/Kludex/dbml">
+    <br />
+    <a href="https://pypi.org/project/dbml" target="_blank">
+        <img src="https://img.shields.io/pypi/v/dbml" alt="Package version">
+    </a>
+    <img src="https://img.shields.io/pypi/pyversions/dbml">
+    <img src="https://img.shields.io/github/license/Kludex/dbml">
+</p>
+
+
+## Installation
+
+``` bash
+pip install dbml
+```
+
+## Usage
+
+```bash
+dbml <module>:<base_class>
+```
+
+## References
+
+- [DBML - Database Markup Language](https://www.dbml.org/home/#intro)
+- [DBML parser for Python](https://github.com/Vanderhoof/PyDBML)
+- [Django DBML generator](https://github.com/makecodes/django-dbml/tree/master)
+- [DbmlForDjango](https://github.com/hamedsj/DbmlForDjango)
+
+## License
+
+This project is licensed under the terms of the MIT license.
+
