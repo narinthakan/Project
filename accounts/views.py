@@ -6,11 +6,9 @@ from django.contrib import messages
 from .forms import RegistrationForm, LoginForm, ProfileForm, ProductForm, ExpertLoginForm, ExpertVerificationForm, SellerRegistrationForm, ExpertRegistrationForm, SkinUploadForm 
 from .models import Product, Profile, Review, Expert, Seller
 from django.contrib.auth.models import User
-# ฟังก์ชันจัดการข้อมูลโปรไฟล์เพิ่มเติม
 from django.contrib import messages
 from django.shortcuts import redirect, render
 from .models import Profile
-
 
 
 # Helper function to check if user is an expert or admin
@@ -36,7 +34,7 @@ def is_admin(user):
 def admin_area(request):
     return render(request, 'admin_area.html')
 
-# ตัวอย่างฟังก์ชันที่ต้องการการตรวจสอบบทบาทผู้ใช้
+# ฟังก์ชันที่ต้องการการตรวจสอบบทบาทผู้ใช้
 @user_passes_test(lambda user: user.groups.filter(name='Specialist').exists())
 def specialist_dashboard(request):
     return render(request, 'specialist_dashboard.html')
@@ -65,6 +63,28 @@ def home(request):
         experts_to_verify = []
     
     return render(request, 'home.html', {'experts_to_verify': experts_to_verify})
+
+@login_required
+def user_profile(request):
+    # ดึงโปรไฟล์ของผู้ใช้ปัจจุบัน
+    profile = Profile.objects.get(user=request.user)
+
+    # ตรวจสอบว่าเป็น Expert หรือ Seller เพื่อดึงข้อมูลเพิ่มเติม
+    expert_profile = None
+    seller_profile = None
+
+    if profile.role == 'Expert' and hasattr(request.user, 'expert_profile'):
+        expert_profile = request.user.expert_profile  # ดึงข้อมูลผู้เชี่ยวชาญ
+    elif profile.role == 'Seller' and hasattr(request.user, 'seller'):
+        seller_profile = request.user.seller  # ดึงข้อมูลผู้ขาย
+    
+    # ส่งข้อมูลไปยัง Template
+    return render(request, 'user_profile.html', {
+        'profile': profile,
+        'expert_profile': expert_profile,
+        'seller_profile': seller_profile
+    })
+
 
 #ฟังก์ชันสำหรับการค้นหาเพราะผลิตภัณฑ์
 def search_products(request):
@@ -117,30 +137,24 @@ def verify_expert(request, expert_id):
 # ฟังก์ชันเข้าสู่ระบบผู้เชี่ยวชาญ
 def expert_login(request):
     if request.method == 'POST':
-        # รับข้อมูลจากฟอร์ม
-        name = request.POST.get('nm', '').strip()
-        surname = request.POST.get('lp', '').strip()
-        license_number = request.POST.get('codepce', '').strip()
-
+        email = request.POST.get('email', '').strip()  # ใช้ฟิลด์ email
+        password = request.POST.get('password', '').strip()  # ใช้ฟิลด์ password
 
         try:
-            # ตรวจสอบผู้เชี่ยวชาญในฐานข้อมูล โดยแยก full_name และ license_number
-            expert = Expert.objects.get(license_number=license_number)
-            full_name_parts = expert.full_name.split()  # แยกชื่อกับนามสกุลออกจาก full_name
+            # ค้นหา User ที่ใช้อีเมลนี้
+            user = User.objects.get(email=email)
 
-            # ตรวจสอบชื่อและนามสกุล
-            if name == full_name_parts[0] and surname == full_name_parts[-1]:
-                request.session['expert_id'] = expert.id  # เซ็ตค่า Session
+            # ตรวจสอบรหัสผ่าน
+            if user.check_password(password):  # ตรวจสอบว่ารหัสผ่านถูกต้อง
+                login(request, user)  # เข้าสู่ระบบ
                 messages.success(request, "เข้าสู่ระบบสำเร็จ!")
-                return redirect('home')  # ไปที่หน้าหลัก
+                return redirect('home')  # Redirect ไปยังหน้า Home
             else:
-                messages.error(request, "ชื่อหรือนามสกุลไม่ถูกต้อง")
-            
-
-        except Expert.DoesNotExist:
-            messages.error(request, "ไม่พบข้อมูลผู้เชี่ยวชาญในระบบ")
-
+                messages.error(request, "รหัสผ่านไม่ถูกต้อง")
+        except User.DoesNotExist:
+            messages.error(request, "ไม่พบบัญชีที่ใช้อีเมลนี้ในระบบ")
     return render(request, 'expert_login.html')
+
 
 # ฟังก์ชันลงทะเบียนผู้เชี่ยวชาญ
 def register_expert(request):
@@ -287,18 +301,16 @@ def skin_data_form(request):
     return render(request, 'skin_data_form.html')
 
 #ฟังก์ชันสำหรับอัปโหลดผิวหน้า
-@login_required
 def upload_skin_view(request):
-    if request.method == 'POST':  # ตรวจสอบว่าใช้ POST Method
-        form = SkinUploadForm(request.POST, request.FILES)  # ใช้ request.FILES สำหรับไฟล์
-        if form.is_valid():  # ตรวจสอบว่าฟอร์ม valid
-            skin_upload = form.save(commit=False)
-            skin_upload.user = request.user  # ผูกกับ user ที่ล็อกอิน
-            skin_upload.save()
-            return redirect('skin_upload_success')  # เปลี่ยนไปหน้าสำเร็จ
-    else:
-        form = SkinUploadForm()
-    return render(request, 'upload_skin.html', {'form': form})
+    if request.method == 'POST' and request.FILES.get('skin_image'):
+        uploaded_file = request.FILES['skin_image']
+        # ตัวอย่าง: บันทึกไฟล์ลงในระบบหรือฐานข้อมูล
+        # คุณสามารถเพิ่มการบันทึกไฟล์ลงใน media ได้โดย:
+        with open(f'media/skin_uploads/{uploaded_file.name}', 'wb+') as destination:
+            for chunk in uploaded_file.chunks():
+                destination.write(chunk)
+        return render(request, 'upload_success.html')  # หน้าเมื่ออัปโหลดสำเร็จ
+    return render(request, 'upload_skin.html')  # หน้าแสดงฟอร์มอัปโหลด
 
 #ฟังก์ชันเข้าสู่ระบบSeller/ผู้ขาย
 def seller_login(request):
@@ -382,19 +394,28 @@ def member_home(request):
 def home(request):
     return render(request, 'home.html')
 
+# ฟังก์ชันตรวจสอบสิทธิ์ (Admin, Expert, หรือ Seller)
+def is_expert_seller_or_admin(user):
+    return user.is_staff or hasattr(user, 'expert_profile') or hasattr(user, 'seller')
+
 # ฟังก์ชันหน้าผลิตภัณฑ์
+@login_required
 def products_views(request):
     products = Product.objects.all()
-    return render(request, 'products.html', {'products': products})
+    # ตรวจสอบสิทธิ์ว่าผู้ใช้งานสามารถแก้ไขได้หรือไม่
+    can_edit = request.user.is_staff or hasattr(request.user, 'expert_profile') or hasattr(request.user, 'seller')
+    return render(request, 'products.html', {'products': products, 'can_edit': can_edit})
 
 # เพิ่มผลิตภัณฑ์
 @login_required
-@user_passes_test(is_expert_or_admin)
+@user_passes_test(is_expert_seller_or_admin)
 def add_product(request):
     if request.method == 'POST':
         form = ProductForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
+            product = form.save(commit=False)
+            product.added_by = request.user  # บันทึกว่าผู้ใช้คนไหนเพิ่ม
+            product.save()
             messages.success(request, 'เพิ่มผลิตภัณฑ์สำเร็จ!')
             return redirect('products')
     else:
@@ -403,7 +424,7 @@ def add_product(request):
 
 # แก้ไขผลิตภัณฑ์
 @login_required
-@user_passes_test(is_expert_or_admin)
+@user_passes_test(is_expert_seller_or_admin)
 def edit_product(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     if request.method == 'POST':
@@ -418,7 +439,7 @@ def edit_product(request, product_id):
 
 # ลบผลิตภัณฑ์
 @login_required
-@user_passes_test(is_expert_or_admin)
+@user_passes_test(is_expert_seller_or_admin)
 def delete_product(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     if request.method == 'POST':
@@ -428,6 +449,7 @@ def delete_product(request, product_id):
     else:
         messages.error(request, 'เกิดข้อผิดพลาดในการลบผลิตภัณฑ์')
     return redirect('products')
+
 
 # ฟังก์ชันสำหรับเพิ่มรีวิว
 @login_required

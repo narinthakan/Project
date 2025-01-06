@@ -42,6 +42,12 @@ class Product(models.Model):
     rating = models.DecimalField(max_digits=3, decimal_places=1, blank=True, null=True)  # คะแนนเฉลี่ยสินค้า
     popular = models.BooleanField(default=False)  # เป็นสินค้ายอดนิยมหรือไม่
     category = models.CharField(max_length=255, default='Uncategorized')  # หมวดหมู่สินค้า
+    
+    added_by = models.CharField(
+        max_length=50,
+        choices=[('Admin', 'Admin'), ('Expert', 'Expert'), ('Seller', 'Seller')],
+        default='Admin'
+    )
 
     def __str__(self):
         return self.name

@@ -66,7 +66,7 @@ urlpatterns = [
     path('skin-data/', views.skin_data_form, name='skin_data_form'),
     
     #เส้นทางสำหรับอัปโหลดผิวหน้า
-    path('upload/', views.upload_skin_view, name='upload_skin'),
+    path('upload-skin/', views.upload_skin_view, name='upload_skin'),
     
     # เส้นทางสำหรับส่งข้อมูลโปรไฟล์เพิ่มเติมหลังจากสมัครสมาชิก
     path('submit-profile/', views.submit_profile_view, name='submit_profile_view'),
@@ -92,13 +92,3 @@ urlpatterns = [
     path('product/delete/<int:product_id>/', views.delete_product, name='delete_product'),  # ลบผลิตภัณฑ์
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
-
-
-
-
-
-
-
-
-

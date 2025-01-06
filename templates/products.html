@@ -62,47 +62,51 @@
 
 <!-- Main Content -->
 <main class="p-6">
-    <!-- ปุ่มเพิ่มผลิตภัณฑ์สำหรับแอดมินและผู้เชี่ยวชาญ -->
+    <!-- ปุ่มเพิ่มผลิตภัณฑ์สำหรับแอดมิน, ผู้เชี่ยวชาญ, และผู้ขาย -->
     {% if user.is_authenticated %}
-        {% if user.is_staff or user.profile.is_expert %}
+        {% if user.is_staff or user.profile.is_expert or user.profile.is_seller %}
             <div class="mb-4">
                 <a href="{% url 'add_product' %}" class="bg-green-500 text-white px-4 py-2 rounded">เพิ่มผลิตภัณฑ์</a>
             </div>
         {% endif %}
     {% endif %}
 
-<!-- Product Grid -->
-<section class="mb-8">
-    <h2 class="text-lg font-bold mb-4">ผลิตภัณฑ์</h2>
-    <div class="grid grid-cols-2 gap-6">
-        <!-- Product Loop -->
-        {% for i in products %}
-        <div class="bg-white rounded-lg shadow-lg p-4">
-            <!-- ตรวจสอบว่ามีไฟล์ภาพหรือไม่ -->
-            {% if i.image %}
-                <img src="{{ i.image.url }}" alt="{{ i.name }}" class="w-full h-64 object-cover bg-gray-100 rounded-lg">
-            {% else %}
-                <!-- ใช้ภาพ Default ถ้าไม่มีภาพที่อัปโหลด -->
-                <img src="{% static 'images/default-image.png' %}" alt="Default Image" class="w-full h-64 object-cover bg-gray-100 rounded-lg">
-            {% endif %}
-            <h3 class="text-md font-semibold mt-2">
-                <a href="{% url 'product_detail' i.id %}">{{ i.name }}</a>
-            </h3>
-            <p class="text-gray-500">{{ i.category }}</p>
-            <p class="text-black font-bold">${{ i.price }}</p>
+    <!-- Product Grid -->
+    <section class="mb-8">
+        <h2 class="text-lg font-bold mb-4">ผลิตภัณฑ์</h2>
+        <div class="grid grid-cols-2 gap-6">
+            <!-- Product Loop -->
+            {% for i in products %}
+            <div class="bg-white rounded-lg shadow-lg p-4">
+                <!-- ตรวจสอบว่ามีไฟล์ภาพหรือไม่ -->
+                {% if i.image %}
+                    <img src="{{ i.image.url }}" alt="{{ i.name }}" class="w-full h-64 object-cover bg-gray-100 rounded-lg">
+                {% else %}
+                    <!-- ใช้ภาพ Default ถ้าไม่มีภาพที่อัปโหลด -->
+                    <img src="{% static 'images/default-image.png' %}" alt="Default Image" class="w-full h-64 object-cover bg-gray-100 rounded-lg">
+                {% endif %}
+                <h3 class="text-md font-semibold mt-2">
+                    <a href="{% url 'product_detail' i.id %}">{{ i.name }}</a>
+                </h3>
+                <p class="text-gray-500">{{ i.category }}</p>
+                <p class="text-black font-bold">${{ i.price }}</p>
 
-            <!-- ปุ่มแก้ไขและลบ (เฉพาะแอดมินและผู้เชี่ยวชาญ) -->
-            {% if user.is_authenticated and user.is_staff or user.profile.is_expert %}
-                <div class="mt-2 flex space-x-2">
-                    <a href="{% url 'edit_product' i.id %}" class="bg-blue-500 text-white px-3 py-1 rounded">แก้ไข</a>
-                    <a href="{% url 'delete_product' i.id %}" class="bg-red-500 text-white px-3 py-1 rounded" onclick="return confirm('คุณต้องการลบผลิตภัณฑ์นี้หรือไม่?');">ลบ</a>
-                </div>
-            {% endif %}
+                <!-- ปุ่มแก้ไขและลบ (เฉพาะแอดมิน, ผู้เชี่ยวชาญ, และผู้ขาย) -->
+                {% if user.is_authenticated %}
+                    {% if user.is_staff or user.profile.is_expert or user.profile.is_seller %}
+                        <div class="mt-2 flex space-x-2">
+                            <a href="{% url 'edit_product' i.id %}" class="bg-blue-500 text-white px-3 py-1 rounded">แก้ไข</a>
+                            <form method="POST" action="{% url 'delete_product' i.id %}" class="inline">
+                                {% csrf_token %}
+                                <button type="submit" class="bg-red-500 text-white px-3 py-1 rounded" onclick="return confirm('คุณต้องการลบผลิตภัณฑ์นี้หรือไม่?');">ลบ</button>
+                            </form>
+                        </div>
+                    {% endif %}
+                {% endif %}
+            </div>
+            {% endfor %}
         </div>
-        {% endfor %}
-    </div>
-</section>
-
+    </section>
 </main>
 </body>
 </html>

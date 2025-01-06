@@ -150,4 +150,3 @@ class SkinUploadForm(forms.ModelForm):
 def validate_image(image):
     if not image.name.endswith(('.png', '.jpg', '.jpeg')):
         raise ValidationError("กรุณาอัปโหลดไฟล์รูปภาพ (png, jpg, jpeg) เท่านั้น")
-       
