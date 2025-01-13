@@ -1,67 +1,135 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ข้อมูลผู้เชี่ยวชาญ</title>
+    <title>โปรไฟล์ผู้เชี่ยวชาญ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@100;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+        * {
+            font-family: "Kanit", sans-serif;
         }
+
+        /* Profile Container */
         .profile-container {
             background-color: white;
-            border-radius: 10px;
+            border-radius: 16px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             padding: 20px;
-            width: 400px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            margin: 40px auto;
             text-align: center;
         }
-        .profile-container img {
-            width: 150px;
-            height: 150px;
+
+        /* Profile Picture Section */
+        .profile-picture {
+            position: relative;
+            width: 120px;
+            height: 120px;
             border-radius: 50%;
+            overflow: hidden;
+            margin: 0 auto 20px;
+            border: 3px solid #A0AEC0;
+            background-color: #E2E8F0;
         }
-        h1 {
-            margin: 20px 0;
+
+        .profile-picture img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
-        p {
-            margin: 5px 0;
+
+        /* User Info */
+        .user-info label {
+            color: #4A5568;
+            font-weight: 600;
+            display: inline-block;
+            width: 150px;
         }
-        .register-button {
-            background-color: #28a745;
+
+        .user-info div {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        /* Back Button */
+        .back-button {
+            color: #3182CE;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        .back-button:hover {
+            text-decoration: underline;
+        }
+
+        /* Edit Profile Button */
+        .edit-button {
+            margin-top: 20px;
+            background-color: #3182CE;
             color: white;
             padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            display: inline-block;
         }
-        .register-button:hover {
-            background-color: #218838;
+
+        .edit-button:hover {
+            background-color: #2B6CB0;
         }
+
     </style>
 </head>
-<body>
-    <div class="profile-container">
-        {% if expert_data %}
-            <img src="https://via.placeholder.com/150" alt="รูปผู้เชี่ยวชาญ">
-            <h1>{{ expert_data.name }}</h1>
-            <p>เลขใบประกอบวิชาชีพ: {{ expert_data.license_number }}</p>
-            <p>อีเมล: {{ expert_data.email }}</p>
-            <p>สาขา: {{ expert_data.specialty }}</p>
-            <button class="register-button">สมัครสมาชิก</button>
-        {% else %}
-            <p>ไม่พบข้อมูลผู้เชี่ยวชาญ</p>
-        {% endif %}
+<body class="bg-blue-100">
+    <!-- Back Button -->
+    <div class="p-4">
+        <a href="{% url 'user_home' %}" class="back-button">&lt; กลับหน้าหลัก</a>
     </div>
-</body>
+    
+    <!-- Profile Section -->
+    <div class="profile-container">
+        <div class="flex flex-col items-center">
+            <div class="profile-picture relative">
+                <!-- รูปโปรไฟล์ -->
+                {% if expert_profile.profile_image %}
+                    <img src="{{ expert_profile.profile_image.url }}" alt="Profile Picture">
+                {% else %}
+                    <img src="{% static 'images/user-icon.png' %}" alt="Default Profile Picture">
+                {% endif %}
+            </div>
+
+            <!-- Expert Info -->
+            <div class="user-info mt-6">
+                <div>
+                    <label>ชื่อ-สกุล:</label>
+                    <span>{{ expert_profile.full_name|default:"-" }}</span>
+                </div>
+                <div>
+                    <label>เลขใบประกอบวิชาชีพ:</label>
+                    <span>{{ expert_profile.license_number|default:"-" }}</span>
+                </div>
+                <div>
+                    <label>ความเชี่ยวชาญ:</label>
+                    <span>{{ expert_profile.expertise|default:"-" }}</span>
+                </div>
+                <div>
+                    <label>สถานที่ทำงาน:</label>
+                    <span>{{ expert_profile.workplace|default:"-" }}</span>
+                </div>
+                <div>
+                    <label>ประสบการณ์:</label>
+                    <span>{{ expert_profile.experience|default:"-" }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ปุ่มแก้ไขข้อมูลส่วนตัว ข้างล่างช่องสี่เหลี่ยม -->
+    <div class="text-center mt-4">
+        <a href="{% url 'edit_expert_profile' %}" class="edit-button">แก้ไขข้อมูลส่วนตัว</a>
+    </div>
 </html>
-
-
-
-

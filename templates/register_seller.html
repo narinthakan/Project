@@ -11,38 +11,46 @@
             font-family: "Kanit", sans-serif;
         }
     </style>
+    <script>
+        function previewImage(event) {
+            const input = event.target;
+            const reader = new FileReader();
+            reader.onload = function() {
+                const preview = document.getElementById('profilePreview');
+                preview.src = reader.result;
+                preview.classList.remove('hidden');
+            }
+            if (input.files && input.files[0]) {
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
 </head>
 <body class="bg-blue-100 flex items-center justify-center min-h-screen">
     <div class="bg-white rounded-lg shadow-lg p-10 max-w-md w-full">
         <h1 class="text-3xl font-bold text-center mb-8">ลงทะเบียนผู้ขาย</h1>
-        
-         <!-- อัปโหลดรูปโปรไฟล์ -->
-         <div class="mb-6 flex flex-col items-center">
-            <label for="profileImage" class="block text-lg font-bold mb-2">อัปโหลดรูปโปรไฟล์</label>
-            <div class="w-32 h-32 bg-gray-200 rounded-full overflow-hidden border border-gray-300 mb-4">
-                <img id="profilePreview" src="#" alt="โปรไฟล์" class="w-full h-full object-cover hidden">
-            </div>
-            <input 
-                type="file" 
-                id="profileImage" 
-                name="profile_image" 
-                accept="image/*" 
-                class="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                onchange="previewImage(event)">
-        </div>
 
-        <form method="POST">
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <!-- อัปโหลดรูปโปรไฟล์ -->
+            <div class="mb-6 flex flex-col items-center">
+                <label for="profileImage" class="block text-lg font-bold mb-2">อัปโหลดรูปโปรไฟล์</label>
+                <div class="w-32 h-32 bg-gray-200 rounded-full overflow-hidden border border-gray-300 mb-4">
+                    <img id="profilePreview" src="#" alt="โปรไฟล์" class="w-full h-full object-cover hidden">
+                </div>
+                <input 
+                    type="file" 
+                    id="profileImage" 
+                    name="profile_picture" 
+                    accept="image/*" 
+                    class="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                    onchange="previewImage(event)">
+            </div>
+
             <!-- ชื่อ-สกุล -->
             <div class="mb-6">
                 <label for="full_name" class="block text-lg font-bold mb-2">ชื่อ-สกุล</label>
                 <input id="full_name" name="full_name" type="text" placeholder="กรอกชื่อ-สกุล" required
-                       class="w-full p-4 text-base rounded border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none placeholder-gray-400">
-            </div>
-
-            <!-- ชื่อผู้ใช้ -->
-            <div class="mb-6">
-                <label for="username" class="block text-lg font-bold mb-2">ชื่อผู้ใช้</label>
-                <input id="username" name="username" type="text" placeholder="กรอกชื่อผู้ใช้" required
                        class="w-full p-4 text-base rounded border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none placeholder-gray-400">
             </div>
 
@@ -77,7 +85,7 @@
             <!-- เว็บไซต์ -->
             <div class="mb-6">
                 <label for="website" class="block text-lg font-bold mb-2">เว็บไซต์/โซเชียลมีเดีย</label>
-                <input id="website" name="website" type="url" placeholder="กรอกเว็บไซต์หรือโซเชียลมีเดีย" required
+                <input id="website" name="website" type="url" placeholder="กรอกเว็บไซต์หรือโซเชียลมีเดีย" 
                        class="w-full p-4 text-base rounded border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none placeholder-gray-400">
             </div>
 
@@ -85,6 +93,13 @@
             <div class="mb-6">
                 <label for="password" class="block text-lg font-bold mb-2">รหัสผ่าน</label>
                 <input id="password" name="password" type="password" placeholder="กรอกรหัสผ่าน" required
+                       class="w-full p-4 text-base rounded border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none placeholder-gray-400">
+            </div>
+
+            <!-- ยืนยันรหัสผ่าน -->
+            <div class="mb-6">
+                <label for="confirm_password" class="block text-lg font-bold mb-2">ยืนยันรหัสผ่าน</label>
+                <input id="confirm_password" name="confirm_password" type="password" placeholder="ยืนยันรหัสผ่าน" required
                        class="w-full p-4 text-base rounded border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none placeholder-gray-400">
             </div>
 

@@ -24,19 +24,8 @@
         }
     </style>
     <script>
-        function showSkinData() {
-            alert("กำลังโหลดข้อมูลผิวหน้าของคุณ...");
-            // คุณสามารถเพิ่มโค้ดเพื่อเปลี่ยนเส้นทางหรือเรียกใช้ฟังก์ชันเพิ่มเติมได้ที่นี่
-        }
-
-        function uploadSkin() {
-            alert("กรุณาอัปโหลดภาพผิวหน้าของคุณ!");
-            // คุณสามารถเพิ่มโค้ดสำหรับการอัปโหลดไฟล์หรือเปิด modal ได้ที่นี่
-        }
-
         function searchFunction() {
             alert("กำลังค้นหา...");
-            // ใส่ฟังก์ชันการค้นหาเพิ่มเติม
         }
     </script>
 </head>
@@ -50,12 +39,12 @@
 
     <div class="flex justify-center items-center">
         <img src="{% static 'images/EssenceTheBeauty_Logo.png' %}" alt="Essence The Beauty Logo" class="w-48 h-auto">
-    </div>                  
+    </div>
 
     <div class="flex items-center space-x-4">
         {% if user.is_authenticated %}
             <a href="{% url 'user_profile' %}" class="text-black hover:underline">{{ user.username }}</a>
-            <a href="{% url 'logout' %}" class="user-link">ออกจากระบบ</a>
+            <a href="{% url 'logout' %}" class="text-black hover:underline">ออกจากระบบ</a>
         {% else %}
             <button onclick="window.location.href='{% url 'login' %}'" class="bg-white text-black px-6 py-2 rounded-full border border-gray-300">เข้าสู่ระบบ</button>
         {% endif %}
@@ -87,19 +76,48 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
             </svg>
         </button>
-    </a>       
+    </a>
 </div>
 
 <!-- คำแนะนำใต้ปุ่ม -->
 <p class="mt-6 text-gray-600 text-center">
     - อัปโหลดภาพที่มีปัญหาผิว<br>
     - ควรถ่ายภาพในที่มีแสงสว่างเพียงพอ และไม่มีการแต่งหน้า 
-    ควรเป็นภาพถ่ายเฉพาะผิวหน้าที่มีปัญหาเท่านั้น เช่น แก้ม ค้าง หน้าผาก
+    ควรเป็นภาพถ่ายเฉพาะผิวหน้าที่มีปัญหาเท่านั้น เช่น แก้ม คาง หน้าผาก
 </p>
 
 <!-- ภาพตัวอย่างผิวหน้า -->
-<div class="relative">
-    <img src="{% static 'images/ตัวอย่างหน้า.jpg' %}" alt="ตัวอย่างผิวหน้า" class="mx-auto">
+<div class="relative mt-6">
+    <img src="{% static 'images/ตัวอย่างหน้า.jpg' %}" alt="ตัวอย่างผิวหน้า" class="mx-auto rounded-lg shadow-md">
 </div>
+
+<div class="flex justify-center space-x-4 mt-8">
+    <!-- ปุ่มที่แสดงสำหรับผู้เชี่ยวชาญ -->
+    {% if user_role == "expert" %}
+        <a href="{% url 'expert_view_page' %}">
+            <button class="bg-blue-500 text-white font-semibold border px-6 py-3 rounded-lg shadow hover:shadow-md focus:outline-none">
+                สำหรับผู้เชี่ยวชาญ: ดูข้อมูลผิวหน้าผู้ใช้งาน
+            </button>
+        </a>
+    {% endif %}
+
+    <!-- ปุ่มที่แสดงสำหรับผู้ใช้งานทั่วไป -->
+    {% if user_role == "general" %}
+        <a href="{% url 'general_advice_page' %}">
+            <button class="bg-green-500 text-white font-semibold border px-6 py-3 rounded-lg shadow hover:shadow-md focus:outline-none">
+                คำแนะนำของผู้เชี่ยวชาญ
+            </button>
+        </a>
+    {% endif %}
+</div>
+
+
+{% comment %} <!-- ปุ่มเพิ่มเติมสำหรับผู้เชี่ยวชาญ -->
+<div class="mt-8 text-center">
+    <a href="{% url 'expert_user_skin_data' %}" class="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition">
+        สำหรับผู้เชี่ยวชาญ: ดูข้อมูลผิวหน้าผู้ใช้งาน
+    </a>
+</div> {% endcomment %}
+
 </body>
 </html>

@@ -28,6 +28,7 @@ class Seller(models.Model):
     product_samples = models.ImageField(upload_to='seller_product_samples/', blank=True, null=True)  # ตัวอย่างสินค้า
     profile_picture = models.ImageField(upload_to='seller_profiles/', blank=True, null=True)  # รูปโปรไฟล์
     created_at = models.DateTimeField(auto_now_add=True)  # วันที่สมัครสมาชิก
+    password = models.CharField(unique=True)
 
     def __str__(self):
         return self.business_name
@@ -76,7 +77,6 @@ class Review(models.Model):
 class Profile(models.Model):
     ROLE_CHOICES = [
         ('User', 'User'),
-        ('Member', 'Member'),
         ('Admin', 'Admin'),
         ('Expert', 'Expert'),
         ('Seller', 'Seller'),
@@ -90,9 +90,44 @@ class Profile(models.Model):
     age = models.IntegerField(blank=True, null=True)  # อายุ
     gender = models.CharField(max_length=10, blank=True, null=True)  # เพศ
     
-
     def __str__(self):
         return f'{self.user.username} Profile'
+
+
+# โมเดลสำหรับผู้เชี่ยวชาญ (Expert)
+class Expert(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='expert_profile', null=True)
+    full_name = models.CharField(max_length=100, verbose_name="ชื่อ-สกุล")
+    license_number = models.CharField(max_length=20, unique=True, verbose_name="เลขใบประกอบวิชาชีพ")
+    expertise = models.CharField(max_length=100, verbose_name="ความเชี่ยวชาญ")
+    workplace = models.CharField(max_length=100, verbose_name="สถานที่ทำงาน")
+    experience = models.TextField(verbose_name="ประสบการณ์การทำงาน")
+    profile_image = models.ImageField(upload_to="experts/profile_images", null=True, blank=True, verbose_name="รูปโปรไฟล์")
+    phone_number = models.CharField(max_length=15, blank=True, null=True, verbose_name="เบอร์โทรศัพท์")
+    is_verified = models.BooleanField(default=False, verbose_name="ยืนยันแล้ว")  # สถานะการยืนยัน
+
+    def __str__(self):
+        return self.full_name
+
+
+# โมเดลสำหรับผู้ขาย (Seller)
+class Seller(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='seller_profile', null=True)
+    full_name = models.CharField(max_length=100, verbose_name="ชื่อ-สกุล")
+    business_name = models.CharField(max_length=255, verbose_name="ชื่อธุรกิจ")
+    product_category = models.CharField(max_length=255, verbose_name="หมวดหมู่สินค้า")
+    website = models.URLField(blank=True, null=True, verbose_name="เว็บไซต์/โซเชียลมีเดีย")
+    phone_number = models.CharField(max_length=15, blank=True, null=True, verbose_name="เบอร์โทรศัพท์")
+    profile_picture = models.ImageField(upload_to='seller_profiles/', blank=True, null=True, verbose_name="รูปโปรไฟล์")
+    email = models.EmailField(unique=True, verbose_name="อีเมล")
+    password = models.CharField(max_length=128, verbose_name="รหัสผ่าน")  
+    product_samples = models.ImageField(upload_to='seller_product_samples/', blank=True, null=True, verbose_name="ตัวอย่างสินค้า")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="วันที่สมัครสมาชิก")
+
+    def __str__(self):
+        return self.business_name
+
+
 
 #สำหรับเก็บข้อมูลภาพผิวหน้า
 class SkinUpload(models.Model):

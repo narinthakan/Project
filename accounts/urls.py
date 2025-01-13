@@ -30,8 +30,11 @@ urlpatterns = [
     path('register-expert/', views.register_expert, name='register_expert'),
     path('home/', views.home, name='home'),
     
-    # เส้นทางสำหรับหน้าโปรไฟล์ผู้เชี่ยวชาญ
-    path('expert-profile/', views.expert_profile, name='expert_profile'),
+    #เส้นทางสำหรับดูข้อมูลผิวหน้า
+    # path('user_skin_data/<int:user_id>/', views.user_skin_data_view, name='user_skin_data'),
+    # path('expert/skin_data/', views.expert_user_skin_data, name='expert_user_skin_data'),
+    # path('expert/skin_data/<int:user_id>/', views.expert_user_skin_data, name='expert_user_skin_data'),
+    
     
     # เส้นทางสำหรับตรวจสอบผู้เชี่ยวชาญ
     path('verify_expert/', views.verify_expert_list, name='verify_expert_list'),  # รายการผู้เชี่ยวชาญที่ต้องการการตรวจสอบ
@@ -45,7 +48,11 @@ urlpatterns = [
 
     # เส้นทางสำหรับแสดงหน้าโปรไฟล์และแก้ไขโปรไฟล์
     path('user_profile/', views.user_profile, name='user_profile'),  # ดูโปรไฟล์
+    path('seller_profile/', views.seller_profile, name='seller_profile'),
+    path('expert_profile/', views.expert_profile, name='expert_profile'),
     path('edit-profile/', views.edit_profile, name='edit_profile'),  # ฟังก์ชันแก้ไขโปรไฟล์ใหม่
+    path('edit_expert_profile/', views.edit_expert_profile, name='edit_expert_profile'),
+    # path('edit_seller_profile/', views.edit_seller_profile, name='edit_seller_profile'),
 
     # เส้นทางสำหรับหน้าแดชบอร์ด
     path('dashboard/', views.user_dashboard, name='user_dashboard'),

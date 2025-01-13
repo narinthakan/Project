@@ -64,7 +64,7 @@
 <main class="p-6">
     <!-- ปุ่มเพิ่มผลิตภัณฑ์สำหรับแอดมิน, ผู้เชี่ยวชาญ, และผู้ขาย -->
     {% if user.is_authenticated %}
-        {% if user.is_staff or user.profile.is_expert or user.profile.is_seller %}
+        {% if user.is_staff or user.profile.role == 'Expert' or user.profile.role == 'Seller' %}
             <div class="mb-4">
                 <a href="{% url 'add_product' %}" class="bg-green-500 text-white px-4 py-2 rounded">เพิ่มผลิตภัณฑ์</a>
             </div>
@@ -93,7 +93,7 @@
 
                 <!-- ปุ่มแก้ไขและลบ (เฉพาะแอดมิน, ผู้เชี่ยวชาญ, และผู้ขาย) -->
                 {% if user.is_authenticated %}
-                    {% if user.is_staff or user.profile.is_expert or user.profile.is_seller %}
+                    {% if user.is_staff or user.profile.role == 'Expert' or user.profile.role == 'Seller' %}
                         <div class="mt-2 flex space-x-2">
                             <a href="{% url 'edit_product' i.id %}" class="bg-blue-500 text-white px-3 py-1 rounded">แก้ไข</a>
                             <form method="POST" action="{% url 'delete_product' i.id %}" class="inline">

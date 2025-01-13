@@ -3,12 +3,11 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test,  permission_required
 from django.contrib.auth.hashers import make_password, check_password
 from django.contrib import messages
-from .forms import RegistrationForm, LoginForm, ProfileForm, ProductForm, ExpertLoginForm, ExpertVerificationForm, SellerRegistrationForm, ExpertRegistrationForm, SkinUploadForm 
-from .models import Product, Profile, Review, Expert, Seller
+from .forms import RegistrationForm, LoginForm, ProfileForm, ProductForm, ExpertLoginForm, ExpertVerificationForm, SellerRegistrationForm, ExpertRegistrationForm, SkinUploadForm, ExpertProfileForm
+from .models import Product, Profile, Review, User, Expert, Seller, SkinUpload
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.shortcuts import redirect, render
-from .models import Profile
 
 
 # Helper function to check if user is an expert or admin
@@ -64,26 +63,55 @@ def home(request):
     
     return render(request, 'home.html', {'experts_to_verify': experts_to_verify})
 
+# @login_required
+# def user_profile(request):
+#     # ดึงโปรไฟล์ของผู้ใช้ปัจจุบัน
+#     profile = Profile.objects.get(user=request.user)
+
+#     # ตรวจสอบว่าเป็น Expert หรือ Seller เพื่อดึงข้อมูลเพิ่มเติม
+#     expert_profile = None
+#     seller_profile = None
+    
+#     # ตรวจสอบบทบาทของผู้ใช้
+#     if profile.role == 'Expert' and hasattr(request.user, 'expert_profile'):
+#         expert_profile = request.user.expert_profile  # ดึงข้อมูลผู้เชี่ยวชาญ
+#     elif profile.role == 'Seller' and hasattr(request.user, 'seller'):
+#         seller_profile = request.user.seller  # ดึงข้อมูลผู้ขาย
+    
+#     # ส่งข้อมูลไปยัง Template
+#     return render(request, 'user_profile.html', {
+#         'profile': profile,
+#         'expert_profile': expert_profile,
+#         'seller_profile': seller_profile
+#     })
+
+# ฟังก์ชันโปรไฟล์ผู้เชี่ยวชาญ
+@login_required
+def expert_profile(request):
+    expert = get_object_or_404(Expert, user=request.user)  # ดึงข้อมูลผู้เชี่ยวชาญที่เกี่ยวข้องกับผู้ใช้
+    return render(request, 'expert_profile.html', {'expert_profile': expert})  # เปลี่ยนชื่อเป็น expert_profile
+
+# ฟังก์ชันโปรไฟล์ผู้ขาย
+@login_required
+def seller_profile(request):
+    seller = get_object_or_404(Seller, user=request.user)
+    return render(request, 'seller_profile.html', {'seller': seller})
+
+# ฟังก์ชันเลือกโปรไฟล์ตามบทบาท
 @login_required
 def user_profile(request):
-    # ดึงโปรไฟล์ของผู้ใช้ปัจจุบัน
-    profile = Profile.objects.get(user=request.user)
+    try:
+        profile = Profile.objects.get(user=request.user)
+        print(profile)
+        if profile.role == 'Expert':
+            return redirect('expert_profile')
+        elif profile.role == 'Seller':
+            return redirect('seller_profile')
+        else:
+            return render(request, 'user_profile.html', {'profile': profile})
+    except Profile.DoesNotExist:
+        return render(request, 'error.html', {'message': 'โปรไฟล์ไม่พบ'})
 
-    # ตรวจสอบว่าเป็น Expert หรือ Seller เพื่อดึงข้อมูลเพิ่มเติม
-    expert_profile = None
-    seller_profile = None
-
-    if profile.role == 'Expert' and hasattr(request.user, 'expert_profile'):
-        expert_profile = request.user.expert_profile  # ดึงข้อมูลผู้เชี่ยวชาญ
-    elif profile.role == 'Seller' and hasattr(request.user, 'seller'):
-        seller_profile = request.user.seller  # ดึงข้อมูลผู้ขาย
-    
-    # ส่งข้อมูลไปยัง Template
-    return render(request, 'user_profile.html', {
-        'profile': profile,
-        'expert_profile': expert_profile,
-        'seller_profile': seller_profile
-    })
 
 
 #ฟังก์ชันสำหรับการค้นหาเพราะผลิตภัณฑ์
@@ -205,18 +233,82 @@ def register_expert(request):
 
     return render(request, 'register_expert.html', {'form': form})
 
+#สำหรับอัปโหลดภาพ
+@login_required
+def upload_skin(request):
+    if request.method == "POST" and request.FILES.get('image'):
+        image = request.FILES['image']
+        SkinUpload.objects.update_or_create(
+            user=request.user,
+            defaults={'image': image}
+        )
+        messages.success(request, "อัปโหลดภาพสำเร็จ!")
+        return redirect('analysis')  # หรือหน้าอื่นตามที่ต้องการ
+
+    return render(request, 'upload_skin.html')
+
+# ตรวจสอบว่าเป็น Expert หรือ Admin
+def is_expert_or_admin(user):
+    return user.is_staff or (hasattr(user, 'profile') and user.profile.role == 'Expert')
+
+
+
+# ฟังก์ชันสำหรับแสดงข้อมูลผิวหน้าของผู้ใช้งาน
+# @login_required
+# @user_passes_test(is_expert_or_admin)
+# def user_skin_data_view(request, user_id):
+#     # ดึงข้อมูลผู้ใช้งานตาม ID
+#     user = get_object_or_404(User, id=user_id)
+
+#     # ดึงข้อมูลโปรไฟล์ที่เกี่ยวข้องกับผู้ใช้งาน
+#     profile = get_object_or_404(Profile, user=user)
+
+#     # ดึงข้อมูลภาพที่ผู้ใช้งานอัปโหลด
+#     skin_upload = SkinUpload.objects.filter(user=user).first()
+
+#     return render(request, 'user_skin_data.html', {
+#         'user': user,
+#         'profile': profile,
+#         'skin_upload': skin_upload,
+#     })
+
+
+# # ฟังก์ชันสำหรับแสดงข้อมูลผิวหน้าของผู้ใช้งานพร้อมคำแนะนำจากผู้เชี่ยวชาญ
+# # @login_required
+# # @user_passes_test(is_expert_or_admin)
+# # def expert_user_skin_data(request, user_id):
+# #     # ดึงข้อมูลผู้ใช้งานและโปรไฟล์
+# #     user = get_object_or_404(User, id=user_id)
+# #     profile = get_object_or_404(Profile, user=user)
+# #     skin_upload = SkinUpload.objects.filter(user=user).first()
+
+# #     if request.method == "POST":
+#         advice = request.POST.get('advice')
+#         if advice:
+#             # บันทึกคำแนะนำ (สามารถปรับเพิ่มฟิลด์ในโมเดลเพื่อจัดเก็บคำแนะนำได้)
+#             messages.success(request, "ส่งคำแนะนำสำเร็จ!")
+#             return redirect('expert_user_skin_data', user_id=user_id)
+
+#     return render(request, 'expert_user_skin_data.html', {
+#         'user': user,
+#         'profile': profile,
+#         'skin_upload': skin_upload,
+#     })
+    
+
+    
 
 # ฟังก์ชันข้อมูลโปรไฟล์ผู้เชี่ยวชาญ
-def expert_profile(request):
-    expert_data = {
-        "name": "ชื่อแพทย์ผู้เชี่ยวชาญ",
-        "license_number": "เลขใบอนุญาต",
-        "email": "อีเมลล์",
-        "specialty": "แพทย์ผิวหนัง",
-    }
+# def expert_profile(request):
+#     expert_data = {
+#         "name": "ชื่อแพทย์ผู้เชี่ยวชาญ",
+#         "license_number": "เลขใบอนุญาต",
+#         "email": "อีเมลล์",
+#         "specialty": "แพทย์ผิวหนัง",
+#     }
 
-    # ส่งข้อมูลไปยังเทมเพลต
-    return render(request, 'expert_profile.html', {'expert_data': expert_data})
+#     # ส่งข้อมูลไปยังเทมเพลต
+#     return render(request, 'expert_profile.html', {'expert_data': expert_data})
 
 def home(request):
     context = {}
@@ -277,24 +369,35 @@ def submit_profile_view(request):
 # ฟังก์ชันแก้ไขโปรไฟล์สำหรับการอัปโหลดรูปภาพและอัปเดตข้อมูล
 @login_required
 def edit_profile(request):
-    profile, created = Profile.objects.get_or_create(user=request.user)
+    profile = Profile.objects.get(user=request.user)
     if request.method == 'POST':
         form = ProfileForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
             form.save()
-
-            user = request.user
-            user.first_name = form.cleaned_data.get('first_name')
-            user.last_name = form.cleaned_data.get('last_name')
-            user.email = form.cleaned_data.get('email')
-            user.save()
-
-            messages.success(request, 'อัปเดตข้อมูลโปรไฟล์เรียบร้อยแล้ว!')
-            return redirect('user_profile')
+            return redirect('view_profile')
     else:
         form = ProfileForm(instance=profile)
-    
     return render(request, 'edit_profile.html', {'form': form})
+
+#ฟังก์ชันแก้ไขโปรไฟล์ผู้เชี่ยวชาญ
+@login_required
+def edit_expert_profile(request):
+    try:
+        expert = Expert.objects.get(user=request.user)
+    except Expert.DoesNotExist:
+        messages.error(request, "ไม่พบข้อมูลผู้เชี่ยวชาญ")
+        return redirect('expert_profile')
+
+    if request.method == 'POST':
+        form = ExpertProfileForm(request.POST, request.FILES, instance=expert)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "แก้ไขข้อมูลสำเร็จ")
+            return redirect('expert_profile')
+    else:
+        form = ExpertProfileForm(instance=expert)
+
+    return render(request, 'edit_expert_profile.html', {'form': form})
 
 #ฟังก์ชันกรอกข้อมูลผิวหน้า
 def skin_data_form(request):
@@ -312,18 +415,24 @@ def upload_skin_view(request):
         return render(request, 'upload_success.html')  # หน้าเมื่ออัปโหลดสำเร็จ
     return render(request, 'upload_skin.html')  # หน้าแสดงฟอร์มอัปโหลด
 
+
 #ฟังก์ชันเข้าสู่ระบบSeller/ผู้ขาย
 def seller_login(request):
     if request.method == 'POST':
         email = request.POST.get('email', '').strip()
         password = request.POST.get('password', '').strip()
 
+        # ตรวจสอบว่ามี Seller ที่ใช้อีเมลนี้หรือไม่
         seller = Seller.objects.filter(email=email).first()
         if seller:
+            # ตรวจสอบรหัสผ่าน
             if check_password(password, seller.password):
-                request.session['seller_id'] = seller.id  # บันทึกข้อมูลผู้ขายใน session
+                # บันทึกข้อมูลผู้ขายใน session
+                request.session['seller_id'] = seller.id
+                request.session['seller_email'] = seller.email
                 messages.success(request, "เข้าสู่ระบบสำเร็จ")
-                return redirect('seller_dashboard')  # ไปยังหน้า Dashboard
+                # Redirect ไปยังหน้าหลัก
+                return redirect('home')  # เปลี่ยน 'home' เป็นชื่อ URL ของหน้าหลัก
             else:
                 messages.error(request, "รหัสผ่านไม่ถูกต้อง")
         else:
@@ -331,22 +440,24 @@ def seller_login(request):
 
     return render(request, 'seller_login.html')
 
+
+
 # ฟังก์ชันสำหรับสมัครสมาชิกผู้ขาย
 def register_seller(request):
     if request.method == 'POST':
         form = SellerRegistrationForm(request.POST, request.FILES)
         if form.is_valid():
             seller = form.save(commit=False)
-            seller.password = make_password(form.cleaned_data['password'].strip())  # เข้ารหัสรหัสผ่าน
+            seller.password = make_password(form.cleaned_data['password'])  # เข้ารหัสรหัสผ่าน
             seller.save()
             messages.success(request, "สมัครสมาชิกผู้ขายสำเร็จ! กรุณาเข้าสู่ระบบ.")
-            return redirect('seller_login')  # เปลี่ยนเส้นทางไปที่หน้าล็อกอิน
+            return redirect('seller_login')  # ไปยังหน้า login
         else:
             messages.error(request, "กรุณากรอกข้อมูลให้ถูกต้อง")
     else:
         form = SellerRegistrationForm()
-
     return render(request, 'register_seller.html', {'form': form})
+
 
 # ฟังก์ชันเข้าสู่ระบบ
 def login_view(request):
@@ -375,10 +486,10 @@ def logout_view(request):
     return redirect('home')
 
 # ฟังก์ชันแสดงหน้าโปรไฟล์
-@login_required
-def user_profile(request):
-    profile, created = Profile.objects.get_or_create(user=request.user)
-    return render(request, 'user_profile.html', {'profile': profile})
+# @login_required
+# def user_profile(request):
+#     profile = Profile.objects.get(user=request.user)
+#     return render(request, 'user_profile.html', {'profile': profile})
 
 # ฟังก์ชันสำหรับหน้าแดชบอร์ด
 @login_required
@@ -395,8 +506,8 @@ def home(request):
     return render(request, 'home.html')
 
 # ฟังก์ชันตรวจสอบสิทธิ์ (Admin, Expert, หรือ Seller)
-def is_expert_seller_or_admin(user):
-    return user.is_staff or hasattr(user, 'expert_profile') or hasattr(user, 'seller')
+def is_expert_seller_or_admin(request):
+    return request.user.is_staff or hasattr(request.user, 'expert_profile') or hasattr(request.user, 'seller')
 
 # ฟังก์ชันหน้าผลิตภัณฑ์
 @login_required

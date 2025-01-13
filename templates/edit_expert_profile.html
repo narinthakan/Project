@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แก้ไขโปรไฟล์ผู้เชี่ยวชาญ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@100;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * {
+            font-family: "Kanit", sans-serif;
+        }
+
+        body {
+            background-color: #E0F2FE; /* สีฟ้าอ่อน */
+        }
+
+        .form-container {
+            background-color: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 600px;
+            margin: 40px auto;
+            text-align: center;
+        }
+
+        .form-container h1 {
+            color: #2B6CB0;
+            margin-bottom: 20px;
+        }
+
+        .form-container label {
+            display: block;
+            color: #4A5568;
+            font-weight: 600;
+            text-align: left;
+            margin-bottom: 8px;
+        }
+
+        .form-container input, .form-container textarea, .form-container select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #CBD5E1;
+            margin-bottom: 16px;
+            font-size: 1rem;
+            background-color: #F1F5F9;
+        }
+
+        .form-container input:focus, .form-container textarea:focus, .form-container select:focus {
+            outline: none;
+            border-color: #3182CE;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.3);
+        }
+
+        .submit-btn {
+            background-color: #3182CE;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .submit-btn:hover {
+            background-color: #2B6CB0;
+        }
+
+        .back-button {
+            color: #3182CE;
+            text-decoration: none;
+            margin-bottom: 20px;
+            display: inline-block;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .back-button:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <!-- Back Button -->
+    <div class="p-4">
+        <a href="{% url 'expert_profile' %}" class="back-button">&lt; กลับ</a>
+    </div>
+
+    <!-- Edit Profile Section -->
+    <div class="form-container">
+        <h1>แก้ไขโปรไฟล์ผู้เชี่ยวชาญ</h1>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <!-- ชื่อ-สกุล -->
+            <div>
+                <label for="id_full_name">ชื่อ-สกุล</label>
+                {{ form.full_name }}
+            </div>
+
+            <!-- เลขใบประกอบวิชาชีพ -->
+            <div>
+                <label for="id_license_number">เลขใบประกอบวิชาชีพ</label>
+                {{ form.license_number }}
+            </div>
+
+            <!-- ความเชี่ยวชาญ -->
+            <div>
+                <label for="id_expertise">ความเชี่ยวชาญ</label>
+                {{ form.expertise }}
+            </div>
+
+            <!-- สถานที่ทำงาน -->
+            <div>
+                <label for="id_workplace">สถานที่ทำงาน</label>
+                {{ form.workplace }}
+            </div>
+
+            <!-- ประสบการณ์ -->
+            <div>
+                <label for="id_experience">ประสบการณ์การทำงาน</label>
+                {{ form.experience }}
+            </div>
+
+            <!-- รูปโปรไฟล์ -->
+            <div>
+                <label for="id_profile_image">รูปโปรไฟล์</label>
+                {{ form.profile_image }}
+            </div>
+
+            <!-- ปุ่มบันทึก -->
+            <button type="submit" class="submit-btn">บันทึก</button>
+        </form>
+    </div>
+</body>
+</html>

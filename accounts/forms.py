@@ -29,9 +29,13 @@ class LoginForm(forms.Form):
 
 # ฟอร์มเข้าสู่ระบบผู้เชี่ยวชาญ (Expert Login)
 class ExpertLoginForm(forms.Form):
-    nm = forms.CharField(label="อีเมล์", max_length=100, required=True)
-    lp = forms.CharField(label="รหัสผ่าน", max_length=100, required=True)
+    email = forms.CharField(label="อีเมล์", max_length=100, required=True)
+    password = forms.CharField(label="รหัสผ่าน", max_length=100, required=True)
 
+class ExpertProfileForm(forms.ModelForm):
+    class Meta:
+        model = Expert
+        fields = ['full_name', 'license_number', 'expertise', 'workplace', 'experience', 'profile_image']
 
 
 # ฟอร์มลงทะเบียนผู้เชี่ยวชาญ (Expert Registration)
@@ -80,14 +84,8 @@ class SellerRegistrationForm(forms.ModelForm):
     class Meta:
         model = Seller
         fields = [
-            'full_name',
-            'email',
-            'phone_number',
-            'business_name',
-            'product_category',
-            'website',
-            'product_samples',
-            'profile_picture',
+            'full_name', 'email', 'phone_number', 'business_name',
+            'product_category', 'website', 'product_samples', 'profile_picture'
         ]
         widgets = {
             'full_name': forms.TextInput(attrs={'placeholder': 'ชื่อ-สกุล', 'class': 'form-control'}),
@@ -106,6 +104,7 @@ class SellerRegistrationForm(forms.ModelForm):
         if password != confirm_password:
             raise forms.ValidationError("รหัสผ่านและยืนยันรหัสผ่านไม่ตรงกัน")
         return cleaned_data
+
 
 
 # ฟอร์มสำหรับสินค้า (Product Form)
