@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ข้อมูลผิวหน้าผู้ใช้งาน</title>
+</head>
+<body>
+    <h1>ข้อมูลผิวหน้าผู้ใช้งาน</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ชื่อผู้ใช้</th>
+                <th>ประเภทผิว</th>
+                <th>ปัญหาผิว</th>
+                <th>อาการแพ้</th>
+                <th>ผลิตภัณฑ์ที่ใช้ปัจจุบัน</th>
+                <th>เป้าหมายการดูแล</th>
+                <th>วันที่ส่งข้อมูล</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for skin in skin_data %}
+                <tr>
+                    <td>{{ skin.user.username }}</td>
+                    <td>{{ skin.get_skin_type_display }}</td>
+                    <td>{{ skin.concern }}</td>
+                    <td>{{ skin.allergies }}</td>
+                    <td>{{ skin.current_products }}</td>
+                    <td>{{ skin.skincare_goal }}</td>
+                    <td>{{ skin.submitted_at }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

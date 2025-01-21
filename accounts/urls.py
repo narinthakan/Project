@@ -23,28 +23,25 @@ urlpatterns = [
     # เส้นทางหน้าสมาชิก
     path('member/', views.member_home, name='member_home'),
     path('user_home/', views.member_home, name='user_home'),
-    path('expert-login/', views.expert_login, name='expert_login'),  # ผู้เชี่ยวชาญ
+    
+    #path('expert-login/', views.expert_login, name='expert_login'),  # ผู้เชี่ยวชาญ
     
     # เส้นทางสำหรับการสมัครสมาชิกผู้เชี่ยวชาญ
     path('expert-login/', views.expert_login, name='expert_login'),
     path('register-expert/', views.register_expert, name='register_expert'),
     path('home/', views.home, name='home'),
     
-    #เส้นทางสำหรับดูข้อมูลผิวหน้า
-    # path('user_skin_data/<int:user_id>/', views.user_skin_data_view, name='user_skin_data'),
-    # path('expert/skin_data/', views.expert_user_skin_data, name='expert_user_skin_data'),
-    # path('expert/skin_data/<int:user_id>/', views.expert_user_skin_data, name='expert_user_skin_data'),
-    
-    
-    # เส้นทางสำหรับตรวจสอบผู้เชี่ยวชาญ
+    # เส้นทางสำหรับตรวจสอบผู้เชี่ยวชาญและผู้ขาย
     path('verify_expert/', views.verify_expert_list, name='verify_expert_list'),  # รายการผู้เชี่ยวชาญที่ต้องการการตรวจสอบ
     path('verify_expert/<int:expert_id>/', views.verify_expert, name='verify_expert'),  # หน้า ตรวจสอบผู้เชี่ยวชาญ
+    path('verify_sellers/', views.verify_seller_list, name='verify_seller_list'),
+    path('verify_sellers/<int:seller_id>/', views.verify_seller, name='verify_seller'),
     
     #เส้นทางสำหรับเข้าสู่ระบบผู้ขาย
     path('seller_login/', seller_login, name='seller_login'),
     #เส้นทางสำหรับหน้าลงทะเบียนผู้ขาย
     path('register_seller/', views.register_seller, name='register_seller'),
-    
+    path('home/', views.home, name='home'),
 
     # เส้นทางสำหรับแสดงหน้าโปรไฟล์และแก้ไขโปรไฟล์
     path('user_profile/', views.user_profile, name='user_profile'),  # ดูโปรไฟล์
@@ -68,6 +65,15 @@ urlpatterns = [
     # เส้นทางหน้าวิเคราะห์และรีวิว
     path('analysis/', views.analysis_view, name='analysis'),
     path('reviews/', views.reviews_view, name='reviews'),
+    
+    #เส้นทางสำหรับดูข้อมูลผิวหน้า
+    # path('user_skin_data/<int:user_id>/', views.user_skin_data_view, name='user_skin_data'),
+    # path('expert/skin_data/', views.expert_user_skin_data, name='expert_user_skin_data'),
+    # path('expert/skin_data/<int:user_id>/', views.expert_user_skin_data, name='expert_user_skin_data'),
+    path('expert-view/', views.expert_view_page, name='expert_view_page'),
+    path('general-advice/', views.general_advice_page, name='general_advice_page'),
+    path('add-skin-profile/', views.add_skin_profile, name='add_skin_profile'),
+    path('expert-view/', views.expert_view_page, name='expert_view_page'),
     
     #เส้นทางสำหรับกรอกข้อมูลผิวหน้าของคุณ
     path('skin-data/', views.skin_data_form, name='skin_data_form'),

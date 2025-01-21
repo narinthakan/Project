@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>หน้าผู้ขาย</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@100;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * {
+            font-family: "Kanit", sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-blue-100">
+    <!-- Navbar -->
+    <nav class="flex justify-between items-center p-6">
+        <div>
+            <input type="text" placeholder="ค้นหา" class="p-2 rounded-lg border border-gray-300">
+        </div>
+
+        <!-- Middle Section: Logo -->
+        <div class="flex justify-center items-center">
+            <img src="{% static 'images/EssenceTheBeauty_Logo.png' %}" alt="Essence The Beauty Logo" class="w-48 h-auto">
+        </div>
+
+        <!-- User Icon -->
+        <div>
+            <span>{{ user.username }}</span>
+            <img src="{% static 'images/user-icon.png' %}" alt="User Icon" class="h-10 inline">
+            <a href="{% url 'logout' %}" class="text-red-500 ml-4">ออกจากระบบ</a>
+        </div>
+    </nav>
+
+    <!-- Welcome Message -->
+    <div class="text-center py-8">
+        <h1 class="text-3xl font-bold">ยินดีต้อนรับ {{ user.username }}!</h1>
+        <p class="mt-2">คุณอยู่ในหน้าสมาชิกของเรา</p>
+    </div>
+
+    <!-- Member Features -->
+    <div class="grid grid-cols-2 gap-4 max-w-2xl mx-auto mb-8">
+        <a href="{% url 'user_profile' %}" class="bg-gray-300 py-3 rounded-lg text-center hover:bg-gray-400">ข้อมูลส่วนตัว</a>
+        <a href="{% url 'products' %}" class="bg-gray-300 py-3 rounded-lg text-center hover:bg-gray-400">ผลิตภัณฑ์</a>
+        <a href="{% url 'analysis' %}" class="bg-gray-300 py-3 rounded-lg text-center hover:bg-gray-400">วิเคราะห์</a>
+        <a href="{% url 'reviews' %}" class="bg-gray-300 py-3 rounded-lg text-center hover:bg-gray-400">รีวิว</a>
+    </div>
+
+    <!-- Image Section -->
+    <div class="relative mb-8">
+        <img src="https://mediwelle.com/wp-content/uploads/2024/05/8.%E0%B8%9B%E0%B8%B1%E0%B8%8D%E0%B8%AB%E0%B8%B2%E0%B8%9C%E0%B8%B4%E0%B8%A7%E0%B8%AB%E0%B9%89%E0%B8%B2%E0%B8%AA%E0%B8%A3%E0%B9%89%E0%B8%B2%E0%B8%87%E0%B8%84%E0%B8%A7%E0%B8%B2%E0%B8%A1%E0%B8%AB%E0%B8%99%E0%B8%B1%E0%B8%81%E0%B9%83%E0%B8%88%E0%B9%83%E0%B8%AB%E0%B9%89%E0%B8%AA%E0%B8%B2%E0%B8%A7%E0%B9%84%E0%B8%97%E0%B8%A2%E0%B9%80%E0%B8%9B%E0%B9%87%E0%B8%99%E0%B8%AD%E0%B8%A2%E0%B9%88%E0%B8%B2%E0%B8%87%E0%B8%A1%E0%B8%B2%E0%B8%81.webp" 
+             alt="Woman Skincare" 
+             class="w-full h-96 object-cover">
+    </div>
+
+    <div class="text-center py-8">
+        <h2 class="text-xl mb-4">บทความเกี่ยวกับการดูแลผิวหน้า</h2>
+        <div class="grid grid-cols-2 gap-4 max-w-2xl mx-auto">
+            <button class="bg-gray-300 py-3 rounded-lg">ผิวธรรมดา (Normal Skin)</button>
+            <button class="bg-gray-300 py-3 rounded-lg">ผิวมัน (Oily Skin)</button>
+            <button class="bg-gray-300 py-3 rounded-lg">ผิวแห้ง (Dry Skin)</button>
+            <button class="bg-gray-300 py-3 rounded-lg">ผิวผสม (Combination Skin)</button>
+            <button class="bg-gray-300 py-3 rounded-lg">ผิวแพ้ง่าย (Sensitive Skin)</button>
+        </div>
+    </div>
+</body>
+</html>
+

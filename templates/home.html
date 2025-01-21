@@ -62,6 +62,9 @@
                 <!-- ทำให้ชื่อผู้ใช้คลิกได้และลิงก์ไปยังหน้าโปรไฟล์ -->
                 <a href="{% url 'user_profile' %}" class="text-black hover:underline">{{ user.username }}</a>
                 <a href="{% url 'logout' %}" class="user-link">ออกจากระบบ</a>
+            {% elif request.session.seller_id %}
+                <a href="{% url 'seller_profile' %}" class="text-black hover:underline">{{ request.session.seller_fullname }}</a>
+                <a href="{% url 'logout' %}" class="user-link">ออกจากระบบ</a>
             {% else %}
                 <!-- แสดงปุ่มเข้าสู่ระบบถ้ายังไม่เข้าสู่ระบบ -->
                 <button onclick="window.location.href='{% url 'login' %}'" class="bg-white text-black px-6 py-2 rounded-full border border-gray-300">เข้าสู่ระบบ</button>
@@ -104,6 +107,18 @@
         </div>
         {% endif %}
     </div>
+
+    <!-- เพิ่มปุ่ม "ตรวจสอบผู้ขาย" -->
+    {% if user.is_staff %}
+    <div class="flex justify-center mt-10">
+        <a href="{% url 'verify_seller_list' %}">
+            <button class="bg-blue-500 text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-700">
+                ตรวจสอบผู้ขาย
+            </button>
+        </a>
+    </div>
+    {% endif %}
+    
 
 </body>
 </html>

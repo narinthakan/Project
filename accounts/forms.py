@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from .models import Profile, Product, Expert, Seller, SkinUpload
+from .models import Profile, Product, Expert, Seller, SkinUpload, SkinProfile
 
 
 # ฟอร์มสำหรับการลงทะเบียนผู้ใช้ (User)
@@ -66,6 +66,12 @@ class ExpertVerificationForm(forms.ModelForm):
     class Meta:
         model = Expert
         fields = ['is_verified']
+        
+# ฟอร์มตรวจสอบผู้ขาย (Seller Registration)
+class SellerLoginForm(forms.Form):
+    class Meta:
+        model = Seller
+        fields = ['is_verified']
 
 
 # ฟอร์มลงทะเบียนผู้ขาย (Seller Registration)
@@ -111,10 +117,10 @@ class SellerRegistrationForm(forms.ModelForm):
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
-        fields = ['name', 'description', 'price', 'image', 'rating', 'popular', 'category']
+        fields = ['name', 'description', 'price', 'image', 'category', 'usage', 'link', 'rating', 'popular']
 
 
-# ฟอร์มแก้ไขโปรไฟล์ผู้ใช้ (Profile)
+# ฟอร์มแก้ไขโปรไฟล์ผู้ใช้ (Profile Form)
 class ProfileForm(forms.ModelForm):
     first_name = forms.CharField(max_length=30, required=True, label="ชื่อ")
     last_name = forms.CharField(max_length=30, required=True, label="สกุล")
@@ -149,3 +155,16 @@ class SkinUploadForm(forms.ModelForm):
 def validate_image(image):
     if not image.name.endswith(('.png', '.jpg', '.jpeg')):
         raise ValidationError("กรุณาอัปโหลดไฟล์รูปภาพ (png, jpg, jpeg) เท่านั้น")
+    
+#สำหรับผู้ใช้งานกรอกข้อมูลผิวหน้า
+class SkinProfileForm(forms.ModelForm):
+    class Meta:
+        model = SkinProfile
+        fields = ['skin_type', 'concern', 'allergies', 'current_products', 'skincare_goal']
+        widgets = {
+            'concern': forms.Textarea(attrs={'rows': 4}),
+            'allergies': forms.Textarea(attrs={'rows': 4}),
+            'current_products': forms.Textarea(attrs={'rows': 4}),
+            'skincare_goal': forms.Textarea(attrs={'rows': 4}),
+        }
+         
