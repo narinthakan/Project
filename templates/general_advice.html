@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>คำแนะนำจากผู้เชี่ยวชาญ</title>
+    <link href="https://cdn.tailwindcss.com" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Kanit', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-10">
+    <div class="max-w-4xl mx-auto bg-white p-8 rounded shadow">
+        <h1 class="text-2xl font-bold mb-6 text-center text-blue-700">คำแนะนำจากผู้เชี่ยวชาญ</h1>
+
+        {% if expert_responses %}
+            {% for response in expert_responses %}
+                <div class="mb-6 border p-6 rounded bg-gray-50 shadow-md">
+                    <p><strong>ประเภทผิว:</strong> {{ response.skin_data.skin_type }}</p>
+                    <p><strong>ปัญหาผิวหน้า:</strong> {{ response.skin_data.concern }}</p>
+                    <p><strong>คำตอบจากผู้เชี่ยวชาญ:</strong> {{ response.response }}</p>
+                    <p><strong>วันที่ตอบ:</strong> {{ response.responded_at|date:"d/m/Y H:i" }}</p>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="text-center text-gray-600">
+                <p>ยังไม่มีคำตอบจากผู้เชี่ยวชาญ</p>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>

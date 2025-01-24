@@ -3,12 +3,12 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test,  permission_required
 from django.contrib.auth.hashers import make_password, check_password
 from django.contrib import messages
-from .forms import RegistrationForm, LoginForm, ProfileForm, ProductForm, ExpertLoginForm, ExpertVerificationForm, SellerRegistrationForm, ExpertRegistrationForm, SkinUploadForm, ExpertProfileForm, SkinProfileForm
-from .models import Product, Profile, Review, User, Expert, Seller, SkinUpload, SkinProfile
+from .forms import RegistrationForm,LoginForm,ProfileForm,ProductForm,ExpertLoginForm,ExpertVerificationForm,SellerRegistrationForm,ExpertRegistrationForm,SkinUploadForm,ExpertProfileForm,SkinDataForm,ExpertResponseForm
+from .models import Product, Profile, Review, User, Expert, Seller, SkinUpload, SkinProfile, SkinData, ExpertResponse
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.shortcuts import redirect, render
-
+import base64
 
 # Helper function to check if user is an expert or admin
 def is_expert_or_admin(user):
@@ -171,13 +171,12 @@ def verify_seller_list(request):
 # ฟังก์ชันสำหรับการตรวจสอบผู้ขาย
 @user_passes_test(lambda u: u.is_staff)  # ให้สามารถเข้าถึงได้เฉพาะแอดมิน
 def verify_seller(request, seller_id):
-    seller = get_object_or_404(Seller, id=seller_id)
+    seller = Seller.objects.get(id=seller_id)
     if request.method == 'POST':
         seller.is_verified = True
         seller.save()
         return redirect('verify_seller_list') # กลับไปยังรายการผู้ขาย
     return render(request, 'verify_seller.html', {'seller': seller})
-
 
 # ฟังก์ชันเข้าสู่ระบบผู้เชี่ยวชาญ
 def expert_login(request):
@@ -257,21 +256,21 @@ def seller_login(request):
         password = request.POST.get('password', '').strip()
 
         try:
-            seller = Seller.objects.get(email=email)
-            if check_password(password, seller.password):
-                # เชื่อมต่อ `user` กับ `Seller`
-                if seller.user:
-                    login(request, seller.user)
+            # ค้นหา Seller ที่มี email ตรงกัน
+            seller = Seller.objects.get(user__email=email)
+            user = authenticate(request, username=seller.user.username, password=password)
+            if user is not None:
+                login(request, user)  # ใช้ระบบล็อกอินของ Django
                 request.session['seller_id'] = seller.id
-                request.session['seller_email'] = seller.email
+                request.session['seller_email'] = seller.user.email
                 request.session['seller_fullname'] = seller.full_name
                 messages.success(request, "เข้าสู่ระบบสำเร็จ!")
-                print('Seller logged in')
                 return redirect('home')
             else:
                 messages.error(request, "รหัสผ่านไม่ถูกต้อง")
         except Seller.DoesNotExist:
             messages.error(request, "ไม่พบบัญชีผู้ขายในระบบ")
+
     return render(request, 'seller_login.html')
 
 #ฟังก์ชันลงทะเบียนผู้ขาย
@@ -279,15 +278,11 @@ def register_seller(request):
     if request.method == 'POST':
         form = SellerRegistrationForm(request.POST, request.FILES)
         if form.is_valid():
-            password = form.cleaned_data.get('password')
-            seller = form.save(commit=False)
-            seller.password = make_password(password)  # เข้ารหัสรหัสผ่าน
-            seller.save()
-            messages.success(request, "สมัครสมาชิกผู้ขายสำเร็จ! กรุณาเข้าสู่ระบบ.")
-            return redirect('seller_login')
+            form.save()
+            messages.success(request, "ลงทะเบียนสำเร็จ! คุณสามารถเข้าสู่ระบบได้แล้ว")
+            return redirect('seller_login')  # เปลี่ยนไปหน้าล็อกอินผู้ขาย
         else:
-            print("Form errors:", form.errors)  # แสดงข้อผิดพลาดของฟอร์ม
-            messages.error(request, "กรุณากรอกข้อมูลให้ถูกต้อง")
+            messages.error(request, "ข้อมูลที่กรอกไม่ถูกต้อง")
     else:
         form = SellerRegistrationForm()
     return render(request, 'register_seller.html', {'form': form})
@@ -295,15 +290,19 @@ def register_seller(request):
 #สำหรับอัปโหลดภาพ
 @login_required
 def upload_skin(request):
-    if request.method == "POST" and request.FILES.get('image'):
-        image = request.FILES['image']
-        SkinUpload.objects.update_or_create(
-            user=request.user,
-            defaults={'image': image}
-        )
-        messages.success(request, "อัปโหลดภาพสำเร็จ!")
-        return redirect('analysis')  # หรือหน้าอื่นตามที่ต้องการ
-
+    if request.method == "POST":
+        if 'image' in request.FILES:  # ตรวจสอบว่ามีไฟล์ภาพในคำขอหรือไม่
+            image = request.FILES['image']
+            # อัปเดตหรือสร้างข้อมูล SkinUpload
+            SkinUpload.objects.update_or_create(
+                user=request.user,
+                defaults={'skin_image': image}  # ต้องเปลี่ยนเป็นชื่อฟิลด์ในโมเดลที่ใช้เก็บภาพ
+            )
+            messages.success(request, "อัปโหลดภาพสำเร็จ!")
+            return redirect('analysis')  # เปลี่ยนเป็นชื่อ URL หรือหน้าที่คุณต้องการเปลี่ยนไป
+        else:
+            messages.error(request, "กรุณาเลือกภาพเพื่ออัปโหลด")
+    
     return render(request, 'upload_skin.html')
 
 # ตรวจสอบว่าเป็น Expert หรือ Admin
@@ -533,13 +532,129 @@ def add_skin_profile(request):
         return redirect('expert_view_page')  # เปลี่ยนเส้นทางไปหน้าแสดงข้อมูล
     return render(request, 'add_skin_profile.html')
 
-#ฟังก์ชันสำหรับแสดงข้อมูลผิวหน้า
+# ฟังก์ชันสำหรับข้อมูลจากฟอร์มและบันทึกลงฐานข้อมูล
 @login_required
-def expert_view_page(request):
-    if request.user.profile.role != "Expert":
-        return redirect('analysis')  # ย้อนกลับถ้าไม่ได้เป็น Expert
-    skin_data = SkinProfile.objects.all()  # ดึงข้อมูลทั้งหมดจาก SkinProfile
-    return render(request, 'expert_view.html', {'skin_data': skin_data})
+def submit_skin_data(request):
+    if request.method == "POST":
+        form = SkinDataForm(request.POST, request.FILES)
+        if form.is_valid():
+            skin_data = form.save(commit=False)
+            skin_data.user = request.user  # เชื่อมข้อมูลกับผู้ใช้งานที่ล็อกอิน
+            try:
+                skin_data.save()
+                messages.success(request, "บันทึกข้อมูลผิวหน้าเรียบร้อยแล้ว!")
+                return redirect('home')  # เปลี่ยนเป็นหน้า home หลังจากบันทึกข้อมูล
+            except Exception as e:
+                messages.error(request, "เกิดข้อผิดพลาดในการบันทึกข้อมูล")
+        else:
+            messages.error(request, "เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาตรวจสอบข้อมูลอีกครั้ง")
+    else:
+        form = SkinDataForm()
+    
+    return render(request, 'skin-data.html', {'form': form})
+
+
+# ตรวจสอบว่าผู้ใช้เป็นผู้เชี่ยวชาญหรือไม่
+def is_expert(user):
+    result = user.groups.filter(name='Expert').exists()
+    return result
+
+
+# ฟังก์ชันสำหรับแสดงข้อมูลผิวหน้า
+@login_required
+@user_passes_test(is_expert)  # อนุญาตเฉพาะผู้เชี่ยวชาญ
+def expert_view(request, skin_data_id):
+    try:
+        # ดึงข้อมูล SkinData ตาม ID ที่ระบุ
+        skin_data = SkinData.objects.get(id=skin_data_id)
+        
+    except SkinData.DoesNotExist:
+        # หากไม่พบข้อมูล SkinData ตาม ID
+        messages.error(request, "ไม่พบข้อมูลผิวหน้าที่คุณต้องการดู")
+        return redirect('home')  # เปลี่ยนเส้นทางไปยังหน้าหลักหรือหน้าอื่น
+
+    # ตรวจสอบว่ามีคำตอบจากผู้เชี่ยวชาญหรือยัง
+    expert_response = None
+    if hasattr(skin_data, 'response'):  # ตรวจสอบว่ามีความสัมพันธ์กับ ExpertResponse
+        expert_response = skin_data.response
+        
+       
+
+    # การจัดการ POST Request สำหรับคำตอบผู้เชี่ยวชาญ
+    if not expert_response and request.method == 'POST':
+        response_form = ExpertResponseForm(request.POST)
+        if response_form.is_valid():
+            expert_response = response_form.save(commit=False)
+            expert_response.skin_data = skin_data
+            expert_response.expert = request.user
+            expert_response.save()
+            messages.success(request, "บันทึกคำตอบจากผู้เชี่ยวชาญเรียบร้อยแล้ว!")
+            return redirect('expert_view', skin_data_id=skin_data.id)  # ป้องกันการส่งซ้ำ
+        else:
+            messages.error(request, "เกิดข้อผิดพลาดในการบันทึกคำตอบ กรุณาตรวจสอบข้อมูลอีกครั้ง")
+    else:
+        response_form = ExpertResponseForm()
+
+    # ส่งข้อมูลไปยัง template
+    return render(request, 'expert-view.html', {
+        'skin_data': skin_data,
+        'expert_response': expert_response,
+        'response_form': response_form,
+    })
+
+
+#ฟังก์ชันสำหรับดูรายการผิวหน้า
+#@login_required
+#@user_passes_test(is_expert)  # อนุญาตเฉพาะผู้เชี่ยวชาญ
+def skin_data_list(request):
+    # ดึงข้อมูล SkinData ทั้งหมด
+    skin_data_list = SkinData.objects.all()  # หรือกรองข้อมูลเฉพาะที่ต้องการ
+    return render(request, 'skin_data_list.html', {'skin_data_list': skin_data_list})
+
+    
+#ฟังก์ชันสำหรับแสดงข้อมูลผิวหน้าจากผู้เชี่ยวชาญตอบกลับ
+@login_required
+def general_advice(request):
+    expert_responses = ExpertResponse.objects.filter(skin_data__user=request.user)
+    return render(request, 'general_advice.html', {'expert_responses': expert_responses})
+    
+    
+# ฟังก์ชันสำหรับบันทึกข้อมูลผิวหน้า SkinData
+def skin_data_form(request):
+    if request.method == 'POST':
+        # ดีบัค: แสดงข้อมูลที่รับจากฟอร์ม
+        print("DEBUG: รับข้อมูล POST:")
+        print(f"skin_type: {request.POST.get('skin_type')}")
+        print(f"concern: {request.POST.get('concern')}")
+        print(f"allergy_history: {request.POST.get('allergy_history', '')}")
+        print(f"current_products: {request.POST.get('current_products', '')}")
+        print(f"skincare_goal: {request.POST.get('skincare_goal', '')}")
+
+        skin_type = request.POST.get('skin_type')
+        concern = request.POST.get('concern')
+        allergy_history = request.POST.get('allergy_history', '')
+        current_products = request.POST.get('current_products', '')
+        skincare_goal = request.POST.get('skincare_goal', '')
+
+        try:
+            skin_data = SkinData.objects.create(
+                user=request.user,
+                skin_type=skin_type,
+                concern=concern,
+                allergy_history=allergy_history,
+                current_products=current_products,
+                skincare_goal=skincare_goal
+            )
+            # ดีบัค: แสดงข้อความเมื่อบันทึกข้อมูลสำเร็จ
+            print(f"DEBUG: SkinData ถูกบันทึกสำเร็จ: {skin_data}")
+            return redirect('home')  # กลับไปยังหน้าหลักหลังส่งข้อมูล
+        except Exception as e:
+            # ดีบัค: แสดงข้อความเมื่อเกิดข้อผิดพลาด
+            print(f"DEBUG: เกิดข้อผิดพลาดในการบันทึก SkinData: {e}")
+
+    # ดีบัค: สำหรับ GET Request
+    print("DEBUG: GET Request - แสดงฟอร์ม")
+    return render(request, 'skin_data_form.html')
 
 
 # ฟังก์ชันเข้าสู่ระบบ
@@ -601,7 +716,7 @@ def products_views(request):
     can_edit = request.user.is_staff or hasattr(request.user, 'expert_profile') or hasattr(request.user, 'seller')
     return render(request, 'products.html', {'products': products, 'can_edit': can_edit})
 
-# เพิ่มผลิตภัณฑ์
+
 # ฟังก์ชันตรวจสอบสิทธิ์
 def is_expert_seller_or_admin(user):
     """ตรวจสอบสิทธิ์เฉพาะ Admin, Expert, และ Seller"""
@@ -611,16 +726,29 @@ def is_expert_seller_or_admin(user):
 @login_required
 @user_passes_test(is_expert_seller_or_admin)  # ตรวจสอบสิทธิ์ผู้ใช้
 def add_product(request):
+    print("เข้าสู่ฟังก์ชัน add_product")  # ตรวจสอบการเรียกใช้ฟังก์ชัน
+
     if request.method == 'POST':
+        print("รับข้อมูล POST:", request.POST)  # ตรวจสอบข้อมูล POST
+        print("รับไฟล์:", request.FILES)  # ตรวจสอบไฟล์ที่อัปโหลด
+
         form = ProductForm(request.POST, request.FILES)
         if form.is_valid():
+            print("ฟอร์ม valid:", form.cleaned_data)  # แสดงข้อมูลที่ผ่านการ validate
             product = form.save(commit=False)
             product.added_by = request.user  # บันทึกว่าผู้ใช้คนไหนเพิ่มสินค้า
             product.save()
+            print("เพิ่มผลิตภัณฑ์สำเร็จ:", product)  # ยืนยันการบันทึกผลิตภัณฑ์
+
             messages.success(request, 'เพิ่มผลิตภัณฑ์สำเร็จ!')
             return redirect('products')  # เปลี่ยนเป็นชื่อ URL ของหน้ารายการผลิตภัณฑ์
+        else:
+            print("ฟอร์มไม่ valid:", form.errors)  # แสดงข้อผิดพลาดของฟอร์ม
+            messages.error(request, 'ฟอร์มมีข้อผิดพลาด กรุณาตรวจสอบข้อมูลอีกครั้ง')
     else:
+        print("แสดงฟอร์มสำหรับ GET request")  # ตรวจสอบการเข้าถึงฟอร์มแบบ GET
         form = ProductForm()
+
     return render(request, 'add_product.html', {'form': form})
 
 # แก้ไขผลิตภัณฑ์

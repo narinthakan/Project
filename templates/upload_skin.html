@@ -4,27 +4,80 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>อัปโหลดภาพผิวหน้า</title>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         * {
             font-family: "Kanit", sans-serif;
         }
+        .nav-link-active {
+            border-bottom: 2px solid black;
+            font-weight: bold;
+        }
+        .nav-link {
+            font-weight: normal;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link:hover {
+            border-bottom: 2px solid gray;
+        }
     </style>
 </head>
-<body class="bg-blue-100 min-h-screen flex items-center justify-center">
-    <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h1 class="text-2xl font-bold mb-6 text-center">อัปโหลดภาพผิวหน้า</h1>
-        <form method="POST" enctype="multipart/form-data">
+<body class="bg-blue-100 p-6">
+    <div class="max-w-lg mx-auto bg-white p-6 rounded shadow">
+        <h1 class="text-xl font-bold mb-4">อัปโหลดภาพผิวหน้า</h1>
+        <form id="uploadForm" method="POST" enctype="multipart/form-data">
             {% csrf_token %}
+            
+            <!-- อัปโหลดภาพจากไฟล์ -->
             <div class="mb-4">
-                <label for="skin_image" class="block text-gray-700 mb-2">เลือกรูปภาพผิวหน้า:</label>
-                <input type="file" id="skin_image" name="skin_image" accept="image/*" class="w-full border border-gray-300 rounded-lg p-2">
+                <label for="skin_image" class="block text-gray-700">เลือกภาพจากอุปกรณ์:</label>
+                <input type="file" name="skin_image" id="skin_image" accept="image/*" class="block w-full border rounded p-2">
             </div>
-            <button type="submit" class="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                อัปโหลด
-            </button>
+
+            <!-- เปิดกล้อง -->
+            <div class="mb-4">
+                <label class="block text-gray-700">ถ่ายภาพด้วยกล้อง:</label>
+                <video id="video" autoplay class="border rounded mb-2 max-w-full"></video>
+                <canvas id="canvas" class="hidden"></canvas>
+                <button type="button" id="capture" class="bg-blue-500 text-white px-4 py-2 rounded mb-2">ถ่ายภาพ</button>
+                <input type="hidden" name="captured_image" id="captured_image">
+                <img id="preview" src="#" alt="ตัวอย่างภาพ" class="hidden border rounded max-w-full">
+            </div>
+
+            <!-- ปุ่มส่ง -->
+            <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded">อัปโหลด</button>
         </form>
     </div>
+
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const captureButton = document.getElementById('capture');
+        const capturedInput = document.getElementById('captured_image');
+        const previewImage = document.getElementById('preview');
+
+        // เปิดกล้อง
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+            })
+            .catch(err => {
+                console.error("ไม่สามารถเปิดกล้องได้:", err);
+            });
+
+        // ถ่ายภาพ
+        captureButton.addEventListener('click', () => {
+            const context = canvas.getContext('2d');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // แปลงภาพเป็น Base64 และแสดงตัวอย่าง
+            const dataUrl = canvas.toDataURL('image/png');
+            capturedInput.value = dataUrl;  // เก็บข้อมูล Base64 ใน input hidden
+            previewImage.src = dataUrl;
+            previewImage.classList.remove('hidden');
+        });
+    </script>
 </body>
 </html>

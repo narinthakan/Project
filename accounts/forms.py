@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from .models import Profile, Product, Expert, Seller, SkinUpload, SkinProfile
+from .models import Profile, Product, Expert, Seller, SkinUpload, SkinProfile, ExpertResponse,Category,SkinData
 
 
 # ฟอร์มสำหรับการลงทะเบียนผู้ใช้ (User)
@@ -76,49 +76,46 @@ class SellerLoginForm(forms.Form):
 
 # ฟอร์มลงทะเบียนผู้ขาย (Seller Registration)
 class SellerRegistrationForm(forms.ModelForm):
-    password = forms.CharField(
-        label="รหัสผ่าน",
-        widget=forms.PasswordInput(attrs={'placeholder': 'รหัสผ่าน', 'class': 'form-control'}),
-        required=True
-    )
-    confirm_password = forms.CharField(
-        label="ยืนยันรหัสผ่าน",
-        widget=forms.PasswordInput(attrs={'placeholder': 'ยืนยันรหัสผ่าน', 'class': 'form-control'}),
-        required=True
-    )
+    # ฟิลด์ที่เกี่ยวข้องกับ User
+    email = forms.EmailField(required=True, label="อีเมล", widget=forms.EmailInput(attrs={'class': 'form-control'}))
+    password = forms.CharField(required=True, label="รหัสผ่าน", widget=forms.PasswordInput(attrs={'class': 'form-control'}))
 
     class Meta:
         model = Seller
-        fields = [
-            'full_name', 'email', 'phone_number', 'business_name',
-            'product_category', 'website', 'product_samples', 'profile_picture'
-        ]
-        widgets = {
-            'full_name': forms.TextInput(attrs={'placeholder': 'ชื่อ-สกุล', 'class': 'form-control'}),
-            'email': forms.EmailInput(attrs={'placeholder': 'อีเมล', 'class': 'form-control'}),
-            'phone_number': forms.TextInput(attrs={'placeholder': 'เบอร์โทรศัพท์', 'class': 'form-control'}),
-            'business_name': forms.TextInput(attrs={'placeholder': 'ชื่อธุรกิจ', 'class': 'form-control'}),
-            'product_category': forms.TextInput(attrs={'placeholder': 'หมวดหมู่สินค้า', 'class': 'form-control'}),
-            'website': forms.URLInput(attrs={'placeholder': 'เว็บไซต์/โซเชียลมีเดีย', 'class': 'form-control'}),
-        }
+        fields = ['full_name', 'business_name', 'product_category', 'website', 'phone_number', 'profile_picture', 'product_samples']
 
-    def clean(self):
-        cleaned_data = super().clean()
-        password = cleaned_data.get("password")
-        confirm_password = cleaned_data.get("confirm_password")
+    def save(self, commit=True):
+        # สร้าง User ก่อน
+        user = User.objects.create_user(
+            username=self.cleaned_data['email'],  # ใช้ email เป็น username
+            email=self.cleaned_data['email'],
+            password=self.cleaned_data['password']
+        )
+        if commit:
+            user.save()
 
-        if password != confirm_password:
-            raise forms.ValidationError("รหัสผ่านและยืนยันรหัสผ่านไม่ตรงกัน")
-        return cleaned_data
+        # สร้าง Seller และเชื่อมโยงกับ User
+        seller = super().save(commit=False)
+        seller.user = user
+        if commit:
+            seller.save()
+
+        return seller
 
 
 
 # ฟอร์มสำหรับสินค้า (Product Form)
 class ProductForm(forms.ModelForm):
+    category = forms.ModelChoiceField(
+        queryset=Category.objects.all(),
+        empty_label="เลือกหมวดหมู่",  # ข้อความเริ่มต้น
+        required=True  # ต้องกรอก
+    )
+
     class Meta:
         model = Product
         fields = ['name', 'description', 'price', 'image', 'category', 'usage', 'link', 'rating', 'popular']
-
+        
 
 # ฟอร์มแก้ไขโปรไฟล์ผู้ใช้ (Profile Form)
 class ProfileForm(forms.ModelForm):
@@ -157,14 +154,23 @@ def validate_image(image):
         raise ValidationError("กรุณาอัปโหลดไฟล์รูปภาพ (png, jpg, jpeg) เท่านั้น")
     
 #สำหรับผู้ใช้งานกรอกข้อมูลผิวหน้า
-class SkinProfileForm(forms.ModelForm):
+class SkinDataForm(forms.ModelForm):
     class Meta:
-        model = SkinProfile
-        fields = ['skin_type', 'concern', 'allergies', 'current_products', 'skincare_goal']
+        model = SkinData
+        fields = ['skin_type', 'concern', 'allergy_history', 'current_products', 'skincare_goal', 'skin_image']
         widgets = {
             'concern': forms.Textarea(attrs={'rows': 4}),
-            'allergies': forms.Textarea(attrs={'rows': 4}),
+            'allergy_history': forms.Textarea(attrs={'rows': 4}),
             'current_products': forms.Textarea(attrs={'rows': 4}),
             'skincare_goal': forms.Textarea(attrs={'rows': 4}),
         }
-         
+
+#สำหรับผู้เชี่ยวชาญตอบปัญหาผิวหน้า
+class ExpertResponseForm(forms.ModelForm):
+    class Meta:
+        model = ExpertResponse
+        fields = ['response']
+        labels = {'response': 'คำตอบจากผู้เชี่ยวชาญ'}
+        widgets = {
+            'response': forms.Textarea(attrs={'class': 'form-control', 'rows': 5}),
+        }      

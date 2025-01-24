@@ -90,12 +90,12 @@
             <!-- หมวดหมู่ -->
             <label for="category">หมวดหมู่</label>
             <select id="category" name="category" required>
-                <option value="">-- เลือกหมวดหมู่ --</option>
-                <option value="moisturizer">มอยเจอไรเซอร์</option>
-                <option value="serum">เซรั่ม</option>
-                <option value="sunscreen">ครีมกันแดด</option>
-                <option value="cleanser">คลีนเซอร์</option>
+            <option value="">-- เลือกหมวดหมู่ --</option>
+            {% for cat in categories %}
+            <option value="{{ cat.id }}">{{ cat.name }}</option>
+            {% endfor %}
             </select>
+
 
             <!-- รายละเอียดสินค้า -->
             <label for="description">รายละเอียดสินค้า</label>

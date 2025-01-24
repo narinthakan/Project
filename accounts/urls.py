@@ -3,7 +3,7 @@ from . import views
 from django.contrib.auth import views as auth_views  # นำเข้าฟังก์ชันการเข้าสู่ระบบและออกจากระบบจาก Django
 from django.conf import settings
 from django.conf.urls.static import static
-from .views import expert_login, seller_login, register_seller
+from .views import expert_login, seller_login, register_seller, expert_view
 
 urlpatterns = [
     # เส้นทางสำหรับการสมัครสมาชิก
@@ -68,12 +68,17 @@ urlpatterns = [
     
     #เส้นทางสำหรับดูข้อมูลผิวหน้า
     # path('user_skin_data/<int:user_id>/', views.user_skin_data_view, name='user_skin_data'),
-    # path('expert/skin_data/', views.expert_user_skin_data, name='expert_user_skin_data'),
+    #path('expert/skin_data/', views.expert_user_skin_data, name='expert_user_skin_data'),
     # path('expert/skin_data/<int:user_id>/', views.expert_user_skin_data, name='expert_user_skin_data'),
     path('expert-view/', views.expert_view_page, name='expert_view_page'),
     path('general-advice/', views.general_advice_page, name='general_advice_page'),
     path('add-skin-profile/', views.add_skin_profile, name='add_skin_profile'),
     path('expert-view/', views.expert_view_page, name='expert_view_page'),
+    path('expert-view/<int:skin_data_id>/', expert_view, name='expert_view'),
+    path('skin-data-list/', views.skin_data_list, name='skin_data_list'),  # เส้นทางแสดงรายการ
+    path('expert-view/<int:skin_data_id>/', views.expert_view, name='expert_view'),  # เส้นทางสำหรับดูรายละเอียด
+    #path('expert-response/<int:skin_data_id>/', views.expert_response, name='expert_response'),
+    
     
     #เส้นทางสำหรับกรอกข้อมูลผิวหน้าของคุณ
     path('skin-data/', views.skin_data_form, name='skin_data_form'),
