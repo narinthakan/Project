@@ -73,10 +73,10 @@ urlpatterns = [
     path('expert-view/', views.expert_view_page, name='expert_view_page'),
     path('general-advice/', views.general_advice_page, name='general_advice_page'),
     path('add-skin-profile/', views.add_skin_profile, name='add_skin_profile'),
-    path('expert-view/', views.expert_view_page, name='expert_view_page'),
-    path('expert-view/<int:skin_data_id>/', expert_view, name='expert_view'),
-    path('skin-data-list/', views.skin_data_list, name='skin_data_list'),  # เส้นทางแสดงรายการ
-    path('expert-view/<int:skin_data_id>/', views.expert_view, name='expert_view'),  # เส้นทางสำหรับดูรายละเอียด
+    #path('expert-view/', views.expert_view_page, name='expert_view_page'),
+    #path('expert-view/<int:skin_data_id>/', expert_view, name='expert_view'),
+    #path('skin-data-list/', views.skin_data_list_view, name='skin_data_list'),  # เส้นทางแสดงรายการ
+    path('expert-view/<int:skin_data_id>/', views.expert_view_detail, name='expert_view_detail'),  # เส้นทางสำหรับดูรายละเอียด
     #path('expert-response/<int:skin_data_id>/', views.expert_response, name='expert_response'),
     
     

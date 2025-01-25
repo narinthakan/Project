@@ -556,60 +556,31 @@ def submit_skin_data(request):
 
 # ตรวจสอบว่าผู้ใช้เป็นผู้เชี่ยวชาญหรือไม่
 def is_expert(user):
-    result = user.groups.filter(name='Expert').exists()
-    return result
+    return user.groups.filter(name='Expert').exists()
 
-
-# ฟังก์ชันสำหรับแสดงข้อมูลผิวหน้า
+# ฟังก์ชันสำหรับแสดงรายการข้อมูลผิวหน้าของผู้ใช้งานทั้งหมด
 @login_required
 @user_passes_test(is_expert)  # อนุญาตเฉพาะผู้เชี่ยวชาญ
-def expert_view(request, skin_data_id):
-    try:
-        # ดึงข้อมูล SkinData ตาม ID ที่ระบุ
-        skin_data = SkinData.objects.get(id=skin_data_id)
-        
-    except SkinData.DoesNotExist:
-        # หากไม่พบข้อมูล SkinData ตาม ID
-        messages.error(request, "ไม่พบข้อมูลผิวหน้าที่คุณต้องการดู")
-        return redirect('home')  # เปลี่ยนเส้นทางไปยังหน้าหลักหรือหน้าอื่น
+def expert_view(request):
+    # ดึงข้อมูลทั้งหมดจาก SkinData
+    skin_data_list = SkinData.objects.all()
+    return render(request, 'expert-view.html', {'skin_data_list': skin_data_list})
 
-    # ตรวจสอบว่ามีคำตอบจากผู้เชี่ยวชาญหรือยัง
-    expert_response = None
-    if hasattr(skin_data, 'response'):  # ตรวจสอบว่ามีความสัมพันธ์กับ ExpertResponse
-        expert_response = skin_data.response
-        
-       
-
-    # การจัดการ POST Request สำหรับคำตอบผู้เชี่ยวชาญ
-    if not expert_response and request.method == 'POST':
-        response_form = ExpertResponseForm(request.POST)
-        if response_form.is_valid():
-            expert_response = response_form.save(commit=False)
-            expert_response.skin_data = skin_data
-            expert_response.expert = request.user
-            expert_response.save()
-            messages.success(request, "บันทึกคำตอบจากผู้เชี่ยวชาญเรียบร้อยแล้ว!")
-            return redirect('expert_view', skin_data_id=skin_data.id)  # ป้องกันการส่งซ้ำ
-        else:
-            messages.error(request, "เกิดข้อผิดพลาดในการบันทึกคำตอบ กรุณาตรวจสอบข้อมูลอีกครั้ง")
-    else:
-        response_form = ExpertResponseForm()
-
-    # ส่งข้อมูลไปยัง template
-    return render(request, 'expert-view.html', {
-        'skin_data': skin_data,
-        'expert_response': expert_response,
-        'response_form': response_form,
-    })
-
+# ฟังก์ชันสำหรับดูรายละเอียดข้อมูลผิวหน้า
+@login_required
+@user_passes_test(is_expert)
+def expert_view_detail(request, skin_data_id):
+    # ดึงข้อมูลตาม ID
+    skin_data = get_object_or_404(SkinData, id=skin_data_id)
+    return render(request, 'expert-view-detail.html', {'skin_data': skin_data})
 
 #ฟังก์ชันสำหรับดูรายการผิวหน้า
-#@login_required
-#@user_passes_test(is_expert)  # อนุญาตเฉพาะผู้เชี่ยวชาญ
-def skin_data_list(request):
+# @login_required
+# @user_passes_test(is_expert)  # อนุญาตเฉพาะผู้เชี่ยวชาญ
+# def skin_data_list(request):
     # ดึงข้อมูล SkinData ทั้งหมด
-    skin_data_list = SkinData.objects.all()  # หรือกรองข้อมูลเฉพาะที่ต้องการ
-    return render(request, 'skin_data_list.html', {'skin_data_list': skin_data_list})
+#    skin_data_list = SkinData.objects.all()  # หรือกรองข้อมูลเฉพาะที่ต้องการ
+#    return render(request, 'skin_data_list.html', {'skin_data_list': skin_data_list})
 
     
 #ฟังก์ชันสำหรับแสดงข้อมูลผิวหน้าจากผู้เชี่ยวชาญตอบกลับ

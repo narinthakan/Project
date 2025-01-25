@@ -3,30 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>รายการข้อมูลผิวหน้า</title>
+    <title>ข้อมูลผิวหน้าผู้ใช้งาน</title>
     <link href="https://cdn.tailwindcss.com" rel="stylesheet">
-    <style>
-        * {
-            font-family: "Kanit", sans-serif;
-        }
-    </style>
 </head>
-<body class="bg-blue-100 p-6">
-    <div class="max-w-4xl mx-auto bg-white p-8 rounded shadow">
-        <h1 class="text-2xl font-bold mb-6 text-gray-800">รายการข้อมูลผิวหน้าของผู้ใช้งาน</h1>
-        
-        <!-- แสดงรายการข้อมูลผิวหน้า -->
-        {% for data in skin_data_list %}
-        <div class="p-4 border rounded mb-4">
-            <p><strong>ชื่อผู้ใช้:</strong> {{ data.user.username }}</p>
-            <p><strong>ประเภทผิว:</strong> {{ data.skin_type }}</p>
-            <p><strong>วันที่ส่ง:</strong> {{ data.submitted_at }}</p>
-            <a href="{% url 'expert_view' skin_data_id=data.id %}" 
-               class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">
-                ดูข้อมูล
-            </a>
-        </div>
-        {% endfor %}
+<body class="bg-gray-100 p-6">
+    <div class="max-w-6xl mx-auto bg-white p-8 rounded shadow">
+        <h1 class="text-2xl font-bold mb-6">ข้อมูลผิวหน้าของผู้ใช้งานทั้งหมด</h1>
+
+        <!-- Debug: ตรวจสอบจำนวนข้อมูล -->
+        <p class="text-gray-600">DEBUG: จำนวนข้อมูลที่ส่งมาจาก View: {{ skin_data_list|length }}</p>
+
+        <!-- วนลูปแสดงข้อมูล -->
+        {% if skin_data_list %}
+            {% for data in skin_data_list %}
+                <div class="p-4 border rounded mb-4 bg-gray-50">
+                    <!-- Debug: ข้อมูลแต่ละรายการ -->
+                    <p class="text-sm text-gray-500">DEBUG: ID: {{ data.id }}</p>
+                    <p class="text-sm text-gray-500">DEBUG: User: {{ data.user.username }}</p>
+                    <p class="text-sm text-gray-500">DEBUG: Skin Type: {{ data.skin_type }}</p>
+                    <p class="text-sm text-gray-500">DEBUG: Concern: {{ data.concern }}</p>
+
+                    <!-- แสดงข้อมูล -->
+                    <p><strong>ชื่อผู้ใช้:</strong> {{ data.user.username }}</p>
+                    <p><strong>ประเภทผิว:</strong> {{ data.skin_type }}</p>
+                    <p><strong>ปัญหาผิวหน้า:</strong> {{ data.concern }}</p>
+                    <p><strong>อาการแพ้:</strong> {{ data.allergy_history }}</p>
+                    <p><strong>ผลิตภัณฑ์ที่ใช้:</strong> {{ data.current_products }}</p>
+                    <p><strong>เป้าหมายการดูแลผิว:</strong> {{ data.skincare_goal }}</p>
+                    <p><strong>วันที่ส่ง:</strong> {{ data.submitted_at }}</p>
+
+                    <!-- แสดงภาพผิวหน้าถ้ามี -->
+                    {% if data.skin_image %}
+                        <div class="mt-4">
+                            <img src="{{ data.skin_image.url }}" alt="ภาพผิวหน้า" class="w-full max-w-sm border rounded shadow">
+                        </div>
+                    {% else %}
+                        <p class="text-gray-600">ไม่มีภาพอัปโหลด</p>
+                    {% endif %}
+
+                    <!-- ลิงก์ไปยังหน้ารายละเอียด -->
+                    <a href="{% url 'expert_view_detail' skin_data_id=data.id %}" class="text-blue-500 underline mt-2 inline-block">
+                        ดูรายละเอียดเพิ่มเติม
+                    </a>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="text-gray-600">ไม่มีข้อมูลผิวหน้าในระบบ</p>
+        {% endif %}
     </div>
 </body>
 </html>
