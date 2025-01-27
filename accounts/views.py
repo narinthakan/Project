@@ -600,7 +600,10 @@ def expert_view_detail(request, skin_data_id):
     return render(request, 'expert_view_detail.html', {
         'skin_data': skin_data,
         'expert_response': expert_response,
+        
     })
+    
+    
     
 # ฟังก์ชันสำหรับรีวิวผู้เชี่ยวชาญ
 @login_required
@@ -608,42 +611,50 @@ def review_expert(request, expert_id):
     # ดึงข้อมูลผู้เชี่ยวชาญจาก ID
     expert = get_object_or_404(User, id=expert_id)
 
-    # ถ้าเป็น POST Request ให้จัดการการส่งฟอร์ม
+    # ตรวจสอบว่าผู้ใช้มีรีวิวอยู่แล้วหรือไม่
+    existing_review = ExpertReview.objects.filter(expert=expert, user=request.user).first()
+
     if request.method == 'POST':
-        form = ExpertReviewForm(request.POST)
+        form = ExpertReviewForm(request.POST, instance=existing_review)  # ใช้ instance ถ้ามีรีวิวเดิม
         if form.is_valid():
             review = form.save(commit=False)
             review.expert = expert
             review.user = request.user
             review.save()
             messages.success(request, "รีวิวของคุณถูกบันทึกเรียบร้อยแล้ว!")
-            return redirect('general_advice')  # เปลี่ยนเส้นทางกลับไปยังหน้า general-advice
+            return redirect('general_advice')
     else:
-        # สร้างฟอร์มว่าง
-        form = ExpertReviewForm()
+        form = ExpertReviewForm(instance=existing_review)  # โหลดรีวิวเดิมถ้ามี
 
-    # ส่งฟอร์มไปยังเทมเพลต
+    # ส่งข้อมูลไปยังเทมเพลต
     return render(request, 'add-expert-review.html', {'form': form, 'expert': expert})
 
 
+# ฟังก์ชันสำหรับลบรีวิว
+@login_required
+def delete_review(request, review_id):
+    review = get_object_or_404(ExpertReview, id=review_id, user=request.user)
+    review.delete()
+    messages.success(request, "รีวิวของคุณถูกลบเรียบร้อยแล้ว!")
+    return redirect('general_advice')
+
+
+# ฟังก์ชันสำหรับแสดงข้อมูลผู้ใช้และรีวิวของผู้เชี่ยวชาญ
 @login_required
 def general_advice(request):
     # ดึงข้อมูลคำแนะนำจากผู้เชี่ยวชาญที่เกี่ยวข้องกับผู้ใช้งานปัจจุบัน
     expert_response = ExpertResponse.objects.filter(skin_data__user=request.user).first()
 
-    if expert_response:
-        skin_data = expert_response.skin_data  # ดึงข้อมูล SkinData ที่เชื่อมโยง
-    else:
-        skin_data = None
+    # ตรวจสอบว่า ExpertResponse มีข้อมูลหรือไม่
+    skin_data = expert_response.skin_data if expert_response else None
+    reviews = ExpertReview.objects.filter(expert=expert_response.expert).order_by('-created_at') if expert_response else []
 
-    # ดึงรีวิวผู้เชี่ยวชาญ
-    reviews = ExpertReview.objects.filter(expert=expert_response.expert) if expert_response else []
-
-    # จัดการฟอร์มรีวิว
-    if request.method == 'POST':
+    # จัดการ POST Request สำหรับฟอร์มรีวิว
+    if request.method == 'POST' and expert_response:
         rating = request.POST.get('rating')
         comment = request.POST.get('comment')
-        if rating and comment and expert_response:
+        if rating and comment:
+            # บันทึกรีวิว
             ExpertReview.objects.create(
                 user=request.user,
                 expert=expert_response.expert,
@@ -651,7 +662,9 @@ def general_advice(request):
                 comment=comment
             )
             messages.success(request, "รีวิวของคุณถูกบันทึกเรียบร้อยแล้ว!")
-            return redirect('general_advice')
+            return redirect('general_advice')  # ใช้ redirect เพื่อป้องกันการส่งข้อมูลซ้ำ
+        else:
+            messages.error(request, "กรุณากรอกคะแนนและความคิดเห็นให้ครบถ้วน")
 
     # ส่งข้อมูลไปยังเทมเพลต
     return render(request, 'general-advice.html', {
@@ -661,13 +674,14 @@ def general_advice(request):
     })
 
 
+
+
 @login_required
 def view_expert_reviews(request, expert_id):
-    expert = get_object_or_404(User, id=expert_id)
-    reviews = ExpertReview.objects.filter(expert=expert)
+     expert = get_object_or_404(User, id=expert_id)
+     reviews = ExpertReview.objects.filter(expert=expert)
 
-    return render(request, 'expert_reviews.html', {'expert': expert, 'reviews': reviews})
-
+     return render(request, 'expert_reviews.html', {'expert': expert, 'reviews': reviews})
 
 
     

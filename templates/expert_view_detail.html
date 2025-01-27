@@ -33,29 +33,41 @@
         });
     </script>
 </head>
-<body>
-    <div>
-        <h1>รายละเอียดข้อมูลผิวหน้า</h1>
-        <p>ชื่อผู้ใช้: {{ skin_data.user.username }}</p>
-        <p>ประเภทผิว: {{ skin_data.skin_type }}</p>
-        <p>ปัญหาผิวหน้า: {{ skin_data.concern }}</p>
-        <p>อาการแพ้: {{ skin_data.allergy_history }}</p>
-        <p>ผลิตภัณฑ์ที่ใช้: {{ skin_data.current_products }}</p>
-        <p>เป้าหมายการดูแลผิว: {{ skin_data.skincare_goal }}</p>
-        <p>วันที่ส่ง: {{ skin_data.submitted_at }}</p>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; padding: 20px;">
+    <div style="max-width: 800px; margin: auto; background-color: #f9f9f9; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+        <h1 style="text-align: center; color: #333;">รายละเอียดข้อมูลผิวหน้า</h1>
+        
+        <div>
+            <p><strong>ชื่อผู้ใช้:</strong> {{ skin_data.user.username }}</p>
+            <p><strong>ประเภทผิว:</strong> {{ skin_data.skin_type }}</p>
+            <p><strong>ปัญหาผิวหน้า:</strong> {{ skin_data.concern }}</p>
+            <p><strong>อาการแพ้:</strong> {{ skin_data.allergy_history }}</p>
+            <p><strong>ผลิตภัณฑ์ที่ใช้:</strong> {{ skin_data.current_products }}</p>
+            <p><strong>เป้าหมายการดูแลผิว:</strong> {{ skin_data.skincare_goal }}</p>
+            <p><strong>วันที่ส่ง:</strong> {{ skin_data.submitted_at|date:"d M Y H:i" }}</p>
+        </div>
+
+        <hr>
 
         <!-- แสดงคำตอบจากผู้เชี่ยวชาญ -->
         {% if expert_response %}
-            <h2>คำตอบจากผู้เชี่ยวชาญ</h2>
-            <p>{{ expert_response.response_text }}</p>
-            <p>โดย: {{ expert_response.expert.username }}</p>
-            <p>วันที่ตอบ: {{ expert_response.created_at }}</p>
-        {% else %}
-            <h2>ตอบกลับปัญหาผิวหน้า</h2>
-            <form method="POST">
+            <h2 style="color: #007BFF;">คำตอบจากผู้เชี่ยวชาญ</h2>
+            <p style="background: #e6f7ff; padding: 10px; border-radius: 5px;">{{ expert_response.response_text }}</p>
+            <p><strong>โดย:</strong> {{ expert_response.expert.username }}</p>
+            <p><strong>วันที่ตอบ:</strong> {{ expert_response.created_at|date:"d M Y H:i" }}</p>
+            <!-- เพิ่มปุ่มแก้ไขคำตอบ -->
+            <h3 style="margin-top: 20px; color: #007BFF;">แก้ไขคำตอบ</h3>
+            <form method="POST" style="margin-top: 10px;">
                 {% csrf_token %}
-                {{ response_form.as_p }}
-                <button type="submit">ส่งคำตอบ</button>
+                <textarea name="response_text" rows="4" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">{{ expert_response.response_text }}</textarea>
+                <button type="submit" style="margin-top: 10px; background-color: #007BFF; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">บันทึก</button>
+            </form>
+        {% else %}
+            <h2 style="color: #007BFF;">ตอบกลับปัญหาผิวหน้า</h2>
+            <form method="POST" style="margin-top: 20px;">
+                {% csrf_token %}
+                <textarea name="response_text" rows="4" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;" placeholder="เขียนคำตอบของคุณ..."></textarea>
+                <button type="submit" style="margin-top: 10px; background-color: #007BFF; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">ส่งคำตอบ</button>
             </form>
         {% endif %}
     </div>

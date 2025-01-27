@@ -150,6 +150,18 @@ class ExpertResponse(models.Model):
     def __str__(self):
         return f"Response by {self.expert.username} for {self.skin_data.user.username}"
 
+#สำหรับรีวิวผู้เชี่ยวชาญ
+class ExpertReview(models.Model):
+    expert = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviews')  # เชื่อมกับผู้เชี่ยวชาญ
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_reviews')  # ผู้ที่รีวิว
+    rating = models.PositiveIntegerField()  # คะแนน (1-5 ดาว)
+    comment = models.TextField(blank=True, null=True)  # คอมเม้น
+    created_at = models.DateTimeField(auto_now_add=True)  # วันที่รีวิว
+
+    def __str__(self):
+        return f"Review by {self.user.username} for {self.expert.username}"
+    
+
 #สำหรับข้อมูลผิวหน้า
 class SkinProfile(models.Model):
     SKIN_TYPE_CHOICES = [
@@ -170,14 +182,3 @@ class SkinProfile(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.skin_type}"
 
-#สำหรับรีวิวผู้เชี่ยวชาญ
-class ExpertReview(models.Model):
-    expert = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviews')  # เชื่อมกับผู้เชี่ยวชาญ
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_reviews')  # ผู้ที่รีวิว
-    rating = models.PositiveIntegerField()  # คะแนน (1-5 ดาว)
-    comment = models.TextField(blank=True, null=True)  # คอมเม้น
-    created_at = models.DateTimeField(auto_now_add=True)  # วันที่รีวิว
-
-    def __str__(self):
-        return f"Review by {self.user.username} for {self.expert.username}"
-    

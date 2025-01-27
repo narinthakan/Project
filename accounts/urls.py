@@ -78,10 +78,12 @@ urlpatterns = [
     #path('skin-data-list/', views.skin_data_list_view, name='skin_data_list'),  # เส้นทางแสดงรายการ
     path('expert-view/<int:skin_data_id>/', views.expert_view_detail, name='expert_view_detail'),  # เส้นทางสำหรับดูรายละเอียด
     #path('expert-response/<int:skin_data_id>/', views.expert_response, name='expert_response'),
+    path('expert-dashboard/', expert_view, name='expert_dashboard'),
     
     #เส้นทางสำหรับรีวิวผู้เชี่ยวชาญ
     path('review-expert/<int:expert_id>/', views.review_expert, name='review_expert'),
     path('expert-reviews/<int:expert_id>/', views.view_expert_reviews, name='view_expert_reviews'),
+    path('delete-review/<int:review_id>/', views.delete_review, name='delete_review'),
     
     #เส้นทางสำหรับกรอกข้อมูลผิวหน้าของคุณ
     path('skin-data/', views.skin_data_form, name='skin_data_form'),
