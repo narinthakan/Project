@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>รีวิวสำหรับ {{ expert.username }}</title>
+</head>
+<body>
+    <h1>รีวิวสำหรับผู้เชี่ยวชาญ: {{ expert.username }}</h1>
+
+    {% if reviews %}
+        {% for review in reviews %}
+            <div>
+                <p><strong>ผู้รีวิว:</strong> {{ review.user.username }}</p>
+                <p><strong>คะแนน:</strong> {{ review.rating }} ดาว</p>
+                <p><strong>ความคิดเห็น:</strong> {{ review.comment }}</p>
+                <p><strong>วันที่รีวิว:</strong> {{ review.created_at }}</p>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>ยังไม่มีรีวิวสำหรับผู้เชี่ยวชาญนี้</p>
+    {% endif %}
+</body>
+</html>

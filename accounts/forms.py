@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from .models import Profile, Product, Expert, Seller, SkinUpload, SkinProfile, ExpertResponse,Category,SkinData
+from .models import Profile, Product, Expert, Seller, SkinUpload, SkinProfile, ExpertResponse,Category,SkinData,ExpertReview
 
 
 # ฟอร์มสำหรับการลงทะเบียนผู้ใช้ (User)
@@ -107,15 +107,27 @@ class SellerRegistrationForm(forms.ModelForm):
 # ฟอร์มสำหรับสินค้า (Product Form)
 class ProductForm(forms.ModelForm):
     category = forms.ModelChoiceField(
-        queryset=Category.objects.all(),
-        empty_label="เลือกหมวดหมู่",  # ข้อความเริ่มต้น
-        required=True  # ต้องกรอก
+        queryset=Category.objects.all(),  # ดึงข้อมูลหมวดหมู่จากฐานข้อมูล
+        empty_label="เลือกหมวดหมู่",  # ตัวเลือกเริ่มต้นใน Dropdown
+        required=True,
+        widget=forms.Select(attrs={'class': 'form-select'}),
+        label='หมวดหมู่สินค้า'
     )
 
     class Meta:
         model = Product
         fields = ['name', 'description', 'price', 'image', 'category', 'usage', 'link', 'rating', 'popular']
-        
+        labels = {
+            'name': 'ชื่อสินค้า',
+            'description': 'คำอธิบายสินค้า',
+            'price': 'ราคา (บาท)',
+            'image': 'ภาพสินค้า',
+            'category': 'หมวดหมู่สินค้า',
+            'usage': 'วิธีการใช้งาน',
+            'link': 'ลิงก์สำหรับซื้อสินค้า',
+            'rating': 'คะแนนสินค้า (0-5)',
+            'popular': 'สินค้ายอดนิยม',
+        }
 
 # ฟอร์มแก้ไขโปรไฟล์ผู้ใช้ (Profile Form)
 class ProfileForm(forms.ModelForm):
@@ -169,8 +181,17 @@ class SkinDataForm(forms.ModelForm):
 class ExpertResponseForm(forms.ModelForm):
     class Meta:
         model = ExpertResponse
-        fields = ['response']
-        labels = {'response': 'คำตอบจากผู้เชี่ยวชาญ'}
+        fields = ['response_text']  # ระบุเฉพาะฟิลด์ response_text
         widgets = {
-            'response': forms.Textarea(attrs={'class': 'form-control', 'rows': 5}),
-        }      
+            'response_text': forms.Textarea(attrs={'rows': 4, 'placeholder': 'เขียนคำตอบที่นี่...'}),
+        }    
+        
+#สำหรับรีวิวผู้เชี่ยวชาญ
+class ExpertReviewForm(forms.ModelForm):
+    class Meta:
+        model = ExpertReview
+        fields = ['rating', 'comment']
+        widgets = {
+            'rating': forms.NumberInput(attrs={'min': 1, 'max': 5, 'class': 'form-control'}),
+            'comment': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'เขียนความเห็นของคุณ'}),
+        }

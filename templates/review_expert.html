@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>รีวิวผู้เชี่ยวชาญ</title>
+</head>
+<body>
+    <h1>รีวิวผู้เชี่ยวชาญ: {{ expert.username }}</h1>
+
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">ส่งรีวิว</button>
+    </form>
+</body>
+</html>

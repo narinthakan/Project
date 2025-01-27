@@ -70,8 +70,8 @@ urlpatterns = [
     # path('user_skin_data/<int:user_id>/', views.user_skin_data_view, name='user_skin_data'),
     #path('expert/skin_data/', views.expert_user_skin_data, name='expert_user_skin_data'),
     # path('expert/skin_data/<int:user_id>/', views.expert_user_skin_data, name='expert_user_skin_data'),
-    path('expert-view/', views.expert_view_page, name='expert_view_page'),
-    path('general-advice/', views.general_advice_page, name='general_advice_page'),
+    path('expert-view/', views.expert_view, name='expert_view'),
+    path('general-advice/', views.general_advice, name='general_advice'),
     path('add-skin-profile/', views.add_skin_profile, name='add_skin_profile'),
     #path('expert-view/', views.expert_view_page, name='expert_view_page'),
     #path('expert-view/<int:skin_data_id>/', expert_view, name='expert_view'),
@@ -79,6 +79,9 @@ urlpatterns = [
     path('expert-view/<int:skin_data_id>/', views.expert_view_detail, name='expert_view_detail'),  # เส้นทางสำหรับดูรายละเอียด
     #path('expert-response/<int:skin_data_id>/', views.expert_response, name='expert_response'),
     
+    #เส้นทางสำหรับรีวิวผู้เชี่ยวชาญ
+    path('review-expert/<int:expert_id>/', views.review_expert, name='review_expert'),
+    path('expert-reviews/<int:expert_id>/', views.view_expert_reviews, name='view_expert_reviews'),
     
     #เส้นทางสำหรับกรอกข้อมูลผิวหน้าของคุณ
     path('skin-data/', views.skin_data_form, name='skin_data_form'),

@@ -75,43 +75,24 @@
         <h1>เพิ่มผลิตภัณฑ์ใหม่</h1>
         <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
-            <!-- ชื่อสินค้า -->
-            <label for="name">ชื่อสินค้า</label>
-            <input type="text" id="name" name="name" placeholder="กรอกชื่อผลิตภัณฑ์" required>
-            
-            <!-- ภาพสินค้า -->
-            <label for="image">ภาพสินค้า</label>
-            <input type="file" id="image" name="image" accept="image/*" required>
-            
-            <!-- ราคา -->
-            <label for="price">ราคา</label>
-            <input type="number" id="price" name="price" placeholder="กรอกราคา (บาท)" required>
-            
-            <!-- หมวดหมู่ -->
-            <label for="category">หมวดหมู่</label>
-            <select id="category" name="category" required>
-            <option value="">-- เลือกหมวดหมู่ --</option>
-            {% for cat in categories %}
-            <option value="{{ cat.id }}">{{ cat.name }}</option>
-            {% endfor %}
-            </select>
+            <!-- ฟอร์มจาก ProductForm -->
+            {{ form.as_p }}
 
-
-            <!-- รายละเอียดสินค้า -->
-            <label for="description">รายละเอียดสินค้า</label>
-            <textarea id="description" name="description" rows="4" placeholder="กรอกรายละเอียดผลิตภัณฑ์" required></textarea>
-
-            <!-- วิธีใช้ -->
-            <label for="usage">วิธีใช้</label>
-            <textarea id="usage" name="usage" rows="3" placeholder="ระบุวิธีการใช้งาน" required></textarea>
-            
-            <!-- ลิ้งค์สั่งซื้อ -->
-            <label for="link">ลิ้งค์สั่งซื้อสินค้า</label>
-            <input type="url" id="link" name="link" placeholder="วางลิ้งค์สั่งซื้อสินค้า" required>
-            
             <!-- ปุ่มบันทึก -->
             <button type="submit">บันทึกผลิตภัณฑ์</button>
         </form>
+
+        <!-- แสดงข้อผิดพลาดถ้ามี -->
+        {% if form.errors %}
+        <div class="text-red-500 mt-4">
+            <h2>ข้อผิดพลาด:</h2>
+            <ul>
+                {% for field, errors in form.errors.items %}
+                    <li>{{ field }}: {{ errors|join:", " }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
     </div>
 </body>
 </html>

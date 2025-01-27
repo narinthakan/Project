@@ -3,8 +3,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test,  permission_required
 from django.contrib.auth.hashers import make_password, check_password
 from django.contrib import messages
-from .forms import RegistrationForm,LoginForm,ProfileForm,ProductForm,ExpertLoginForm,ExpertVerificationForm,SellerRegistrationForm,ExpertRegistrationForm,SkinUploadForm,ExpertProfileForm,SkinDataForm,ExpertResponseForm
-from .models import Product, Profile, Review, User, Expert, Seller, SkinUpload, SkinProfile, SkinData, ExpertResponse
+from .forms import RegistrationForm,LoginForm,ProfileForm,ProductForm,ExpertLoginForm,ExpertVerificationForm,SellerRegistrationForm,ExpertRegistrationForm,SkinUploadForm,ExpertProfileForm,SkinDataForm,ExpertResponseForm,ExpertReviewForm
+from .models import Product, Profile, Review, User, Expert, Seller, SkinUpload, SkinProfile, SkinData, ExpertResponse,ExpertReview
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.shortcuts import redirect, render
@@ -564,23 +564,111 @@ def is_expert(user):
 def expert_view(request):
     # ดึงข้อมูลทั้งหมดจาก SkinData
     skin_data_list = SkinData.objects.all()
-    return render(request, 'expert-view.html', {'skin_data_list': skin_data_list})
+    return render(request, 'expert_view.html', {'skin_data_list': skin_data_list})
 
 # ฟังก์ชันสำหรับดูรายละเอียดข้อมูลผิวหน้า
 @login_required
 @user_passes_test(is_expert)
 def expert_view_detail(request, skin_data_id):
-    # ดึงข้อมูลตาม ID
+    # ดึงข้อมูล SkinData ที่ต้องการดูรายละเอียด
     skin_data = get_object_or_404(SkinData, id=skin_data_id)
-    return render(request, 'expert-view-detail.html', {'skin_data': skin_data})
 
-#ฟังก์ชันสำหรับดูรายการผิวหน้า
-# @login_required
-# @user_passes_test(is_expert)  # อนุญาตเฉพาะผู้เชี่ยวชาญ
-# def skin_data_list(request):
-    # ดึงข้อมูล SkinData ทั้งหมด
-#    skin_data_list = SkinData.objects.all()  # หรือกรองข้อมูลเฉพาะที่ต้องการ
-#    return render(request, 'skin_data_list.html', {'skin_data_list': skin_data_list})
+    # ตรวจสอบว่ามีคำตอบจากผู้เชี่ยวชาญหรือไม่
+    try:
+        expert_response = skin_data.response
+    except ExpertResponse.DoesNotExist:
+        expert_response = None
+
+    # จัดการ POST Request สำหรับการตอบกลับ
+    if request.method == 'POST':
+        response_text = request.POST.get('response_text', '').strip()
+        if response_text:
+            if expert_response:
+                # อัปเดตคำตอบเดิม
+                expert_response.response_text = response_text
+                expert_response.save()
+            else:
+                # สร้างคำตอบใหม่
+                ExpertResponse.objects.create(
+                    skin_data=skin_data,
+                    expert=request.user,
+                    response_text=response_text
+                )
+            messages.success(request, "ตอบกลับสำเร็จ!")
+            return redirect('expert_view_detail', skin_data_id=skin_data.id)
+
+    return render(request, 'expert_view_detail.html', {
+        'skin_data': skin_data,
+        'expert_response': expert_response,
+    })
+    
+# ฟังก์ชันสำหรับรีวิวผู้เชี่ยวชาญ
+@login_required
+def review_expert(request, expert_id):
+    # ดึงข้อมูลผู้เชี่ยวชาญจาก ID
+    expert = get_object_or_404(User, id=expert_id)
+
+    # ถ้าเป็น POST Request ให้จัดการการส่งฟอร์ม
+    if request.method == 'POST':
+        form = ExpertReviewForm(request.POST)
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.expert = expert
+            review.user = request.user
+            review.save()
+            messages.success(request, "รีวิวของคุณถูกบันทึกเรียบร้อยแล้ว!")
+            return redirect('general_advice')  # เปลี่ยนเส้นทางกลับไปยังหน้า general-advice
+    else:
+        # สร้างฟอร์มว่าง
+        form = ExpertReviewForm()
+
+    # ส่งฟอร์มไปยังเทมเพลต
+    return render(request, 'add-expert-review.html', {'form': form, 'expert': expert})
+
+
+@login_required
+def general_advice(request):
+    # ดึงข้อมูลคำแนะนำจากผู้เชี่ยวชาญที่เกี่ยวข้องกับผู้ใช้งานปัจจุบัน
+    expert_response = ExpertResponse.objects.filter(skin_data__user=request.user).first()
+
+    if expert_response:
+        skin_data = expert_response.skin_data  # ดึงข้อมูล SkinData ที่เชื่อมโยง
+    else:
+        skin_data = None
+
+    # ดึงรีวิวผู้เชี่ยวชาญ
+    reviews = ExpertReview.objects.filter(expert=expert_response.expert) if expert_response else []
+
+    # จัดการฟอร์มรีวิว
+    if request.method == 'POST':
+        rating = request.POST.get('rating')
+        comment = request.POST.get('comment')
+        if rating and comment and expert_response:
+            ExpertReview.objects.create(
+                user=request.user,
+                expert=expert_response.expert,
+                rating=rating,
+                comment=comment
+            )
+            messages.success(request, "รีวิวของคุณถูกบันทึกเรียบร้อยแล้ว!")
+            return redirect('general_advice')
+
+    # ส่งข้อมูลไปยังเทมเพลต
+    return render(request, 'general-advice.html', {
+        'skin_data': skin_data,
+        'expert_response': expert_response,
+        'reviews': reviews
+    })
+
+
+@login_required
+def view_expert_reviews(request, expert_id):
+    expert = get_object_or_404(User, id=expert_id)
+    reviews = ExpertReview.objects.filter(expert=expert)
+
+    return render(request, 'expert_reviews.html', {'expert': expert, 'reviews': reviews})
+
+
 
     
 #ฟังก์ชันสำหรับแสดงข้อมูลผิวหน้าจากผู้เชี่ยวชาญตอบกลับ
@@ -680,7 +768,7 @@ def is_expert_seller_or_admin(request):
     return request.user.is_staff or hasattr(request.user, 'expert_profile') or hasattr(request.user, 'seller')
 
 # ฟังก์ชันหน้าผลิตภัณฑ์
-@login_required
+#@login_required
 def products_views(request):
     products = Product.objects.all()
     # ตรวจสอบสิทธิ์ว่าผู้ใช้งานสามารถแก้ไขได้หรือไม่
@@ -688,39 +776,28 @@ def products_views(request):
     return render(request, 'products.html', {'products': products, 'can_edit': can_edit})
 
 
-# ฟังก์ชันตรวจสอบสิทธิ์
+# ตรวจสอบสิทธิ์ของผู้ใช้ (Admin, Expert, Seller)
 def is_expert_seller_or_admin(user):
-    """ตรวจสอบสิทธิ์เฉพาะ Admin, Expert, และ Seller"""
-    return user.groups.filter(name__in=['Admin', 'Expert', 'Seller']).exists() or user.is_staff
+    return user.is_staff or user.groups.filter(name__in=['Expert', 'Seller']).exists()
 
-# เพิ่มผลิตภัณฑ์
+# ฟังก์ชันสำหรับเพิ่มผลิตภัณฑ์
 @login_required
-@user_passes_test(is_expert_seller_or_admin)  # ตรวจสอบสิทธิ์ผู้ใช้
+@user_passes_test(is_expert_seller_or_admin)
 def add_product(request):
-    print("เข้าสู่ฟังก์ชัน add_product")  # ตรวจสอบการเรียกใช้ฟังก์ชัน
-
     if request.method == 'POST':
-        print("รับข้อมูล POST:", request.POST)  # ตรวจสอบข้อมูล POST
-        print("รับไฟล์:", request.FILES)  # ตรวจสอบไฟล์ที่อัปโหลด
-
         form = ProductForm(request.POST, request.FILES)
         if form.is_valid():
-            print("ฟอร์ม valid:", form.cleaned_data)  # แสดงข้อมูลที่ผ่านการ validate
             product = form.save(commit=False)
-            product.added_by = request.user  # บันทึกว่าผู้ใช้คนไหนเพิ่มสินค้า
+            product.added_by = request.user
             product.save()
-            print("เพิ่มผลิตภัณฑ์สำเร็จ:", product)  # ยืนยันการบันทึกผลิตภัณฑ์
-
             messages.success(request, 'เพิ่มผลิตภัณฑ์สำเร็จ!')
-            return redirect('products')  # เปลี่ยนเป็นชื่อ URL ของหน้ารายการผลิตภัณฑ์
+            return redirect('products')
         else:
-            print("ฟอร์มไม่ valid:", form.errors)  # แสดงข้อผิดพลาดของฟอร์ม
             messages.error(request, 'ฟอร์มมีข้อผิดพลาด กรุณาตรวจสอบข้อมูลอีกครั้ง')
     else:
-        print("แสดงฟอร์มสำหรับ GET request")  # ตรวจสอบการเข้าถึงฟอร์มแบบ GET
         form = ProductForm()
-
     return render(request, 'add_product.html', {'form': form})
+
 
 # แก้ไขผลิตภัณฑ์
 @login_required

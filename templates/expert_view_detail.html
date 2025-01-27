@@ -4,28 +4,60 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>รายละเอียดข้อมูลผิวหน้า</title>
+    <script>
+        // ปิดการคลิกขวา
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            alert('ไม่อนุญาตให้คลิกขวา');
+        });
+
+        // ปิดการใช้ Print Screen (พรินท์สกรีน)
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'PrintScreen') {
+                alert('ไม่อนุญาตให้แคปหน้าจอ');
+                e.preventDefault();
+            }
+            // ปิดการใช้ Ctrl+S หรือ Ctrl+Shift+S
+            if ((e.ctrlKey && e.key === 's') || (e.ctrlKey && e.shiftKey && e.key === 's')) {
+                alert('ไม่อนุญาตให้บันทึกหน้านี้');
+                e.preventDefault();
+            }
+        });
+
+        // ลบคลิปบอร์ดเมื่อกด Print Screen
+        document.addEventListener('keyup', function(e) {
+            if (e.key === 'PrintScreen') {
+                navigator.clipboard.writeText('');
+                alert('เนื้อหาหน้าจอถูกลบจากคลิปบอร์ดแล้ว');
+            }
+        });
+    </script>
 </head>
-<body class="p-6">
-    <div class="max-w-4xl mx-auto bg-white p-8 rounded shadow">
-        <h1 class="text-2xl font-bold mb-6">รายละเอียดข้อมูลผิวหน้า</h1>
-        <p><strong>ชื่อผู้ใช้:</strong> {{ skin_data.user.username }}</p>
-        <p><strong>ประเภทผิว:</strong> {{ skin_data.skin_type }}</p>
-        <p><strong>ปัญหาผิวหน้า:</strong> {{ skin_data.concern }}</p>
-        <p><strong>อาการแพ้:</strong> {{ skin_data.allergy_history }}</p>
-        <p><strong>ผลิตภัณฑ์ที่ใช้:</strong> {{ skin_data.current_products }}</p>
-        <p><strong>เป้าหมายการดูแลผิว:</strong> {{ skin_data.skincare_goal }}</p>
-        <p><strong>วันที่ส่ง:</strong> {{ skin_data.submitted_at }}</p>
+<body>
+    <div>
+        <h1>รายละเอียดข้อมูลผิวหน้า</h1>
+        <p>ชื่อผู้ใช้: {{ skin_data.user.username }}</p>
+        <p>ประเภทผิว: {{ skin_data.skin_type }}</p>
+        <p>ปัญหาผิวหน้า: {{ skin_data.concern }}</p>
+        <p>อาการแพ้: {{ skin_data.allergy_history }}</p>
+        <p>ผลิตภัณฑ์ที่ใช้: {{ skin_data.current_products }}</p>
+        <p>เป้าหมายการดูแลผิว: {{ skin_data.skincare_goal }}</p>
+        <p>วันที่ส่ง: {{ skin_data.submitted_at }}</p>
 
-        <!-- แสดงภาพผิวหน้าถ้ามี -->
-        {% if skin_data.skin_image %}
-        <div class="mt-4">
-            <img src="{{ skin_data.skin_image.url }}" alt="ภาพผิวหน้า" class="w-full max-w-sm border rounded shadow">
-        </div>
+        <!-- แสดงคำตอบจากผู้เชี่ยวชาญ -->
+        {% if expert_response %}
+            <h2>คำตอบจากผู้เชี่ยวชาญ</h2>
+            <p>{{ expert_response.response_text }}</p>
+            <p>โดย: {{ expert_response.expert.username }}</p>
+            <p>วันที่ตอบ: {{ expert_response.created_at }}</p>
+        {% else %}
+            <h2>ตอบกลับปัญหาผิวหน้า</h2>
+            <form method="POST">
+                {% csrf_token %}
+                {{ response_form.as_p }}
+                <button type="submit">ส่งคำตอบ</button>
+            </form>
         {% endif %}
-
-        <a href="{% url 'expert_view_page' %}" class="text-blue-500 underline mt-4 inline-block">
-            กลับไปหน้าข้อมูลทั้งหมด
-        </a>
     </div>
 </body>
 </html>

@@ -17,17 +17,30 @@
 
         {% if expert_responses %}
             {% for response in expert_responses %}
-                <div class="mb-6 border p-6 rounded bg-gray-50 shadow-md">
+                <div class="p-4 border rounded mb-4 bg-gray-50">
+                    <p><strong>ชื่อผู้ใช้:</strong> {{ response.skin_data.user.username }}</p>
                     <p><strong>ประเภทผิว:</strong> {{ response.skin_data.skin_type }}</p>
                     <p><strong>ปัญหาผิวหน้า:</strong> {{ response.skin_data.concern }}</p>
-                    <p><strong>คำตอบจากผู้เชี่ยวชาญ:</strong> {{ response.response }}</p>
-                    <p><strong>วันที่ตอบ:</strong> {{ response.responded_at|date:"d/m/Y H:i" }}</p>
+                    <p><strong>อาการแพ้:</strong> {{ response.skin_data.allergy_history }}</p>
+                    <p><strong>ผลิตภัณฑ์ที่ใช้:</strong> {{ response.skin_data.current_products }}</p>
+                    <p><strong>เป้าหมายการดูแลผิว:</strong> {{ response.skin_data.skincare_goal }}</p>
+
+                    <!-- เพิ่มการแสดงภาพถ้ามีการอัปโหลด -->
+                    {% if response.skin_data.skin_image %}
+                        <div class="mt-4">
+                            <p><strong>ภาพผิวหน้าที่อัปโหลด:</strong></p>
+                            <img src="{{ response.skin_data.skin_image.url }}" alt="ภาพผิวหน้า" class="w-full max-w-sm border rounded shadow">
+                        </div>
+                    {% endif %}
+
+                    <hr class="my-4">
+                    <p><strong>คำตอบจากผู้เชี่ยวชาญ:</strong> {{ response.response_text }}</p>
+                    <p><strong>โดย:</strong> {{ response.expert.username }}</p>
+                    <p><strong>วันที่ตอบ:</strong> {{ response.created_at|date:"d M Y H:i" }}</p>
                 </div>
             {% endfor %}
         {% else %}
-            <div class="text-center text-gray-600">
-                <p>ยังไม่มีคำตอบจากผู้เชี่ยวชาญ</p>
-            </div>
+            <p class="text-gray-600">ยังไม่มีคำแนะนำจากผู้เชี่ยวชาญ</p>
         {% endif %}
     </div>
 </body>

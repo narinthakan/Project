@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import reverse
 from django.utils.html import format_html
-from .models import Product, Expert, Seller, Profile, SkinUpload, SkinData,  ExpertResponse
+from .models import Product, Expert, Seller, Profile, SkinUpload, SkinData,  ExpertResponse,ExpertReview
 # Register your models here.
 admin.site.register(Product)
 admin.site.register(Profile)
@@ -64,3 +64,9 @@ class ExpertResponseAdmin(admin.ModelAdmin):
 # ลงทะเบียนโมเดลใน Django Admin
 admin.site.register(SkinData, SkinDataAdmin)
 admin.site.register(ExpertResponse, ExpertResponseAdmin)
+
+# สำหรับรีวิวผู้เชี่ยวชาญ
+@admin.register(ExpertReview)
+class ExpertReviewAdmin(admin.ModelAdmin):
+    list_display = ('expert', 'user', 'rating', 'created_at')
+    list_filter = ('rating', 'created_at')

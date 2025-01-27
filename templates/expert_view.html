@@ -10,19 +10,12 @@
     <div class="max-w-6xl mx-auto bg-white p-8 rounded shadow">
         <h1 class="text-2xl font-bold mb-6">ข้อมูลผิวหน้าของผู้ใช้งานทั้งหมด</h1>
 
-        <!-- Debug: ตรวจสอบจำนวนข้อมูล -->
-        <p class="text-gray-600">DEBUG: จำนวนข้อมูลที่ส่งมาจาก View: {{ skin_data_list|length }}</p>
-
+        
         <!-- วนลูปแสดงข้อมูล -->
         {% if skin_data_list %}
             {% for data in skin_data_list %}
                 <div class="p-4 border rounded mb-4 bg-gray-50">
-                    <!-- Debug: ข้อมูลแต่ละรายการ -->
-                    <p class="text-sm text-gray-500">DEBUG: ID: {{ data.id }}</p>
-                    <p class="text-sm text-gray-500">DEBUG: User: {{ data.user.username }}</p>
-                    <p class="text-sm text-gray-500">DEBUG: Skin Type: {{ data.skin_type }}</p>
-                    <p class="text-sm text-gray-500">DEBUG: Concern: {{ data.concern }}</p>
-
+                
                     <!-- แสดงข้อมูล -->
                     <p><strong>ชื่อผู้ใช้:</strong> {{ data.user.username }}</p>
                     <p><strong>ประเภทผิว:</strong> {{ data.skin_type }}</p>
