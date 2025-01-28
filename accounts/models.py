@@ -142,13 +142,14 @@ class SkinData(models.Model):
 
 #สำหรับข้อมูลคำตอบจากผู้เชี่ยวชาญ
 class ExpertResponse(models.Model):
-    skin_data = models.OneToOneField(SkinData, on_delete=models.CASCADE, related_name="response")
-    expert = models.ForeignKey(User, on_delete=models.CASCADE, related_name="expert_responses") # ผู้เชี่ยวชาญที่ตอบ
-    response_text = models.TextField()  # คำตอบจากผู้เชี่ยวชาญ
-    created_at = models.DateTimeField(auto_now_add=True)  # วันที่ตอบกลับ
+    skin_data = models.ForeignKey('SkinData', on_delete=models.CASCADE, related_name='responses')  # Many-to-One
+    expert = models.ForeignKey(User, on_delete=models.CASCADE, related_name='expert_responses')  # ผู้เชี่ยวชาญ
+    response_text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"Response by {self.expert.username} for {self.skin_data.user.username}"
+        return f"Response by {self.expert.username} for {self.skin_data.id}"
 
 #สำหรับรีวิวผู้เชี่ยวชาญ
 class ExpertReview(models.Model):

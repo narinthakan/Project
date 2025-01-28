@@ -17,11 +17,6 @@
                 alert('ไม่อนุญาตให้แคปหน้าจอ');
                 e.preventDefault();
             }
-            // ปิดการใช้ Ctrl+S หรือ Ctrl+Shift+S
-            if ((e.ctrlKey && e.key === 's') || (e.ctrlKey && e.shiftKey && e.key === 's')) {
-                alert('ไม่อนุญาตให้บันทึกหน้านี้');
-                e.preventDefault();
-            }
         });
 
         // ลบคลิปบอร์ดเมื่อกด Print Screen
@@ -45,18 +40,26 @@
             <p><strong>ผลิตภัณฑ์ที่ใช้:</strong> {{ skin_data.current_products }}</p>
             <p><strong>เป้าหมายการดูแลผิว:</strong> {{ skin_data.skincare_goal }}</p>
             <p><strong>วันที่ส่ง:</strong> {{ skin_data.submitted_at|date:"d M Y H:i" }}</p>
+
+            {% if skin_data.skin_image %}
+            <div class="mt-4">
+                <p><strong>ภาพผิวหน้าที่อัปโหลด:</strong></p>
+                <img src="{{ skin_data.skin_image.url }}" alt="ภาพผิวหน้า" class="w-full max-w-sm border rounded shadow">
+            </div>
+            {% endif %}
         </div>
+    
 
         <hr>
 
         <!-- แสดงคำตอบจากผู้เชี่ยวชาญ -->
         {% if expert_response %}
-            <h2 style="color: #007BFF;">คำตอบจากผู้เชี่ยวชาญ</h2>
+            <h2 style="color: #007BFF;">คำตอบของคุณ</h2>
             <p style="background: #e6f7ff; padding: 10px; border-radius: 5px;">{{ expert_response.response_text }}</p>
-            <p><strong>โดย:</strong> {{ expert_response.expert.username }}</p>
             <p><strong>วันที่ตอบ:</strong> {{ expert_response.created_at|date:"d M Y H:i" }}</p>
+
             <!-- เพิ่มปุ่มแก้ไขคำตอบ -->
-            <h3 style="margin-top: 20px; color: #007BFF;">แก้ไขคำตอบ</h3>
+            <h3 style="margin-top: 20px; color: #007BFF;">แก้ไขคำตอบของคุณ</h3>
             <form method="POST" style="margin-top: 10px;">
                 {% csrf_token %}
                 <textarea name="response_text" rows="4" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">{{ expert_response.response_text }}</textarea>

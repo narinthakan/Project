@@ -562,10 +562,20 @@ def is_expert(user):
 @login_required
 @user_passes_test(is_expert)  # อนุญาตเฉพาะผู้เชี่ยวชาญ
 def expert_view(request):
-    # ดึงข้อมูลทั้งหมดจาก SkinData
-    skin_data_list = SkinData.objects.all()
-    return render(request, 'expert_view.html', {'skin_data_list': skin_data_list})
+    # ดึงข้อมูลทั้งหมดจาก SkinData และตรวจสอบว่ามีคำแนะนำจากผู้เชี่ยวชาญแล้วหรือไม่
+    skin_data_with_status = []
+    for skin_data in SkinData.objects.all():
+        has_response = ExpertResponse.objects.filter(skin_data=skin_data).exists()
+        skin_data_with_status.append({
+            'data': skin_data,
+            'has_response': has_response
+        })
 
+    return render(request, 'expert_view.html', {
+        'skin_data_with_status': skin_data_with_status
+    })
+    
+    
 # ฟังก์ชันสำหรับดูรายละเอียดข้อมูลผิวหน้า
 @login_required
 @user_passes_test(is_expert)
@@ -573,9 +583,9 @@ def expert_view_detail(request, skin_data_id):
     # ดึงข้อมูล SkinData ที่ต้องการดูรายละเอียด
     skin_data = get_object_or_404(SkinData, id=skin_data_id)
 
-    # ตรวจสอบว่ามีคำตอบจากผู้เชี่ยวชาญหรือไม่
+    # ดึงคำตอบของผู้เชี่ยวชาญที่ล็อกอินอยู่เท่านั้น
     try:
-        expert_response = skin_data.response
+        expert_response = ExpertResponse.objects.get(skin_data=skin_data, expert=request.user)
     except ExpertResponse.DoesNotExist:
         expert_response = None
 
@@ -588,20 +598,22 @@ def expert_view_detail(request, skin_data_id):
                 expert_response.response_text = response_text
                 expert_response.save()
             else:
-                # สร้างคำตอบใหม่
+                # สร้างคำตอบใหม่สำหรับผู้เชี่ยวชาญคนนี้
                 ExpertResponse.objects.create(
                     skin_data=skin_data,
                     expert=request.user,
                     response_text=response_text
                 )
-            messages.success(request, "ตอบกลับสำเร็จ!")
+            messages.success(request, "คำตอบของคุณถูกบันทึกสำเร็จ!")
             return redirect('expert_view_detail', skin_data_id=skin_data.id)
 
     return render(request, 'expert_view_detail.html', {
         'skin_data': skin_data,
-        'expert_response': expert_response,
-        
+        'expert_response': expert_response,  # เฉพาะคำตอบของผู้เชี่ยวชาญที่ล็อกอินอยู่
     })
+
+
+
     
     
     
@@ -642,36 +654,48 @@ def delete_review(request, review_id):
 # ฟังก์ชันสำหรับแสดงข้อมูลผู้ใช้และรีวิวของผู้เชี่ยวชาญ
 @login_required
 def general_advice(request):
-    # ดึงข้อมูลคำแนะนำจากผู้เชี่ยวชาญที่เกี่ยวข้องกับผู้ใช้งานปัจจุบัน
-    expert_response = ExpertResponse.objects.filter(skin_data__user=request.user).first()
+    # ดึงข้อมูลผิวหน้าของผู้ใช้ปัจจุบัน
+    user_skin_data = SkinData.objects.filter(user=request.user)
 
-    # ตรวจสอบว่า ExpertResponse มีข้อมูลหรือไม่
-    skin_data = expert_response.skin_data if expert_response else None
-    reviews = ExpertReview.objects.filter(expert=expert_response.expert).order_by('-created_at') if expert_response else []
+    # ดึงคำแนะนำจากผู้เชี่ยวชาญที่เกี่ยวข้องกับผู้ใช้
+    expert_responses = ExpertResponse.objects.filter(skin_data__user=request.user)
 
-    # จัดการ POST Request สำหรับฟอร์มรีวิว
-    if request.method == 'POST' and expert_response:
+    # ดึงข้อมูลที่ส่งไป แต่ยังไม่ได้รับคำตอบ
+    skin_data_without_response = user_skin_data.exclude(id__in=expert_responses.values('skin_data'))
+
+    # ✅ ดึง "ผู้เชี่ยวชาญทั้งหมด" ที่เคยให้คำแนะนำกับข้อมูลของผู้ใช้
+    experts_reviewable = User.objects.filter(expertresponse__skin_data__user=request.user).distinct()
+
+    # ✅ ดึง "รีวิวที่ผู้ใช้เคยให้กับผู้เชี่ยวชาญ"
+    expert_reviews = ExpertReview.objects.filter(user=request.user)
+
+    # ✅ จัดการการส่งรีวิว
+    if request.method == 'POST':
+        expert_id = request.POST.get('expert_id')  # ดึง ID ผู้เชี่ยวชาญที่รีวิว
         rating = request.POST.get('rating')
         comment = request.POST.get('comment')
-        if rating and comment:
-            # บันทึกรีวิว
+
+        if expert_id and rating and comment:
+            expert = get_object_or_404(User, id=expert_id)  # ดึงข้อมูลผู้เชี่ยวชาญ
             ExpertReview.objects.create(
                 user=request.user,
-                expert=expert_response.expert,
+                expert=expert,
                 rating=rating,
                 comment=comment
             )
             messages.success(request, "รีวิวของคุณถูกบันทึกเรียบร้อยแล้ว!")
-            return redirect('general_advice')  # ใช้ redirect เพื่อป้องกันการส่งข้อมูลซ้ำ
+            return redirect('general_advice')
         else:
             messages.error(request, "กรุณากรอกคะแนนและความคิดเห็นให้ครบถ้วน")
 
-    # ส่งข้อมูลไปยังเทมเพลต
     return render(request, 'general-advice.html', {
-        'skin_data': skin_data,
-        'expert_response': expert_response,
-        'reviews': reviews
+        'user_skin_data': user_skin_data,
+        'expert_responses': expert_responses,
+        'experts_reviewable': experts_reviewable,  # ✅ แสดงเฉพาะผู้เชี่ยวชาญที่ให้คำแนะนำแล้ว
+        'expert_reviews': expert_reviews,
+        'skin_data_without_response': skin_data_without_response,  # ✅ ข้อมูลที่ยังไม่ได้รับคำแนะนำ
     })
+
 
 
 
