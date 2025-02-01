@@ -3,57 +3,137 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ข้อมูลผิวหน้าผู้ใช้งาน</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>ข้อมูลผิวหน้าทั้งหมด</title>
+    
     <style>
-        * {
-            font-family: 'Kanit', sans-serif;
+        html, body {
+            user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            font-family: "Kanit", sans-serif;
+            line-height: 1.6;
+            padding: 20px;
+            background-color: #E3F2FD;
         }
+
+        .container {
+            max-width: 1000px;
+            margin: auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 24px;
+            color: #007BFF;
+            margin-bottom: 20px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: white;
+        }
+
+        .table th, .table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .table th {
+            background-color: #007BFF;
+            color: white;
+            font-size: 16px;
+            text-transform: uppercase;
+        }
+
+        .table td {
+            font-size: 14px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .status-green {
+            background-color: #28A745;
+            color: white;
+        }
+
+        .status-red {
+            background-color: #DC3545;
+            color: white;
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: #007BFF;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
     </style>
 </head>
-<body class="bg-gray-100 p-6">
-    <div class="max-w-6xl mx-auto bg-white p-8 rounded shadow">
-        <h1 class="text-2xl font-bold mb-6 text-center text-blue-700">ข้อมูลผิวหน้าของผู้ใช้งาน</h1>
+<body>
 
-        <!-- วนลูปแสดงข้อมูล -->
-        {% if skin_data_with_status %}
-            {% for item in skin_data_with_status %}
-                <div class="p-4 border rounded mb-4 {% if not item.has_response %}bg-red-100{% else %}bg-green-100{% endif %}">
-                
-                    <!-- แสดงข้อมูล -->
-                    <p><strong>ชื่อผู้ใช้:</strong> {{ item.data.user.username }}</p>
-                    <p><strong>ประเภทผิว:</strong> {{ item.data.skin_type }}</p>
-                    <p><strong>ปัญหาผิวหน้า:</strong> {{ item.data.concern }}</p>
-                    <p><strong>อาการแพ้:</strong> {{ item.data.allergy_history }}</p>
-                    <p><strong>ผลิตภัณฑ์ที่ใช้:</strong> {{ item.data.current_products }}</p>
-                    <p><strong>เป้าหมายการดูแลผิว:</strong> {{ item.data.skincare_goal }}</p>
-                    <p><strong>วันที่ส่ง:</strong> {{ item.data.submitted_at|date:"d M Y H:i" }}</p>
+    <div class="container">
+        <h1>ข้อมูลผิวหน้าทั้งหมด</h1>
 
-                    <!-- แสดงภาพผิวหน้าถ้ามี -->
-                    {% if item.data.skin_image %}
-                        <div class="mt-4">
-                            <img src="{{ item.data.skin_image.url }}" alt="ภาพผิวหน้า" class="w-full max-w-sm border rounded shadow">
-                        </div>
-                    {% else %}
-                        <p class="text-gray-600">ไม่มีภาพอัปโหลด</p>
-                    {% endif %}
-
-                    <!-- แจ้งเตือนว่ามีคำแนะนำแล้วหรือยัง -->
-                    {% if not item.has_response %}
-                        <p class="text-red-700 font-bold">⚠️ ยังไม่มีคำแนะนำจากผู้เชี่ยวชาญ</p>
-                    {% else %}
-                        <p class="text-green-700 font-bold">✅ มีคำแนะนำจากผู้เชี่ยวชาญแล้ว</p>
-                    {% endif %}
-
-                    <!-- ลิงก์ไปยังหน้ารายละเอียด -->
-                    <a href="{% url 'expert_view_detail' skin_data_id=item.data.id %}" class="block mt-2 text-center bg-blue-500 text-white px-4 py-2 rounded">
-                        ดูรายละเอียดเพิ่มเติม
-                    </a>
-                </div>
-            {% endfor %}
-        {% else %}
-            <p class="text-gray-600 text-center">ไม่มีข้อมูลผิวหน้าในระบบ</p>
-        {% endif %}
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ชื่อผู้ใช้</th>
+                        <th>ประเภทผิว</th>
+                        <th>ปัญหาผิว</th>
+                        <th>สถานะของคุณ</th>
+                        <th>ดูรายละเอียด</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for skin_data_entry in skin_data_with_status %}
+                    <tr>
+                        <td>{{ skin_data_entry.data.user.username }}</td>
+                        <td>{{ skin_data_entry.data.skin_type }}</td>
+                        <td>{{ skin_data_entry.data.concern }}</td>
+                        <td>
+                            <span class="status-badge {% if skin_data_entry.status == 'ตอบแล้ว' %}status-green{% else %}status-red{% endif %}">
+                                {{ skin_data_entry.status }}
+                            </span>
+                        </td>
+                        <td><a href="{% url 'expert_view_detail' skin_data_entry.data.id %}" class="btn">🔍 ดูข้อมูล</a></td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">
+                            <span class="status-badge status-red">ยังไม่มีข้อมูล</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
+
 </body>
 </html>

@@ -1,129 +1,58 @@
+{% extends "base.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="th">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>วิเคราะห์ผิวหน้า</title>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        * {
-            font-family: "Kanit", sans-serif;
-        }
-        .nav-link-active {
-            border-bottom: 2px solid black;
-            font-weight: bold;
-        }
-        .nav-link {
-            font-weight: normal;
-            border-bottom: 2px solid transparent;
-        }
-        .nav-link:hover {
-            border-bottom: 2px solid gray;
-        }
-    </style>
-    <script>
-        function searchFunction() {
-            alert("กำลังค้นหา...");
-        }
-    </script>
-</head>
-<body class="bg-blue-100 min-h-screen">
-<!-- Navbar -->
-<nav class="flex justify-between items-center p-6">
-    <div class="flex items-center">
-        <input id="searchInput" type="text" placeholder="ค้นหา" class="w-60 p-2 rounded-full border border-gray-300 focus:outline-none">
-        <button onclick="searchFunction()" class="ml-2 bg-gray-200 px-4 py-2 rounded-full">ค้นหา</button>
+
+{% block title %}วิเคราะห์ผิวหน้า{% endblock %}
+
+{% block content %}
+<div class="bg-blue-100 py-10">
+
+    <!-- ปุ่มส่งข้อมูล (อยู่ข้างบนภาพ) -->
+    <div class="flex justify-center space-x-4 mb-4">
+        <a href="{% if user.is_authenticated %}{% url 'skin_data_form' %}{% else %}{% url 'login' %}{% endif %}">
+            <button class="bg-white text-black font-semibold border px-6 py-3 rounded-lg shadow hover:shadow-md">
+                ข้อมูลผิวหน้าของคุณ
+            </button>
+        </a>
+        <a href="{% if user.is_authenticated %}{% url 'upload_skin' %}{% else %}{% url 'login' %}{% endif %}">
+            <button class="bg-white text-black font-semibold border px-6 py-3 rounded-lg shadow hover:shadow-md">
+                อัปโหลดผิวหน้า
+            </button>
+        </a>
     </div>
 
-    <div class="flex justify-center items-center">
-        <img src="{% static 'images/EssenceTheBeauty_Logo.png' %}" alt="Essence The Beauty Logo" class="w-48 h-auto">
+    <!-- คำแนะนำ (อยู่ข้างใต้ปุ่มและข้างบนภาพ) -->
+    <p class="mt-2 text-gray-600 text-center">
+        - อัปโหลดภาพที่มีปัญหาผิว<br>
+        - ควรถ่ายภาพในที่มีแสงสว่างเพียงพอ และไม่มีการแต่งหน้า 
+        ควรเป็นภาพถ่ายเฉพาะผิวหน้าที่มีปัญหาเท่านั้น เช่น แก้ม คาง หน้าผาก
+    </p>
+
+    <!-- ภาพตัวอย่างผิวหน้า -->
+    <div class="relative mt-4">
+        <img src="{% static 'images/ตัวอย่างหน้า.jpg' %}" alt="ตัวอย่างผิวหน้า" class="mx-auto rounded-lg shadow-md">
     </div>
 
-    <div class="flex items-center space-x-4">
+    <!-- ปุ่มเพิ่มเติมสำหรับผู้ใช้และผู้เชี่ยวชาญ -->
+    <div class="flex justify-center space-x-4 mt-8">
         {% if user.is_authenticated %}
-            <a href="{% url 'user_profile' %}" class="text-black hover:underline">{{ user.username }}</a>
-            <a href="{% url 'logout' %}" class="text-black hover:underline">ออกจากระบบ</a>
+            {% if user.profile.role == "Expert" %}
+                <a href="{% url 'expert_view' %}">
+                    <button class="bg-blue-500 text-white font-semibold border px-6 py-3 rounded-lg shadow hover:shadow-md focus:outline-none">
+                        สำหรับผู้เชี่ยวชาญ: ดูข้อมูลผิวหน้าผู้ใช้งาน
+                    </button>
+                </a>
+            {% endif %}
+
+            {% if user.profile.role == "User" %}
+                <a href="{% url 'general_advice' %}">
+                    <button class="bg-green-500 text-white font-semibold border px-6 py-3 rounded-lg shadow hover:shadow-md focus:outline-none">
+                        คำแนะนำของผู้เชี่ยวชาญ
+                    </button>
+                </a>
+            {% endif %}
         {% else %}
-            <button onclick="window.location.href='{% url 'login' %}'" class="bg-white text-black px-6 py-2 rounded-full border border-gray-300">เข้าสู่ระบบ</button>
+            <p class="text-center text-red-500">กรุณา <a href="{% url 'login' %}" class="underline">เข้าสู่ระบบ</a> เพื่อดูข้อมูลเพิ่มเติม</p>
         {% endif %}
     </div>
-</nav>
-
-<!-- Navigation Links -->
-<div class="flex justify-center space-x-16 py-6">
-    <a href="{% url 'home' %}" class="{% if request.resolver_match.url_name == 'home' %}nav-link-active{% else %}nav-link{% endif %}">หน้าหลัก</a>
-    <a href="{% url 'products' %}" class="{% if request.resolver_match.url_name == 'products' %}nav-link-active{% else %}nav-link{% endif %}">ผลิตภัณฑ์</a>
-    <a href="{% url 'analysis' %}" class="{% if request.resolver_match.url_name == 'analysis' %}nav-link-active{% else %}nav-link{% endif %}">วิเคราะห์</a>
-    <a href="{% url 'reviews' %}" class="{% if request.resolver_match.url_name == 'reviews' %}nav-link-active{% else %}nav-link{% endif %}">รีวิว</a>
 </div>
-
-<!-- Content -->
-<div class="flex justify-center space-x-4 mt-8">
-    <!-- ปุ่มข้อมูลผิวหน้าของคุณ -->
-    <a href="{% url 'skin_data_form' %}">
-        <button class="bg-white text-black font-semibold border px-6 py-3 rounded-lg shadow hover:shadow-md focus:outline-none">
-            ข้อมูลผิวหน้าของคุณ
-        </button>
-    </a>
-
-    <!-- ปุ่มอัปโหลดผิวหน้า -->
-    <a href="{% url 'upload_skin' %}">
-        <button class="bg-white text-black font-semibold border px-6 py-3 rounded-lg shadow hover:shadow-md flex items-center focus:outline-none">
-            อัปโหลดผิวหน้า
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-            </svg>
-        </button>
-    </a>
-</div>
-
-<!-- คำแนะนำใต้ปุ่ม -->
-<p class="mt-6 text-gray-600 text-center">
-    - อัปโหลดภาพที่มีปัญหาผิว<br>
-    - ควรถ่ายภาพในที่มีแสงสว่างเพียงพอ และไม่มีการแต่งหน้า 
-    ควรเป็นภาพถ่ายเฉพาะผิวหน้าที่มีปัญหาเท่านั้น เช่น แก้ม คาง หน้าผาก
-</p>
-
-<!-- ภาพตัวอย่างผิวหน้า -->
-<div class="relative mt-6">
-    <img src="{% static 'images/ตัวอย่างหน้า.jpg' %}" alt="ตัวอย่างผิวหน้า" class="mx-auto rounded-lg shadow-md">
-</div>
-
-
-
-<div class="flex justify-center space-x-4 mt-8">
-    <script>
-        console.log("User role: {{ user_role }}");
-    </script>
-    <!-- ปุ่มสำหรับผู้เชี่ยวชาญ -->
-    {% if user_role == "expert" %}
-        <a href="{% url 'expert_view' %}">
-            <button class="bg-blue-500 text-white font-semibold border px-6 py-3 rounded-lg shadow hover:shadow-md focus:outline-none">
-                สำหรับผู้เชี่ยวชาญ: ดูข้อมูลผิวหน้าผู้ใช้งาน
-            </button>
-        </a>
-    {% endif %}
-
-    <!-- ปุ่มสำหรับผู้ใช้งานทั่วไป -->
-    {% if user_role == "general" %}
-        <a href="{% url 'general_advice' %}">
-            <button class="bg-green-500 text-white font-semibold border px-6 py-3 rounded-lg shadow hover:shadow-md focus:outline-none">
-                คำแนะนำของผู้เชี่ยวชาญ
-            </button>
-        </a>
-    {% endif %}
-</div>
-
-
-
-{% comment %} <!-- ปุ่มเพิ่มเติมสำหรับผู้เชี่ยวชาญ -->
-<div class="mt-8 text-center">
-    <a href="{% url 'expert_user_skin_data' %}" class="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition">
-        สำหรับผู้เชี่ยวชาญ: ดูข้อมูลผิวหน้าผู้ใช้งาน
-    </a>
-</div> {% endcomment %}
-
-</body>
-</html>
+{% endblock %}

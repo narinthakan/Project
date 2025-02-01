@@ -11,81 +11,104 @@
             font-family: 'Kanit', sans-serif;
         }
         body {
-            background-color: #f0f4f8;
+            background: linear-gradient(to bottom, #E3F2FD, #F8FAFC);
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            padding: 20px;
         }
         .container {
-            max-width: 700px;
+            max-width: 600px;
             width: 100%;
-            background-color: white;
-            padding: 40px;
+            background: white;
+            padding: 30px;
             border-radius: 16px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .container:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.12);
         }
         h1 {
-            font-size: 2rem;
-            margin-bottom: 20px;
+            font-size: 1.8rem;
+            margin-bottom: 15px;
             text-align: center;
-            font-weight: 600;
-            color: #2d3748;
+            font-weight: 700;
+            color: #2D3748;
+        }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 16px;
         }
         label {
-            display: block;
-            margin-bottom: 8px;
             font-weight: 500;
-            color: #4a5568;
+            color: #4A5568;
+            margin-bottom: 6px;
         }
         input, textarea, select {
             width: 100%;
             padding: 12px;
-            margin-bottom: 20px;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            background-color: #f7fafc;
-            transition: border-color 0.2s ease;
+            border: 1px solid #CBD5E0;
+            border-radius: 10px;
+            background: #F7FAFC;
+            transition: all 0.3s ease;
         }
         input:focus, textarea:focus, select:focus {
             outline: none;
-            border-color: #3182ce;
-            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.3);
+            border-color: #4299E1;
+            box-shadow: 0 0 5px rgba(66, 153, 225, 0.3);
+            background: white;
         }
         button {
-            background-color: #38a169;
+            background: #4299E1;
             color: white;
-            padding: 12px 24px;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
+            padding: 14px;
+            border-radius: 12px;
             font-size: 1rem;
-            font-weight: 600;
-            display: block;
-            margin: 20px auto;
-            transition: background-color 0.3s ease;
+            font-weight: 700;
+            width: 100%;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(66, 153, 225, 0.3);
         }
         button:hover {
-            background-color: #2f855a;
+            background: #3182CE;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(66, 153, 225, 0.4);
+        }
+        .error-box {
+            background: #FED7D7;
+            color: #9B2C2C;
+            padding: 12px;
+            border-radius: 10px;
+            margin-top: 10px;
+            font-weight: 500;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>เพิ่มผลิตภัณฑ์ใหม่</h1>
+        <h1>✨ เพิ่มผลิตภัณฑ์ใหม่</h1>
         <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
-            <!-- ฟอร์มจาก ProductForm -->
-            {{ form.as_p }}
+            
+            {% for field in form %}
+                <div class="input-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                </div>
+            {% endfor %}
 
             <!-- ปุ่มบันทึก -->
-            <button type="submit">บันทึกผลิตภัณฑ์</button>
+            <button type="submit">💾 บันทึกผลิตภัณฑ์</button>
         </form>
 
         <!-- แสดงข้อผิดพลาดถ้ามี -->
         {% if form.errors %}
-        <div class="text-red-500 mt-4">
-            <h2>ข้อผิดพลาด:</h2>
+        <div class="error-box">
+            <h2>🚨 ข้อผิดพลาด:</h2>
             <ul>
                 {% for field, errors in form.errors.items %}
                     <li>{{ field }}: {{ errors|join:", " }}</li>

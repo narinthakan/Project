@@ -15,19 +15,17 @@
     <div class="max-w-4xl mx-auto bg-white p-8 rounded shadow">
         <h1 class="text-2xl font-bold mb-6 text-center text-blue-700">คำแนะนำจากผู้เชี่ยวชาญ</h1>
 
-        <!-- ส่วนแสดงคำแนะนำจากผู้เชี่ยวชาญ -->
+        <!-- 🔹 ส่วนแสดงคำแนะนำจากผู้เชี่ยวชาญ -->
         {% if expert_responses %}
             {% for response in expert_responses %}
             <div class="p-4 border rounded mb-6 bg-gray-50">
                 <h2 class="text-lg font-bold text-gray-700 mb-2">ข้อมูลผิวหน้า</h2>
-                <p><strong>ชื่อผู้ใช้:</strong> {{ response.skin_data.user.username }}</p>
                 <p><strong>ประเภทผิว:</strong> {{ response.skin_data.skin_type }}</p>
                 <p><strong>ปัญหาผิวหน้า:</strong> {{ response.skin_data.concern }}</p>
                 <p><strong>อาการแพ้:</strong> {{ response.skin_data.allergy_history }}</p>
                 <p><strong>ผลิตภัณฑ์ที่ใช้:</strong> {{ response.skin_data.current_products }}</p>
                 <p><strong>เป้าหมายการดูแลผิว:</strong> {{ response.skin_data.skincare_goal }}</p>
 
-                <!-- แสดงภาพถ้ามี -->
                 {% if response.skin_data.skin_image %}
                 <div class="mt-4">
                     <p><strong>ภาพผิวหน้าที่อัปโหลด:</strong></p>
@@ -40,7 +38,7 @@
                 <h2 class="text-lg font-bold text-gray-700 mb-2">คำตอบจากผู้เชี่ยวชาญ</h2>
                 <p class="bg-blue-50 p-3 rounded text-gray-800">{{ response.response_text }}</p>
                 <p><strong>โดย:</strong> {{ response.expert.username }}</p>
-                <p><strong>วันที่ตอบ:</strong> {{ response.created_at|date:"d M Y H:i" }}</p>
+                <p class="text-sm text-gray-500">วันที่ตอบ: {{ response.created_at|date:"d M Y H:i" }}</p>
             </div>
             {% endfor %}
         {% else %}
@@ -49,50 +47,66 @@
 
         <hr class="my-8">
 
-        <!-- ฟอร์มสำหรับรีวิวผู้เชี่ยวชาญ -->
+        <!-- 🔹 ฟอร์มสำหรับรีวิวผู้เชี่ยวชาญ -->
         <h2 class="text-xl font-bold mb-6 text-blue-700">รีวิวผู้เชี่ยวชาญ</h2>
-        <form method="POST" class="mb-8">
-            {% csrf_token %}
-            <div class="mb-4">
-                <label for="rating" class="block text-gray-700 mb-2">ให้คะแนน:</label>
-                <select name="rating" id="rating" class="w-full border rounded p-2">
-                    <option value="5">5 ดาว</option>
-                    <option value="4">4 ดาว</option>
-                    <option value="3">3 ดาว</option>
-                    <option value="2">2 ดาว</option>
-                    <option value="1">1 ดาว</option>
-                </select>
-            </div>
+        {% if expert_responses %}
+            <form method="POST">
+                {% csrf_token %}
+                <div class="mb-4">
+                    <label for="expert_id" class="block text-gray-700 mb-2">เลือกผู้เชี่ยวชาญที่ต้องการรีวิว:</label>
+                    <select name="expert_id" id="expert_id" class="w-full border rounded p-2">
+                        {% for response in expert_responses %}
+                            <option value="{{ response.expert.id }}">{{ response.expert.username }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
 
-            <div class="mb-4">
-                <label for="comment" class="block text-gray-700 mb-2">แสดงความคิดเห็น:</label>
-                <textarea name="comment" id="comment" rows="4" class="w-full border rounded p-2" placeholder="แสดงความคิดเห็นของคุณ..."></textarea>
-            </div>
+                <div class="mb-4">
+                    <label for="rating" class="block text-gray-700 mb-2">ให้คะแนน:</label>
+                    <select name="rating" id="rating" class="w-full border rounded p-2">
+                        <option value="5">5 ดาว</option>
+                        <option value="4">4 ดาว</option>
+                        <option value="3">3 ดาว</option>
+                        <option value="2">2 ดาว</option>
+                        <option value="1">1 ดาว</option>
+                    </select>
+                </div>
 
-            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">ส่งรีวิว</button>
-        </form>
+                <div class="mb-4">
+                    <label for="comment" class="block text-gray-700 mb-2">แสดงความคิดเห็น:</label>
+                    <textarea name="comment" id="comment" rows="4" class="w-full border rounded p-2" placeholder="แสดงความคิดเห็นของคุณ..."></textarea>
+                </div>
 
-        <!-- ส่วนแสดงรีวิว -->
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">ส่งรีวิว</button>
+            </form>
+        {% else %}
+            <p class="text-gray-600">คุณยังไม่ได้รับคำแนะนำจากผู้เชี่ยวชาญ จึงไม่สามารถรีวิวได้</p>
+        {% endif %}
+
+        <hr class="my-8">
+
+        <!-- 🔹 ส่วนแสดงรีวิว -->
         <h2 class="text-xl font-bold mb-6 text-blue-700">ความคิดเห็นจากผู้ใช้งาน</h2>
-        {% if reviews %}
-            {% for review in reviews %}
-            <div class="mb-4 p-4 border rounded bg-gray-50">
-                <p><strong>ผู้ใช้:</strong> {{ review.user.username }}</p>
-                <p><strong>คะแนน:</strong> {{ review.rating }} ดาว</p>
-                <p class="text-gray-700">{{ review.comment }}</p>
-                <p class="text-sm text-gray-500">วันที่: {{ review.created_at|date:"d M Y H:i" }}</p>
+        {% if expert_reviews %}
+            {% for review in expert_reviews %}
+                <div class="mb-4 p-4 border rounded bg-gray-50">
+                    <p><strong>ผู้ใช้:</strong> {{ review.user.username }}</p>
+                    <p><strong>ผู้เชี่ยวชาญ:</strong> {{ review.expert.username }}</p>
+                    <p><strong>คะแนน:</strong> {{ review.rating }} ดาว</p>
+                    <p class="text-gray-700">{{ review.comment }}</p>
+                    <p class="text-sm text-gray-500">วันที่: {{ review.created_at|date:"d M Y H:i" }}</p>
 
-                {% if review.user == request.user %}
-                <!-- ปุ่มลบรีวิว -->
-                <form method="POST" action="{% url 'delete_review' review.id %}">
-                    {% csrf_token %}
-                    <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded mt-2">ลบความคิดเห็น</button>
-                </form>
-                {% endif %}
-            </div>
+                    {% if review.user == request.user %}
+                    <!-- ปุ่มลบรีวิว -->
+                    <form method="POST" action="{% url 'delete_review' review.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded mt-2">ลบความคิดเห็น</button>
+                    </form>
+                    {% endif %}
+                </div>
             {% endfor %}
         {% else %}
-        <p class="text-gray-600">ยังไม่มีความคิดเห็นสำหรับผู้เชี่ยวชาญนี้</p>
+            <p class="text-gray-600">ยังไม่มีความคิดเห็นสำหรับผู้เชี่ยวชาญนี้</p>
         {% endif %}
     </div>
 </body>

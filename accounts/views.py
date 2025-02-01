@@ -2,13 +2,16 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test,  permission_required
 from django.contrib.auth.hashers import make_password, check_password
+from django.core.files.base import ContentFile 
 from django.contrib import messages
+from django.conf import settings,os
 from .forms import RegistrationForm,LoginForm,ProfileForm,ProductForm,ExpertLoginForm,ExpertVerificationForm,SellerRegistrationForm,ExpertRegistrationForm,SkinUploadForm,ExpertProfileForm,SkinDataForm,ExpertResponseForm,ExpertReviewForm
 from .models import Product, Profile, Review, User, Expert, Seller, SkinUpload, SkinProfile, SkinData, ExpertResponse,ExpertReview
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.shortcuts import redirect, render
 import base64
+import uuid
 
 # Helper function to check if user is an expert or admin
 def is_expert_or_admin(user):
@@ -64,27 +67,28 @@ def home(request):
     
     return render(request, 'home.html', {'experts_to_verify': experts_to_verify})
 
-# @login_required
-# def user_profile(request):
-#     # ดึงโปรไฟล์ของผู้ใช้ปัจจุบัน
-#     profile = Profile.objects.get(user=request.user)
+# ตรวจสอบว่าเป็นแอดมิน
+def is_admin(user):
+    return user.is_staff  # is_staff=True คือแอดมิน
 
-#     # ตรวจสอบว่าเป็น Expert หรือ Seller เพื่อดึงข้อมูลเพิ่มเติม
-#     expert_profile = None
-#     seller_profile = None
-    
-#     # ตรวจสอบบทบาทของผู้ใช้
-#     if profile.role == 'Expert' and hasattr(request.user, 'expert_profile'):
-#         expert_profile = request.user.expert_profile  # ดึงข้อมูลผู้เชี่ยวชาญ
-#     elif profile.role == 'Seller' and hasattr(request.user, 'seller'):
-#         seller_profile = request.user.seller  # ดึงข้อมูลผู้ขาย
-    
-#     # ส่งข้อมูลไปยัง Template
-#     return render(request, 'user_profile.html', {
-#         'profile': profile,
-#         'expert_profile': expert_profile,
-#         'seller_profile': seller_profile
-#     })
+# ฟังก์ชันให้แอดมินดูรายชื่อผู้ใช้งานทั้งหมด (ทุก Role)
+@login_required
+@user_passes_test(is_admin)
+def admin_user_list(request):
+    users = User.objects.prefetch_related('profile').all()  # ดึงข้อมูล User และ Profile ทุก Role
+    return render(request, 'admin_user_list.html', {'users': users})
+
+# ฟังก์ชันให้แอดมินดูโปรไฟล์ของผู้ใช้แต่ละคน (ทุก Role)
+@login_required
+@user_passes_test(is_admin)
+def admin_view_user_profile(request, user_id):
+    user = get_object_or_404(User, id=user_id)  # ดึงข้อมูลผู้ใช้
+    profile = Profile.objects.filter(user=user).first()  # ดึง Profile ที่เชื่อมกับ User
+
+    if not profile:
+        profile = Profile.objects.create(user=user)  # สร้าง Profile อัตโนมัติถ้าไม่มี
+
+    return render(request, 'admin_user_detail.html', {'user': user, 'profile': profile})
 
 # ฟังก์ชันโปรไฟล์ผู้เชี่ยวชาญ
 @login_required
@@ -125,6 +129,9 @@ def search_products(request):
         'query': query,  # ส่งคำค้นไปเพื่อแสดงผล
     })
     
+
+    
+    
 # ฟังก์ชันสำหรับการสมัครสมาชิก
 def register_view(request):
     if request.method == 'POST':
@@ -140,7 +147,8 @@ def register_view(request):
             else:
                 messages.error(request, 'ไม่สามารถเข้าสู่ระบบได้ กรุณาลองอีกครั้ง')
         else:
-            messages.error(request, 'ข้อมูลไม่ถูกต้อง กรุณาตรวจสอบข้อมูลอีกครั้ง')
+            for field, error in form.errors.items():    #แสดงข้อผอดพลาดจากฟอร์ม
+                messages.error(request, f"{field}: {error}")
     else:
         form = RegistrationForm()
     return render(request, 'register.html', {'form': form})
@@ -291,44 +299,52 @@ def register_seller(request):
 @login_required
 def upload_skin(request):
     if request.method == "POST":
-        if 'image' in request.FILES:  # ตรวจสอบว่ามีไฟล์ภาพในคำขอหรือไม่
-            image = request.FILES['image']
-            # อัปเดตหรือสร้างข้อมูล SkinUpload
-            SkinUpload.objects.update_or_create(
-                user=request.user,
-                defaults={'skin_image': image}  # ต้องเปลี่ยนเป็นชื่อฟิลด์ในโมเดลที่ใช้เก็บภาพ
-            )
-            messages.success(request, "อัปโหลดภาพสำเร็จ!")
-            return redirect('analysis')  # เปลี่ยนเป็นชื่อ URL หรือหน้าที่คุณต้องการเปลี่ยนไป
-        else:
-            messages.error(request, "กรุณาเลือกภาพเพื่ออัปโหลด")
-    
-    return render(request, 'upload_skin.html')
+        skin_type = request.POST.get("skin_type")
+        concern = request.POST.get("concern")
+        image = request.FILES.get("skin_image") or request.FILES.get("captured_image")
+
+
+        if not image:
+            messages.error(request, "กรุณาเลือกหรือถ่ายภาพเพื่ออัปโหลด")
+            return redirect("upload_skin")
+
+        # บันทึกภาพลงในโมเดล
+        skin_data = SkinData.objects.create(
+            user=request.user,
+            skin_type=skin_type,
+            concern=concern,
+            skin_image=image
+        )
+
+
+        messages.success(request, "อัปโหลดภาพสำเร็จ!")
+        return redirect("expert_view_detail", skin_data_id=skin_data.id)
+
+    return render(request, "upload_skin.html")
+
 
 # ตรวจสอบว่าเป็น Expert หรือ Admin
 def is_expert_or_admin(user):
     return user.is_staff or (hasattr(user, 'profile') and user.profile.role == 'Expert')
 
 #ดูข้อมูลผิว
-@login_required
 def analysis_view(request):
-    try:
-        # ตรวจสอบ Role ของผู้ใช้
-        profile = request.user.profile
+    user = request.user
+    user_role = None  # กำหนดค่าเริ่มต้น
+
+    # ตรวจสอบว่าผู้ใช้ล็อกอิน และมี Profile หรือไม่
+    if user.is_authenticated and hasattr(user, 'profile'):
+        profile = user.profile
         if profile.role == "Expert":
             user_role = "expert"
         elif profile.role == "User":
             user_role = "general"
-            
         else:
-            user_role = None  # กรณี Role อื่นๆ เช่น Admin
-    except Profile.DoesNotExist:
-        user_role = None  # กรณีที่ Profile ไม่มีในระบบ
-    print(f"Debug: User Role = {user_role}")
-        
-    return render(request, 'analysis.html', {
-        'user_role': user_role,  # ส่งค่า user_role ไปยัง Template
+            user_role = None  # Admin หรือ Role อื่น
 
+    print(f"Debug: User Role = {user_role}")  # ตรวจสอบค่าผ่าน Console
+    return render(request, 'analysis.html', {
+        'user_role': user_role,  # ส่งค่าไปที่ Template
     })
     
 @login_required
@@ -347,63 +363,6 @@ def general_advice_page(request):
     # เพิ่มคำแนะนำที่ต้องการแสดง
     return render(request, 'general_advice.html')
     
-
-# ฟังก์ชันสำหรับแสดงข้อมูลผิวหน้าของผู้ใช้งาน
-# @login_required
-# @user_passes_test(is_expert_or_admin)
-# def user_skin_data_view(request, user_id):
-#     # ดึงข้อมูลผู้ใช้งานตาม ID
-#     user = get_object_or_404(User, id=user_id)
-
-#     # ดึงข้อมูลโปรไฟล์ที่เกี่ยวข้องกับผู้ใช้งาน
-#     profile = get_object_or_404(Profile, user=user)
-
-#     # ดึงข้อมูลภาพที่ผู้ใช้งานอัปโหลด
-#     skin_upload = SkinUpload.objects.filter(user=user).first()
-
-#     return render(request, 'user_skin_data.html', {
-#         'user': user,
-#         'profile': profile,
-#         'skin_upload': skin_upload,
-#     })
-
-
-# # ฟังก์ชันสำหรับแสดงข้อมูลผิวหน้าของผู้ใช้งานพร้อมคำแนะนำจากผู้เชี่ยวชาญ
-# # @login_required
-# # @user_passes_test(is_expert_or_admin)
-# # def expert_user_skin_data(request, user_id):
-# #     # ดึงข้อมูลผู้ใช้งานและโปรไฟล์
-# #     user = get_object_or_404(User, id=user_id)
-# #     profile = get_object_or_404(Profile, user=user)
-# #     skin_upload = SkinUpload.objects.filter(user=user).first()
-
-# #     if request.method == "POST":
-#         advice = request.POST.get('advice')
-#         if advice:
-#             # บันทึกคำแนะนำ (สามารถปรับเพิ่มฟิลด์ในโมเดลเพื่อจัดเก็บคำแนะนำได้)
-#             messages.success(request, "ส่งคำแนะนำสำเร็จ!")
-#             return redirect('expert_user_skin_data', user_id=user_id)
-
-#     return render(request, 'expert_user_skin_data.html', {
-#         'user': user,
-#         'profile': profile,
-#         'skin_upload': skin_upload,
-#     })
-    
-
-    
-
-# ฟังก์ชันข้อมูลโปรไฟล์ผู้เชี่ยวชาญ
-# def expert_profile(request):
-#     expert_data = {
-#         "name": "ชื่อแพทย์ผู้เชี่ยวชาญ",
-#         "license_number": "เลขใบอนุญาต",
-#         "email": "อีเมลล์",
-#         "specialty": "แพทย์ผิวหนัง",
-#     }
-
-#     # ส่งข้อมูลไปยังเทมเพลต
-#     return render(request, 'expert_profile.html', {'expert_data': expert_data})
 
 def home(request):
     context = {}
@@ -470,7 +429,7 @@ def edit_profile(request):
         form = ProfileForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
             form.save()
-            return redirect('view_profile')
+            return redirect('user_profile')
     else:
         form = ProfileForm(instance=profile)
     return render(request, 'edit_profile.html', {'form': form})
@@ -500,16 +459,46 @@ def skin_data_form(request):
     return render(request, 'skin_data_form.html')
 
 #ฟังก์ชันสำหรับอัปโหลดผิวหน้า
+@login_required
 def upload_skin_view(request):
-    if request.method == 'POST' and request.FILES.get('skin_image'):
-        uploaded_file = request.FILES['skin_image']
-        # ตัวอย่าง: บันทึกไฟล์ลงในระบบหรือฐานข้อมูล
-        # คุณสามารถเพิ่มการบันทึกไฟล์ลงใน media ได้โดย:
-        with open(f'media/skin_uploads/{uploaded_file.name}', 'wb+') as destination:
-            for chunk in uploaded_file.chunks():
-                destination.write(chunk)
-        return render(request, 'upload_success.html')  # หน้าเมื่ออัปโหลดสำเร็จ
-    return render(request, 'upload_skin.html')  # หน้าแสดงฟอร์มอัปโหลด
+    """ ให้ผู้ใช้งานสามารถอัปโหลดภาพจากอุปกรณ์หรือถ่ายภาพได้ """
+
+    if request.method == 'POST':
+        skin_image = request.FILES.get("skin_image")  # ✅ รับไฟล์จากอุปกรณ์
+        captured_image = request.POST.get("captured_image")  # ✅ รับภาพจากกล้อง (Base64)
+
+        if not skin_image and not captured_image:
+            messages.error(request, "❌ กรุณาเลือกไฟล์หรือถ่ายภาพก่อนอัปโหลด")
+            return redirect("upload_skin")
+
+        # ✅ ตรวจสอบว่าผู้ใช้มี SkinData เดิมหรือไม่
+        skin_data = SkinData(user=request.user)
+
+        if skin_image:
+            skin_data.skin_image = skin_image
+
+        if captured_image:
+            format, imgstr = captured_image.split(';base64,')
+            ext = format.split('/')[-1]
+            file_name = f"skin_{request.user.id}.{ext}"
+            skin_data.skin_image.save(file_name, ContentFile(base64.b64decode(imgstr)), save=False)
+
+        # ✅ บันทึกข้อมูลลง Database
+        skin_data.save()
+        messages.success(request, "✅ อัปโหลดภาพสำเร็จ!")
+
+        # ✅ เปลี่ยนไปใช้ user_id ใน redirect
+        return redirect("expert_view_detail", user_id=request.user.id)
+
+    return render(request, "upload_skin.html")
+
+
+
+
+
+def upload_success(request):
+    return render(request, "upload_success.html")
+
 
 #ฟังก์ชันสำหรับกรอกข้อมูลผิวหน้า
 @login_required
@@ -562,59 +551,61 @@ def is_expert(user):
 @login_required
 @user_passes_test(is_expert)  # อนุญาตเฉพาะผู้เชี่ยวชาญ
 def expert_view(request):
-    # ดึงข้อมูลทั้งหมดจาก SkinData และตรวจสอบว่ามีคำแนะนำจากผู้เชี่ยวชาญแล้วหรือไม่
+    skin_data_list = SkinData.objects.all()  # ดึงข้อมูลผิวหน้าทั้งหมด
+    current_expert = request.user  # ดึง Expert ที่ล็อกอินอยู่
+
+    # เตรียมข้อมูลสถานะเฉพาะของ Expert ที่ล็อกอินอยู่
     skin_data_with_status = []
-    for skin_data in SkinData.objects.all():
-        has_response = ExpertResponse.objects.filter(skin_data=skin_data).exists()
+    for skin_data in skin_data_list:
+        has_response = ExpertResponse.objects.filter(skin_data=skin_data, expert=current_expert).exists()
+        status = "ตอบแล้ว" if has_response else "ยังไม่ตอบ"
+
         skin_data_with_status.append({
             'data': skin_data,
-            'has_response': has_response
+            'status': status
         })
 
     return render(request, 'expert_view.html', {
         'skin_data_with_status': skin_data_with_status
     })
+
     
     
 # ฟังก์ชันสำหรับดูรายละเอียดข้อมูลผิวหน้า
 @login_required
 @user_passes_test(is_expert)
-def expert_view_detail(request, skin_data_id):
-    # ดึงข้อมูล SkinData ที่ต้องการดูรายละเอียด
-    skin_data = get_object_or_404(SkinData, id=skin_data_id)
+def expert_view_detail(request, user_id):
+    """ ดึงข้อมูลทั้งหมดของผู้ใช้ที่เคยส่งมา ให้ผู้เชี่ยวชาญดู """
 
-    # ดึงคำตอบของผู้เชี่ยวชาญที่ล็อกอินอยู่เท่านั้น
-    try:
-        expert_response = ExpertResponse.objects.get(skin_data=skin_data, expert=request.user)
-    except ExpertResponse.DoesNotExist:
-        expert_response = None
+    # ✅ ดึงข้อมูลทั้งหมดของผู้ใช้ที่ระบุ
+    user_skin_data = SkinData.objects.filter(user_id=user_id).order_by('-submitted_at')
 
-    # จัดการ POST Request สำหรับการตอบกลับ
+    # ✅ ดึงข้อมูลล่าสุดของผู้ใช้
+    latest_skin_data = user_skin_data.first()
+
+    # ✅ ดึงคำตอบของผู้เชี่ยวชาญ
+    expert_response = ExpertResponse.objects.filter(skin_data=latest_skin_data, expert=request.user).first()
+
     if request.method == 'POST':
         response_text = request.POST.get('response_text', '').strip()
         if response_text:
             if expert_response:
-                # อัปเดตคำตอบเดิม
                 expert_response.response_text = response_text
                 expert_response.save()
             else:
-                # สร้างคำตอบใหม่สำหรับผู้เชี่ยวชาญคนนี้
-                ExpertResponse.objects.create(
-                    skin_data=skin_data,
-                    expert=request.user,
-                    response_text=response_text
-                )
-            messages.success(request, "คำตอบของคุณถูกบันทึกสำเร็จ!")
-            return redirect('expert_view_detail', skin_data_id=skin_data.id)
+                ExpertResponse.objects.create(skin_data=latest_skin_data, expert=request.user, response_text=response_text)
+            messages.success(request, "บันทึกคำตอบเรียบร้อยแล้ว")
+            return redirect('expert_view_detail', user_id=user_id)
+        else:
+            messages.error(request, "กรุณากรอกคำตอบก่อนส่ง")
 
     return render(request, 'expert_view_detail.html', {
-        'skin_data': skin_data,
-        'expert_response': expert_response,  # เฉพาะคำตอบของผู้เชี่ยวชาญที่ล็อกอินอยู่
+        "user_skin_data": user_skin_data,
+        "expert_response": expert_response,
     })
 
 
 
-    
     
     
 # ฟังก์ชันสำหรับรีวิวผู้เชี่ยวชาญ
@@ -663,13 +654,13 @@ def general_advice(request):
     # ดึงข้อมูลที่ส่งไป แต่ยังไม่ได้รับคำตอบ
     skin_data_without_response = user_skin_data.exclude(id__in=expert_responses.values('skin_data'))
 
-    # ✅ ดึง "ผู้เชี่ยวชาญทั้งหมด" ที่เคยให้คำแนะนำกับข้อมูลของผู้ใช้
+    # ดึง "ผู้เชี่ยวชาญทั้งหมด" ที่เคยให้คำแนะนำกับข้อมูลของผู้ใช้
     experts_reviewable = User.objects.filter(expertresponse__skin_data__user=request.user).distinct()
 
-    # ✅ ดึง "รีวิวที่ผู้ใช้เคยให้กับผู้เชี่ยวชาญ"
+    # ดึง "รีวิวที่ผู้ใช้เคยให้กับผู้เชี่ยวชาญ"
     expert_reviews = ExpertReview.objects.filter(user=request.user)
 
-    # ✅ จัดการการส่งรีวิว
+    # จัดการการส่งรีวิว
     if request.method == 'POST':
         expert_id = request.POST.get('expert_id')  # ดึง ID ผู้เชี่ยวชาญที่รีวิว
         rating = request.POST.get('rating')
@@ -691,9 +682,9 @@ def general_advice(request):
     return render(request, 'general-advice.html', {
         'user_skin_data': user_skin_data,
         'expert_responses': expert_responses,
-        'experts_reviewable': experts_reviewable,  # ✅ แสดงเฉพาะผู้เชี่ยวชาญที่ให้คำแนะนำแล้ว
+        'experts_reviewable': experts_reviewable,  # แสดงเฉพาะผู้เชี่ยวชาญที่ให้คำแนะนำแล้ว
         'expert_reviews': expert_reviews,
-        'skin_data_without_response': skin_data_without_response,  # ✅ ข้อมูลที่ยังไม่ได้รับคำแนะนำ
+        'skin_data_without_response': skin_data_without_response,  # ข้อมูลที่ยังไม่ได้รับคำแนะนำ
     })
 
 
@@ -779,6 +770,9 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return redirect('home')
+
+# ฟังก์ชันแก้ไขบทความ
+
 
 # ฟังก์ชันแสดงหน้าโปรไฟล์
 '''

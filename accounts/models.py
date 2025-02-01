@@ -6,6 +6,7 @@ from django.dispatch import receiver
 from django.db.models import Avg
 
 
+
 # โมเดลสำหรับโปรไฟล์ผู้ใช้ทั่วไป
 class Profile(models.Model):
     ROLE_CHOICES = [
@@ -153,15 +154,14 @@ class ExpertResponse(models.Model):
 
 #สำหรับรีวิวผู้เชี่ยวชาญ
 class ExpertReview(models.Model):
-    expert = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviews')  # เชื่อมกับผู้เชี่ยวชาญ
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_reviews')  # ผู้ที่รีวิว
+    expert = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviews')  # ผู้เชี่ยวชาญ
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_reviews')  # ผู้รีวิว
     rating = models.PositiveIntegerField()  # คะแนน (1-5 ดาว)
-    comment = models.TextField(blank=True, null=True)  # คอมเม้น
+    comment = models.TextField(blank=True, null=True)  # ความคิดเห็น
     created_at = models.DateTimeField(auto_now_add=True)  # วันที่รีวิว
 
     def __str__(self):
         return f"Review by {self.user.username} for {self.expert.username}"
-    
 
 #สำหรับข้อมูลผิวหน้า
 class SkinProfile(models.Model):
@@ -182,4 +182,5 @@ class SkinProfile(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.skin_type}"
+
 

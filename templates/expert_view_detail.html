@@ -4,74 +4,151 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>รายละเอียดข้อมูลผิวหน้า</title>
-    <script>
-        // ปิดการคลิกขวา
-        document.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-            alert('ไม่อนุญาตให้คลิกขวา');
-        });
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        html, body {
+            font-family: 'Kanit', sans-serif;
+            line-height: 1.6;
+            padding: 20px;
+            background-color: #F3F4F6;
+            user-select: none;
+        }
 
-        // ปิดการใช้ Print Screen (พรินท์สกรีน)
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'PrintScreen') {
-                alert('ไม่อนุญาตให้แคปหน้าจอ');
-                e.preventDefault();
-            }
-        });
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
 
-        // ลบคลิปบอร์ดเมื่อกด Print Screen
-        document.addEventListener('keyup', function(e) {
-            if (e.key === 'PrintScreen') {
-                navigator.clipboard.writeText('');
-                alert('เนื้อหาหน้าจอถูกลบจากคลิปบอร์ดแล้ว');
-            }
-        });
-    </script>
+        .title {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .info {
+            background: #F9FAFB;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .info p {
+            margin: 5px 0;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .info p strong {
+            color: #1E3A8A;
+        }
+
+        .image-container {
+            text-align: center;
+            margin: 15px 0;
+        }
+
+        .image-container img {
+            width: 100%;
+            max-width: 350px;
+            border-radius: 8px;
+            border: 2px solid #90CAF9;
+        }
+
+        .no-data {
+            color: red;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .response-box {
+            background: #EFF6FF;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .response-box textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #B0BEC5;
+            border-radius: 6px;
+            font-size: 14px;
+            resize: none;
+            height: 80px;
+        }
+
+        .btn {
+            background: #1D4ED8;
+            color: white;
+            padding: 12px 15px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+            width: 100%;
+            text-align: center;
+            transition: 0.3s;
+        }
+
+        .btn:hover {
+            background: #1E40AF;
+        }
+    </style>
 </head>
-<body style="font-family: Arial, sans-serif; line-height: 1.6; padding: 20px;">
-    <div style="max-width: 800px; margin: auto; background-color: #f9f9f9; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
-        <h1 style="text-align: center; color: #333;">รายละเอียดข้อมูลผิวหน้า</h1>
-        
-        <div>
-            <p><strong>ชื่อผู้ใช้:</strong> {{ skin_data.user.username }}</p>
-            <p><strong>ประเภทผิว:</strong> {{ skin_data.skin_type }}</p>
-            <p><strong>ปัญหาผิวหน้า:</strong> {{ skin_data.concern }}</p>
-            <p><strong>อาการแพ้:</strong> {{ skin_data.allergy_history }}</p>
-            <p><strong>ผลิตภัณฑ์ที่ใช้:</strong> {{ skin_data.current_products }}</p>
-            <p><strong>เป้าหมายการดูแลผิว:</strong> {{ skin_data.skincare_goal }}</p>
-            <p><strong>วันที่ส่ง:</strong> {{ skin_data.submitted_at|date:"d M Y H:i" }}</p>
+<body>
+    <div class="container">
+        <h1 class="title">รายละเอียดข้อมูลผิวหน้า</h1>
 
-            {% if skin_data.skin_image %}
-            <div class="mt-4">
-                <p><strong>ภาพผิวหน้าที่อัปโหลด:</strong></p>
-                <img src="{{ skin_data.skin_image.url }}" alt="ภาพผิวหน้า" class="w-full max-w-sm border rounded shadow">
+        {% for data in user_skin_data %}
+            <div class="info mb-6 p-4 border rounded">
+                <p><strong>ชื่อผู้ใช้:</strong> {{ data.user.username }}</p>
+                <p><strong>ประเภทผิว:</strong> {{ data.skin_type|default:"-" }}</p>
+                <p><strong>ปัญหาผิวหน้า:</strong> {{ data.concern|default:"-" }}</p>
+                <p><strong>อาการแพ้:</strong> {{ data.allergy_history|default:"-" }}</p>
+                <p><strong>ผลิตภัณฑ์ที่ใช้:</strong> {{ data.current_products|default:"-" }}</p>
+                <p><strong>เป้าหมายการดูแลผิว:</strong> {{ data.skincare_goal|default:"-" }}</p>
+                <p><strong>วันที่ส่ง:</strong> {{ data.submitted_at|date:"d M Y H:i" }}</p>
+
+                {% if data.skin_image %}
+                    <div class="image-container mt-4">
+                        <p><strong>ภาพผิวหน้าที่อัปโหลด:</strong></p>
+                        <img src="{{ data.skin_image.url }}" alt="ภาพผิวหน้า" class="border rounded max-w-full">
+                    </div>
+                {% endif %}
             </div>
-            {% endif %}
-        </div>
-    
+        {% empty %}
+            <p class="text-center text-red-500">ไม่มีข้อมูลที่ส่งมา</p>
+        {% endfor %}
 
-        <hr>
+        <hr class="my-4">
 
-        <!-- แสดงคำตอบจากผู้เชี่ยวชาญ -->
+        <!-- ✅ ฟอร์มตอบกลับของผู้เชี่ยวชาญ -->
         {% if expert_response %}
-            <h2 style="color: #007BFF;">คำตอบของคุณ</h2>
-            <p style="background: #e6f7ff; padding: 10px; border-radius: 5px;">{{ expert_response.response_text }}</p>
-            <p><strong>วันที่ตอบ:</strong> {{ expert_response.created_at|date:"d M Y H:i" }}</p>
-
-            <!-- เพิ่มปุ่มแก้ไขคำตอบ -->
-            <h3 style="margin-top: 20px; color: #007BFF;">แก้ไขคำตอบของคุณ</h3>
-            <form method="POST" style="margin-top: 10px;">
-                {% csrf_token %}
-                <textarea name="response_text" rows="4" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">{{ expert_response.response_text }}</textarea>
-                <button type="submit" style="margin-top: 10px; background-color: #007BFF; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">บันทึก</button>
-            </form>
+            <div class="response-box bg-blue-100 p-4 rounded mt-4">
+                <h2 class="text-lg font-bold">คำตอบของคุณ</h2>
+                <form method="POST">
+                    {% csrf_token %}
+                    <textarea name="response_text" rows="3" class="w-full p-2 border rounded">{{ expert_response.response_text }}</textarea>
+                    <button type="submit" class="mt-2 bg-blue-500 text-white px-4 py-2 rounded">บันทึก</button>
+                </form>
+            </div>
         {% else %}
-            <h2 style="color: #007BFF;">ตอบกลับปัญหาผิวหน้า</h2>
-            <form method="POST" style="margin-top: 20px;">
-                {% csrf_token %}
-                <textarea name="response_text" rows="4" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;" placeholder="เขียนคำตอบของคุณ..."></textarea>
-                <button type="submit" style="margin-top: 10px; background-color: #007BFF; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">ส่งคำตอบ</button>
-            </form>
+            <div class="response-box bg-blue-100 p-4 rounded mt-4">
+                <h2 class="text-lg font-bold">ตอบกลับปัญหาผิวหน้า</h2>
+                <form method="POST">
+                    {% csrf_token %}
+                    <textarea name="response_text" rows="3" class="w-full p-2 border rounded" placeholder="เขียนคำตอบของคุณ..."></textarea>
+                    <button type="submit" class="mt-2 bg-blue-500 text-white px-4 py-2 rounded">ส่งคำตอบ</button>
+                </form>
+            </div>
         {% endif %}
     </div>
 </body>

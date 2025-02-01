@@ -3,12 +3,13 @@ from . import views
 from django.contrib.auth import views as auth_views  # นำเข้าฟังก์ชันการเข้าสู่ระบบและออกจากระบบจาก Django
 from django.conf import settings
 from django.conf.urls.static import static
-from .views import expert_login, seller_login, register_seller, expert_view
+from .views import expert_login, seller_login, register_seller, expert_view, admin_user_list, admin_view_user_profile, verify_expert, verify_seller
 
 urlpatterns = [
     # เส้นทางสำหรับการสมัครสมาชิก
     path('register/', views.register_view, name='register'),
-
+    
+    
     # เส้นทางเข้าสู่ระบบและออกจากระบบ
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
@@ -16,6 +17,10 @@ urlpatterns = [
     # เส้นทางหน้าหลัก
     path('', views.home, name='home'),
     path('home/', views.home, name='home'),
+    
+    # เส้นทางแอดมินดูข้อมุลผู้ใช้งาน
+    path('admin/users/', admin_user_list, name='admin_user_list'),  # ดูรายชื่อผู้ใช้ทั้งหมด
+    path('admin/user/<int:user_id>/', admin_view_user_profile, name='admin_view_user_profile'),  # ดูโปรไฟล์แต่ละคน
     
     #เส้นทางค้นหาผลิตภัณฑ์
     path('search/', views.search_products, name='search_products'),
@@ -61,6 +66,9 @@ urlpatterns = [
     path('dry-skin/', views.dry_skin_view, name='dry_skin'),
     path('combination-skin/', views.combination_skin_view, name='combination_skin'),
     path('sensitive-skin/', views.sensitive_skin_view, name='sensitive_skin'),
+    
+    # เส้นทางสำหรับแก้ไขบทความ
+    
 
     # เส้นทางหน้าวิเคราะห์และรีวิว
     path('analysis/', views.analysis_view, name='analysis'),
@@ -74,7 +82,7 @@ urlpatterns = [
     path('general-advice/', views.general_advice, name='general_advice'),
     path('add-skin-profile/', views.add_skin_profile, name='add_skin_profile'),
     #path('expert-view/', views.expert_view_page, name='expert_view_page'),
-    #path('expert-view/<int:skin_data_id>/', expert_view, name='expert_view'),
+    path('expert-view/<int:skin_data_id>/', views.expert_view_detail, name='expert_view_detail'),
     #path('skin-data-list/', views.skin_data_list_view, name='skin_data_list'),  # เส้นทางแสดงรายการ
     path('expert-view/<int:skin_data_id>/', views.expert_view_detail, name='expert_view_detail'),  # เส้นทางสำหรับดูรายละเอียด
     #path('expert-response/<int:skin_data_id>/', views.expert_response, name='expert_response'),
@@ -90,6 +98,9 @@ urlpatterns = [
     
     #เส้นทางสำหรับอัปโหลดผิวหน้า
     path('upload-skin/', views.upload_skin_view, name='upload_skin'),
+    path('upload-success/', views.upload_success, name='upload_success'),
+    path('accounts/expert-view/<int:user_id>/', views.expert_view_detail, name='expert_view_detail'),
+
     
     # เส้นทางสำหรับส่งข้อมูลโปรไฟล์เพิ่มเติมหลังจากสมัครสมาชิก
     path('submit-profile/', views.submit_profile_view, name='submit_profile_view'),

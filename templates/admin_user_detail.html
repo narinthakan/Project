@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}รายละเอียดผู้ใช้งาน - Essence The Beauty{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto bg-white shadow-md rounded-lg p-6 mt-6">
+    <h2 class="text-2xl font-bold mb-4 text-gray-800">ข้อมูลผู้ใช้งาน</h2>
+
+    <div class="flex space-x-6">
+        <!-- แสดงรูปจาก Profile -->
+        {% if profile.image %}
+            <img src="{{ profile.image.url }}" alt="User Profile" class="w-24 h-24 rounded-full shadow-md">
+        {% else %}
+            <img src="{% static 'images/profile-placeholder.png' %}" alt="Default Profile" class="w-24 h-24 rounded-full shadow-md">
+        {% endif %}
+
+        <div>
+            <p><strong>ชื่อจริง:</strong> {{ user.first_name }} {{ user.last_name }}</p>
+            <p><strong>อีเมล:</strong> {{ user.email }}</p>
+            <p><strong>เบอร์โทร:</strong> {{ profile.phone_number|default:"-" }}</p>
+            <p><strong>ที่อยู่:</strong> {{ profile.address|default:"-" }}</p>
+            <p><strong>บทบาท:</strong> {{ profile.role }}</p>
+            <p><strong>อายุ:</strong> {{ profile.age|default:"-" }}</p>
+            <p><strong>เพศ:</strong> {{ profile.gender|default:"-" }}</p>
+            <p><strong>ปัญหาผิว:</strong> {{ profile.skin_problem|default:"-" }}</p>
+        </div>
+    </div>
+
+    <div class="mt-6 text-center">
+        <a href="{% url 'admin_user_list' %}" class="bg-gray-500 text-white px-6 py-2 rounded-lg shadow-md hover:bg-gray-700 transition">
+            🔙 กลับไปยังรายชื่อผู้ใช้
+        </a>
+    </div>
+</div>
+{% endblock %}
