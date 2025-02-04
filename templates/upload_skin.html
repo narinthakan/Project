@@ -7,79 +7,129 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         * { font-family: "Kanit", sans-serif; }
+        .hidden { display: none; }
+        .preview-container img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin: 5px;
+            border: 2px solid #90CAF9;
+        }
     </style>
 </head>
 <body class="bg-blue-100 p-6">
     <div class="max-w-lg mx-auto bg-white p-6 rounded shadow">
-        <h1 class="text-xl font-bold mb-4">📸 อัปโหลดหรือถ่ายภาพผิวหน้า</h1>
+        <h1 class="text-xl font-bold mb-4 text-center">📸 อัปโหลดหรือถ่ายภาพผิวหน้า</h1>
+        
         <form id="uploadForm" method="POST" enctype="multipart/form-data" onsubmit="return validateUpload()">
             {% csrf_token %}
-            
+
             <!-- ✅ อัปโหลดภาพจากอุปกรณ์ -->
             <div class="mb-4">
-                <label for="skin_images" class="block text-gray-700">เลือกภาพจากอุปกรณ์ (ต้องเลือกอย่างน้อย 2 รูป):</label>
-                <input type="file" name="skin_images" id="skin_images" accept="image/*" multiple class="block w-full border rounded p-2">
+                <label class="block text-gray-700 font-bold">เลือกภาพจากอุปกรณ์ (ต้องเลือกอย่างน้อย 2 รูป):</label>
+                <input type="file" id="fileInput" name="images" accept="image/*" multiple class="block w-full border rounded p-2">
                 <p id="file-error" class="text-red-500 text-sm hidden">❌ กรุณาเลือกอย่างน้อย 2 รูป</p>
+                <div id="uploadedPreview" class="flex flex-wrap mt-2"></div>
+                
             </div>
-        
+            
+
             <!-- ✅ เปิดกล้องและถ่ายภาพ -->
             <div class="mb-4">
-                <label class="block text-gray-700">ถ่ายภาพด้วยกล้อง:</label>
-                <video id="video" autoplay class="border rounded mb-2 max-w-full"></video>
+                <label class="block text-gray-700 font-bold">ถ่ายภาพด้วยกล้อง (ต้องถ่ายอย่างน้อย 2 รูป):</label>
+                <video id="video" autoplay class="border rounded mb-2 w-full"></video>
                 <canvas id="canvas" class="hidden"></canvas>
-                <button type="button" id="capture" class="bg-blue-500 text-white px-4 py-2 rounded mb-2">📸 ถ่ายภาพ</button>
-                <input type="hidden" name="captured_images" id="captured_images">
-                <div id="previewContainer"></div> <!-- ✅ แสดงตัวอย่างหลายรูป -->
+                <button type="button" id="capture" class="bg-blue-500 text-white px-4 py-2 rounded mb-2 w-full">📸 ถ่ายภาพ</button>
+                <div id="capturedPreview" class="flex flex-wrap mt-2"></div>
             </div>
         
             <!-- ✅ ปุ่มส่ง -->
             <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded w-full">📤 อัปโหลด</button>
         </form>
-        
-        <script>
-            const video = document.getElementById('video');
-            const canvas = document.getElementById('canvas');
-            const captureButton = document.getElementById('capture');
-            const capturedInput = document.getElementById('captured_images');
-            const fileInput = document.getElementById('skin_images');
-            const previewContainer = document.getElementById('previewContainer');
-            const fileError = document.getElementById('file-error');
-        
-            navigator.mediaDevices.getUserMedia({ video: true })
-                .then(stream => {
-                    video.srcObject = stream;
-                })
-                .catch(err => {
-                    console.error("❌ ไม่สามารถเปิดกล้องได้:", err);
-                });
-        
-            let capturedImages = [];
-        
-            captureButton.addEventListener('click', () => {
-                const context = canvas.getContext('2d');
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        
-                const dataUrl = canvas.toDataURL('image/png');
-                capturedImages.push(dataUrl);
-                capturedInput.value = capturedImages.join(",");
-        
-                const imgElement = document.createElement('img');
-                imgElement.src = dataUrl;
-                imgElement.classList.add('border', 'rounded', 'max-w-full', 'mb-2');
-                previewContainer.appendChild(imgElement);
+    </div>
+
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const captureButton = document.getElementById('capture');
+        const fileInput = document.getElementById('fileInput');
+        const uploadedPreview = document.getElementById('uploadedPreview');
+        const capturedPreview = document.getElementById('capturedPreview');
+        const fileError = document.getElementById('file-error');
+
+        let selectedFiles = []; // เก็บไฟล์ทั้งหมดที่เลือก
+
+        // ✅ เปิดกล้อง
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+            })
+            .catch(err => {
+                console.error("❌ ไม่สามารถเปิดกล้องได้:", err);
             });
-        
-            function validateUpload() {
-                let uploadedFiles = fileInput.files.length;
-                let capturedCount = capturedImages.length;
-                if ((uploadedFiles + capturedCount) < 2) {
-                    fileError.classList.remove('hidden');
-                    return false;
-                }
-                return true;
+
+        // ✅ ถ่ายภาพจากกล้อง
+        captureButton.addEventListener('click', () => {
+            const context = canvas.getContext('2d');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // แปลง canvas → Blob → File
+            canvas.toBlob(blob => {
+                const imageFile = new File([blob], `capture-${Date.now()}.png`, { type: 'image/png' });
+
+                // เก็บไฟล์ที่ถ่ายไว้
+                selectedFiles.push(imageFile);
+
+                // แสดงตัวอย่าง
+                const imgElement = document.createElement('img');
+                imgElement.src = URL.createObjectURL(blob);
+                imgElement.classList.add('preview-container');
+                capturedPreview.appendChild(imgElement);
+
+                // ⚠️ สำคัญ: อัปเดต fileInput.files ใหม่
+                const dataTransfer = new DataTransfer();
+                selectedFiles.forEach(f => dataTransfer.items.add(f));
+                fileInput.files = dataTransfer.files;
+
+            }, 'image/png');
+        });
+
+        // ✅ อัปโหลดภาพจากอุปกรณ์ (ไม่ให้หายเมื่อเพิ่มไฟล์ใหม่)
+        fileInput.addEventListener('change', function () {
+            const newFiles = Array.from(this.files);
+            selectedFiles.push(...newFiles); // เพิ่มไฟล์ใหม่เข้าไปใน array เดิม
+
+            uploadedPreview.innerHTML = ''; // เคลียร์ preview เดิม
+            selectedFiles.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const imgElement = document.createElement('img');
+                    imgElement.src = e.target.result;
+                    imgElement.classList.add('preview-container');
+                    uploadedPreview.appendChild(imgElement);
+                };
+                reader.readAsDataURL(file);
+            });
+
+            // ✅ อัปเดตค่าใน input ให้รวมไฟล์ทั้งหมด
+            const dataTransfer = new DataTransfer();
+            selectedFiles.forEach(file => dataTransfer.items.add(file));
+            fileInput.files = dataTransfer.files;
+        });
+
+        // ✅ ตรวจสอบว่าต้องมีอย่างน้อย 2 รูป
+        function validateUpload() {
+            const totalImages = selectedFiles.length;
+
+            if (totalImages < 2) {
+                fileError.classList.remove('hidden');
+                return false;
             }
-        </script>        
+            return true;
+        }
+    </script>
 </body>
 </html>

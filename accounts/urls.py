@@ -3,7 +3,7 @@ from . import views
 from django.contrib.auth import views as auth_views  # นำเข้าฟังก์ชันการเข้าสู่ระบบและออกจากระบบจาก Django
 from django.conf import settings
 from django.conf.urls.static import static
-from .views import expert_login, seller_login, register_seller, expert_view, admin_user_list, admin_view_user_profile, verify_expert, verify_seller
+from .views import expert_login, seller_login, register_seller, expert_view, admin_user_list, admin_view_user_profile, verify_expert, verify_seller,upload_success
 
 urlpatterns = [
     # เส้นทางสำหรับการสมัครสมาชิก

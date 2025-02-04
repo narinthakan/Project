@@ -154,28 +154,68 @@ class ProfileForm(forms.ModelForm):
         user.save()
         return super().save(*args, **kwargs)
     
-#สำหรับอัพโหลดภาพ
-class SkinUploadForm(forms.ModelForm):
-    class Meta:
-        model = SkinUpload
-        fields = ['image']    # ฟิลด์ที่ต้องการให้ผู้ใช้อัปโหลด
-    
-#การจัดการรูปภาพ
-def validate_image(image):
-    if not image.name.endswith(('.png', '.jpg', '.jpeg')):
-        raise ValidationError("กรุณาอัปโหลดไฟล์รูปภาพ (png, jpg, jpeg) เท่านั้น")
-    
-#สำหรับผู้ใช้งานกรอกข้อมูลผิวหน้า
+# ฟังก์ชันตรวจสอบว่ามีอัปโหลดภาพอย่างน้อย 2 ภาพ
+def validate_image_count(images):
+    if len(images) < 2:
+        raise ValidationError("❌ กรุณาอัปโหลดหรือถ่ายภาพอย่างน้อย 2 ภาพ")
+
+# Custom Widget สำหรับอัปโหลดหลายไฟล์
+class MultipleFileInput(forms.ClearableFileInput):
+    allow_multiple_selected = True
+
+    def value_from_datadict(self, data, files, name):
+        if hasattr(files, 'getlist'):
+            return files.getlist(name)
+        return files.get(name)
+
+# ฟอร์มกรอกข้อมูลผิวหน้า
 class SkinDataForm(forms.ModelForm):
     class Meta:
         model = SkinData
-        fields = ['skin_type', 'concern', 'allergy_history', 'current_products', 'skincare_goal', 'skin_image']
+        fields = ['skin_type', 'concern', 'allergy_history', 'current_products', 'skincare_goal']
         widgets = {
-            'concern': forms.Textarea(attrs={'rows': 4}),
-            'allergy_history': forms.Textarea(attrs={'rows': 4}),
-            'current_products': forms.Textarea(attrs={'rows': 4}),
-            'skincare_goal': forms.Textarea(attrs={'rows': 4}),
+            'concern': forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
+            'allergy_history': forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
+            'current_products': forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
+            'skincare_goal': forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
         }
+        labels = {
+            'skin_type': 'ประเภทผิว',
+            'concern': 'ปัญหาผิวที่กังวล',
+            'allergy_history': 'ประวัติการแพ้',
+            'current_products': 'ผลิตภัณฑ์ที่ใช้อยู่ในปัจจุบัน',
+            'skincare_goal': 'เป้าหมายการดูแลผิว'
+        }
+
+class SkinImageForm(forms.Form):
+    images = forms.FileField(
+        widget=MultipleFileInput(attrs={
+            'multiple': True,
+            'class': 'form-control',
+            'accept': 'image/*'
+        }),
+        required=False,
+        label='รูปภาพผิวหน้า'
+    )
+
+    def clean_images(self):
+        images = self.files.getlist('images')
+        if not images:
+            raise forms.ValidationError("❌ กรุณาอัปโหลดรูปภาพ")
+        if len(images) < 2:
+            raise forms.ValidationError("❌ กรุณาอัปโหลดอย่างน้อย 2 ภาพ")
+        
+        # ตรวจสอบประเภทไฟล์
+        for image in images:
+            if not image.content_type.startswith('image/'):
+                raise forms.ValidationError("❌ กรุณาอัปโหลดไฟล์รูปภาพเท่านั้น")
+            
+            # ตรวจสอบขนาดไฟล์ (ไม่เกิน 5MB)
+            if image.size > 5 * 1024 * 1024:  # 5MB in bytes
+                raise forms.ValidationError("❌ ขนาดไฟล์แต่ละไฟล์ต้องไม่เกิน 5MB")
+        
+        return images
+
 
 #สำหรับผู้เชี่ยวชาญตอบปัญหาผิวหน้า
 class ExpertResponseForm(forms.ModelForm):

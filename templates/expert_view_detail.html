@@ -117,11 +117,15 @@
                 <p><strong>เป้าหมายการดูแลผิว:</strong> {{ data.skincare_goal|default:"-" }}</p>
                 <p><strong>วันที่ส่ง:</strong> {{ data.submitted_at|date:"d M Y H:i" }}</p>
 
-                {% if data.skin_image %}
+                {% if data.images.all %}
                     <div class="image-container mt-4">
                         <p><strong>ภาพผิวหน้าที่อัปโหลด:</strong></p>
-                        <img src="{{ data.skin_image.url }}" alt="ภาพผิวหน้า" class="border rounded max-w-full">
+                        {% for image in data.images.all %}
+                            <img src="{{ image.image.url }}" alt="ภาพผิวหน้า" class="border rounded max-w-full">
+                        {% endfor %}
                     </div>
+                {% else %}
+                    <p class="text-center text-red-500">ไม่มีข้อมูลที่ส่งมา</p>
                 {% endif %}
             </div>
         {% empty %}

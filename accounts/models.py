@@ -128,19 +128,24 @@ class SkinUpload(models.Model):
 
 #สำหรับข้อมูลผิวหน้าของผู้ใช้งาน
 class SkinData(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="skin_data")  # ผู้ใช้ที่ส่งข้อมูล
-    skin_type = models.CharField(max_length=50)  # ประเภทผิว
-    concern = models.TextField()  # ปัญหาผิวหน้า
-    allergy_history = models.TextField(blank=True, null=True)  # ประวัติการแพ้
-    current_products = models.TextField(blank=True, null=True)  # ผลิตภัณฑ์ที่ใช้ปัจจุบัน
-    skincare_goal = models.TextField(blank=True, null=True)  # เป้าหมายการดูแลผิวหน้า
-    skin_image = models.ImageField(upload_to='skin_images/', blank=True, null=True)  # ภาพอัปโหลด
-    submitted_at = models.DateTimeField(auto_now_add=True)  # วันที่ส่งข้อมูล
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="skin_data")
+    skin_type = models.CharField(max_length=50, blank=True, null=True)
+    concern = models.TextField(blank=True, null=True)
+    allergy_history = models.TextField(blank=True, null=True)
+    current_products = models.TextField(blank=True, null=True)
+    skincare_goal = models.TextField(blank=True, null=True)
+    submitted_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"SkinData of {self.user.username}"
 
+class SkinImage(models.Model):
+    skin_data = models.ForeignKey(SkinData, on_delete=models.CASCADE, related_name="images")
+    image = models.ImageField(upload_to="skin_images/")
 
+    def __str__(self):
+        return f"Image for {self.skin_data.user.username}"
+    
 #สำหรับข้อมูลคำตอบจากผู้เชี่ยวชาญ
 class ExpertResponse(models.Model):
     skin_data = models.ForeignKey('SkinData', on_delete=models.CASCADE, related_name='responses')  # Many-to-One

@@ -3,13 +3,15 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test,  permission_required
 from django.contrib.auth.hashers import make_password, check_password
 from django.core.files.base import ContentFile 
+from django.core.files.storage import default_storage
 from django.contrib import messages
 from django.conf import settings,os
-from .forms import RegistrationForm,LoginForm,ProfileForm,ProductForm,ExpertLoginForm,ExpertVerificationForm,SellerRegistrationForm,ExpertRegistrationForm,SkinUploadForm,ExpertProfileForm,SkinDataForm,ExpertResponseForm,ExpertReviewForm
-from .models import Product, Profile, Review, User, Expert, Seller, SkinUpload, SkinProfile, SkinData, ExpertResponse,ExpertReview
+from .forms import RegistrationForm,LoginForm,ProfileForm,ProductForm,ExpertLoginForm,ExpertVerificationForm,SellerRegistrationForm,ExpertRegistrationForm,ExpertProfileForm,SkinDataForm,ExpertResponseForm,ExpertReviewForm,SkinImageForm
+from .models import Product, Profile, Review, User, Expert, Seller, SkinUpload, SkinProfile, SkinData, ExpertResponse,ExpertReview,SkinImage
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.shortcuts import redirect, render
+from django.urls import reverse
 import base64
 import uuid
 
@@ -461,36 +463,54 @@ def skin_data_form(request):
 #ฟังก์ชันสำหรับอัปโหลดผิวหน้า
 @login_required
 def upload_skin_view(request):
-    """ ให้ผู้ใช้งานสามารถอัปโหลดภาพจากอุปกรณ์หรือถ่ายภาพได้ """
-
     if request.method == 'POST':
-        skin_image = request.FILES.get("skin_image")  # ✅ รับไฟล์จากอุปกรณ์
-        captured_image = request.POST.get("captured_image")  # ✅ รับภาพจากกล้อง (Base64)
+        print("🔍 DEBUG: request.FILES =", request.FILES)
+        skin_data_form = SkinDataForm(request.POST)
+        skin_image_form = SkinImageForm(request.POST, request.FILES)
+        print("🔍 fields in form:", list(skin_image_form.fields.keys()))
+        for k, v in request.FILES.lists():
+            print(f"🔍 FILES key='{k}', value={v}")
 
-        if not skin_image and not captured_image:
-            messages.error(request, "❌ กรุณาเลือกไฟล์หรือถ่ายภาพก่อนอัปโหลด")
-            return redirect("upload_skin")
+        print(skin_data_form.is_valid())
+        print(skin_image_form.is_valid())
 
-        # ✅ ตรวจสอบว่าผู้ใช้มี SkinData เดิมหรือไม่
-        skin_data = SkinData(user=request.user)
+        if skin_data_form.is_valid():#and skin_image_form.is_valid():
+            try:
+                skin_data = skin_data_form.save(commit=False)
+                skin_data.user = request.user
+                skin_data.save()
 
-        if skin_image:
-            skin_data.skin_image = skin_image
+                images = request.FILES.getlist('images')
+                print(f"✅ DEBUG: Images uploaded ({len(images)} files)")
+                
+                for img in images:
+                    new_image = SkinImage.objects.create(skin_data=skin_data, image=img)
+                    print(f"✅ DEBUG: Image saved -> {new_image.image.url}")
 
-        if captured_image:
-            format, imgstr = captured_image.split(';base64,')
-            ext = format.split('/')[-1]
-            file_name = f"skin_{request.user.id}.{ext}"
-            skin_data.skin_image.save(file_name, ContentFile(base64.b64decode(imgstr)), save=False)
 
-        # ✅ บันทึกข้อมูลลง Database
-        skin_data.save()
-        messages.success(request, "✅ อัปโหลดภาพสำเร็จ!")
+                messages.success(request, "✅ อัปโหลดข้อมูลและภาพสำเร็จ!")
 
-        # ✅ เปลี่ยนไปใช้ user_id ใน redirect
-        return redirect("expert_view_detail", user_id=request.user.id)
+                print("🔄 DEBUG: Redirecting to upload_success!")  # เช็คจุด Redirect
+                return redirect("upload_success")  
 
-    return render(request, "upload_skin.html")
+            except Exception as e:
+                messages.error(request, f"❌ เกิดข้อผิดพลาด: {str(e)}")
+                print(f"❌ ERROR: {e}")
+                return redirect("upload_skin")
+        else:
+            print("❌ Form validation failed.")  # เช็คว่าฟอร์มไม่ผ่าน
+            print("SkinDataForm Errors:", skin_data_form.errors)
+            print("SkinImageForm Errors:", skin_image_form.errors)
+
+            messages.error(request, "❌ กรุณาตรวจสอบข้อมูลที่กรอก")
+
+    skin_data_form = SkinDataForm()
+    skin_image_form = SkinImageForm()
+
+    return render(request, "upload_skin.html", {
+        "skin_data_form": skin_data_form,
+        "skin_image_form": skin_image_form,
+    })
 
 
 
@@ -498,7 +518,6 @@ def upload_skin_view(request):
 
 def upload_success(request):
     return render(request, "upload_success.html")
-
 
 #ฟังก์ชันสำหรับกรอกข้อมูลผิวหน้า
 @login_required
@@ -571,38 +590,52 @@ def expert_view(request):
 
     
     
+
 # ฟังก์ชันสำหรับดูรายละเอียดข้อมูลผิวหน้า
 @login_required
 @user_passes_test(is_expert)
 def expert_view_detail(request, user_id):
-    """ ดึงข้อมูลทั้งหมดของผู้ใช้ที่เคยส่งมา ให้ผู้เชี่ยวชาญดู """
+    """ ดึงข้อมูลทั้งหมดของผู้ใช้ พร้อมรูปภาพ ให้ผู้เชี่ยวชาญดู """
 
-    # ✅ ดึงข้อมูลทั้งหมดของผู้ใช้ที่ระบุ
-    user_skin_data = SkinData.objects.filter(user_id=user_id).order_by('-submitted_at')
+    print(f"🔍 DEBUG: กำลังโหลดข้อมูลของ user_id = {user_id}")
 
-    # ✅ ดึงข้อมูลล่าสุดของผู้ใช้
-    latest_skin_data = user_skin_data.first()
+    # ตรวจสอบว่า user_id ที่ส่งเข้ามาคือ `User.id` หรือ `SkinData.id`
+    existing_users = SkinData.objects.values_list('user__id', flat=True).distinct()
+    existing_skin_data_ids = SkinData.objects.values_list('id', flat=True).distinct()
+
+    print(f"🔍 DEBUG: user_id ที่มีอยู่ใน SkinData = {list(existing_users)}")
+    print(f"🔍 DEBUG: SkinData ID ที่มีอยู่ = {list(existing_skin_data_ids)}")
+
+    # ✅ ตรวจสอบว่าค่า user_id ที่เข้ามาเป็น `SkinData.id` หรือ `User.id`
+    skin_data_entry = SkinData.objects.filter(id=user_id).select_related("user").first()
+    if skin_data_entry:
+        actual_user_id = skin_data_entry.user.id
+        user_skin_data = SkinData.objects.filter(user=skin_data_entry.user).order_by('-submitted_at')
+    else:
+        actual_user_id = None
+        user_skin_data = SkinData.objects.none()
+
+    print(f"✅ DEBUG: user_id ที่ใช้ในการค้นหา = {actual_user_id}")
+    print(f"✅ DEBUG: พบข้อมูล SkinData = {user_skin_data.count()} รายการ")
+
+    # ✅ ดึงข้อมูลล่าสุดและรูปภาพ
+    latest_skin_data = user_skin_data.first() if user_skin_data.exists() else None
+    all_images = SkinImage.objects.filter(skin_data=latest_skin_data) if latest_skin_data else None
+
+    print(f"✅ DEBUG: จำนวนรูปภาพที่เกี่ยวข้อง = {all_images.count() if all_images else 0}")
 
     # ✅ ดึงคำตอบของผู้เชี่ยวชาญ
     expert_response = ExpertResponse.objects.filter(skin_data=latest_skin_data, expert=request.user).first()
 
-    if request.method == 'POST':
-        response_text = request.POST.get('response_text', '').strip()
-        if response_text:
-            if expert_response:
-                expert_response.response_text = response_text
-                expert_response.save()
-            else:
-                ExpertResponse.objects.create(skin_data=latest_skin_data, expert=request.user, response_text=response_text)
-            messages.success(request, "บันทึกคำตอบเรียบร้อยแล้ว")
-            return redirect('expert_view_detail', user_id=user_id)
-        else:
-            messages.error(request, "กรุณากรอกคำตอบก่อนส่ง")
-
     return render(request, 'expert_view_detail.html', {
         "user_skin_data": user_skin_data,
+        "latest_skin_data": latest_skin_data,
+        "all_images": all_images,
         "expert_response": expert_response,
     })
+
+
+
 
 
 
