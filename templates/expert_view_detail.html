@@ -134,6 +134,24 @@
 
         <hr class="my-4">
 
+        <!-- ✅ แสดงคำตอบของผู้เชี่ยวชาญ -->
+        {% if expert_responses %}
+        <div class="response-box bg-green-100 p-4 rounded mt-4">
+            <h2 class="text-lg font-bold text-green-700">คำตอบของผู้เชี่ยวชาญ</h2>
+            {% for response in expert_responses %}
+                <div class="p-3 border-b last:border-none">
+                    <p class="text-gray-800">{{ response.response_text }}</p>
+                    <p class="text-sm text-gray-500">โดย: {{ response.expert.username }} | {{ response.created_at|date:"d M Y H:i" }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="response-box bg-yellow-100 p-4 rounded mt-4">
+            <h2 class="text-lg font-bold text-yellow-700">ยังไม่มีคำตอบ</h2>
+            <p class="mt-2 text-gray-600">ผู้เชี่ยวชาญยังไม่ได้ตอบกลับปัญหาผิวหน้านี้</p>
+        </div>
+    {% endif %}
+
         <!-- ✅ ฟอร์มตอบกลับของผู้เชี่ยวชาญ -->
         {% if expert_response %}
             <div class="response-box bg-blue-100 p-4 rounded mt-4">
@@ -149,7 +167,7 @@
                 <h2 class="text-lg font-bold">ตอบกลับปัญหาผิวหน้า</h2>
                 <form method="POST">
                     {% csrf_token %}
-                    <textarea name="response_text" rows="3" class="w-full p-2 border rounded" placeholder="เขียนคำตอบของคุณ..."></textarea>
+                    {{ form.as_p }}
                     <button type="submit" class="mt-2 bg-blue-500 text-white px-4 py-2 rounded">ส่งคำตอบ</button>
                 </form>
             </div>

@@ -599,14 +599,7 @@ def expert_view_detail(request, user_id):
 
     print(f"🔍 DEBUG: กำลังโหลดข้อมูลของ user_id = {user_id}")
 
-    # ตรวจสอบว่า user_id ที่ส่งเข้ามาคือ `User.id` หรือ `SkinData.id`
-    existing_users = SkinData.objects.values_list('user__id', flat=True).distinct()
-    existing_skin_data_ids = SkinData.objects.values_list('id', flat=True).distinct()
-
-    print(f"🔍 DEBUG: user_id ที่มีอยู่ใน SkinData = {list(existing_users)}")
-    print(f"🔍 DEBUG: SkinData ID ที่มีอยู่ = {list(existing_skin_data_ids)}")
-
-    # ✅ ตรวจสอบว่าค่า user_id ที่เข้ามาเป็น `SkinData.id` หรือ `User.id`
+    # ตรวจสอบว่า user_id ที่ส่งเข้ามาเป็น `SkinData.id` หรือ `User.id`
     skin_data_entry = SkinData.objects.filter(id=user_id).select_related("user").first()
     if skin_data_entry:
         actual_user_id = skin_data_entry.user.id
@@ -624,18 +617,29 @@ def expert_view_detail(request, user_id):
 
     print(f"✅ DEBUG: จำนวนรูปภาพที่เกี่ยวข้อง = {all_images.count() if all_images else 0}")
 
-    # ✅ ดึงคำตอบของผู้เชี่ยวชาญ
-    expert_response = ExpertResponse.objects.filter(skin_data=latest_skin_data, expert=request.user).first()
+    # ✅ ดึงคำตอบล่าสุดของผู้เชี่ยวชาญ
+    expert_responses = ExpertResponse.objects.filter(skin_data=latest_skin_data, expert=request.user).order_by('-created_at')
+
+    # ✅ จัดการฟอร์มเมื่อส่ง POST
+    if request.method == "POST":
+        form = ExpertResponseForm(request.POST)
+        if form.is_valid():
+            ExpertResponse.objects.create(
+                skin_data=latest_skin_data,
+                expert=request.user,
+                response_text=form.cleaned_data['response_text']
+            )
+            return redirect('expert_view_detail', user_id=user_id)  # รีเฟรชหน้าหลังจากบันทึกสำเร็จ
+    else:
+        form = ExpertResponseForm()
 
     return render(request, 'expert_view_detail.html', {
         "user_skin_data": user_skin_data,
         "latest_skin_data": latest_skin_data,
         "all_images": all_images,
-        "expert_response": expert_response,
+        "expert_responses": expert_responses,  # ส่งคำตอบทั้งหมดไปที่ Template
+        "form": form,  # ส่งฟอร์มไปยังเทมเพลต
     })
-
-
-
 
 
 
@@ -719,6 +723,16 @@ def general_advice(request):
         'expert_reviews': expert_reviews,
         'skin_data_without_response': skin_data_without_response,  # ข้อมูลที่ยังไม่ได้รับคำแนะนำ
     })
+
+
+
+
+
+
+
+
+
+
 
 
 
