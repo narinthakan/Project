@@ -165,11 +165,20 @@ def verify_expert_list(request):
 # ฟังก์ชันสำหรับการตรวจสอบผู้เชี่ยวชาญ
 @user_passes_test(lambda u: u.is_staff)  # ให้สามารถเข้าถึงได้เฉพาะแอดมิน
 def verify_expert(request, expert_id):
-    expert = Expert.objects.get(id=expert_id)
+    # ใช้ get_object_or_404 เพื่อดึงข้อมูลผู้เชี่ยวชาญหรือส่งกลับ 404 หากไม่พบ
+    expert = get_object_or_404(Expert, id=expert_id)
+    
     if request.method == 'POST':
+        # ยืนยันผู้เชี่ยวชาญ
         expert.is_verified = True
         expert.save()
-        return redirect('verify_expert_list')  # กลับไปยังรายการผู้เชี่ยวชาญ
+        
+        # ส่งข้อความแจ้งเตือนว่าการยืนยันสำเร็จ
+        messages.success(request, f"ผู้เชี่ยวชาญ {expert.full_name} ได้รับการยืนยันแล้ว")
+        
+        # เปลี่ยนเส้นทางไปยังรายการผู้เชี่ยวชาญที่ต้องการการตรวจสอบ
+        return redirect('verify_expert_list')
+    
     return render(request, 'verify_expert.html', {'expert': expert})
 
 # ฟังก์ชันสำหรับรายการผู้ขายที่ต้องการการตรวจสอบ
@@ -181,12 +190,14 @@ def verify_seller_list(request):
 # ฟังก์ชันสำหรับการตรวจสอบผู้ขาย
 @user_passes_test(lambda u: u.is_staff)  # ให้สามารถเข้าถึงได้เฉพาะแอดมิน
 def verify_seller(request, seller_id):
-    seller = Seller.objects.get(id=seller_id)
+    seller = get_object_or_404(Seller, id=seller_id)  # ดึงข้อมูล Seller หรือส่งกลับ 404 หากไม่พบ
     if request.method == 'POST':
         seller.is_verified = True
         seller.save()
-        return redirect('verify_seller_list') # กลับไปยังรายการผู้ขาย
+        messages.success(request, f"ผู้ขาย {seller.business_name} ได้รับการยืนยันแล้ว")
+        return redirect('verify_seller_list')  # กลับไปยังรายการผู้ขาย
     return render(request, 'verify_seller.html', {'seller': seller})
+
 
 # ฟังก์ชันเข้าสู่ระบบผู้เชี่ยวชาญ
 def expert_login(request):
@@ -265,37 +276,44 @@ def seller_login(request):
         email = request.POST.get('email', '').strip()
         password = request.POST.get('password', '').strip()
 
+        # ค้นหา User ที่ใช้ email นี้
         try:
-            # ค้นหา Seller ที่มี email ตรงกัน
-            seller = Seller.objects.get(user__email=email)
-            user = authenticate(request, username=seller.user.username, password=password)
-            if user is not None:
-                login(request, user)  # ใช้ระบบล็อกอินของ Django
-                request.session['seller_id'] = seller.id
-                request.session['seller_email'] = seller.user.email
-                request.session['seller_fullname'] = seller.full_name
-                messages.success(request, "เข้าสู่ระบบสำเร็จ!")
-                return redirect('home')
-            else:
-                messages.error(request, "รหัสผ่านไม่ถูกต้อง")
-        except Seller.DoesNotExist:
-            messages.error(request, "ไม่พบบัญชีผู้ขายในระบบ")
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            messages.error(request, "ไม่พบอีเมลนี้ในระบบ")
+            return render(request, 'seller_login.html')
+
+        # ตรวจสอบรหัสผ่าน
+        user = authenticate(request, username=user.username, password=password)
+        if user is not None:
+            login(request, user)
+            # ตั้งค่าเซสชันหลังจากล็อกอินสำเร็จ
+            request.session['seller_id'] = user.seller_profile.id
+            request.session['seller_email'] = user.email
+            request.session['seller_fullname'] = user.seller_profile.full_name
+            messages.success(request, "เข้าสู่ระบบสำเร็จ!")
+            return redirect('home')  # เปลี่ยนไปยังหน้าหลัก
+        else:
+            messages.error(request, "รหัสผ่านไม่ถูกต้อง")
 
     return render(request, 'seller_login.html')
 
-#ฟังก์ชันลงทะเบียนผู้ขาย
+
+# ฟังก์ชันลงทะเบียนผู้ขาย
 def register_seller(request):
     if request.method == 'POST':
         form = SellerRegistrationForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
+            seller = form.save()  # สร้าง Seller และ User โดยอัตโนมัติจากฟอร์ม
             messages.success(request, "ลงทะเบียนสำเร็จ! คุณสามารถเข้าสู่ระบบได้แล้ว")
             return redirect('seller_login')  # เปลี่ยนไปหน้าล็อกอินผู้ขาย
         else:
             messages.error(request, "ข้อมูลที่กรอกไม่ถูกต้อง")
     else:
         form = SellerRegistrationForm()
+
     return render(request, 'register_seller.html', {'form': form})
+
 
 #สำหรับอัปโหลดภาพ
 @login_required
@@ -588,7 +606,7 @@ def expert_view(request):
         'skin_data_with_status': skin_data_with_status
     })
 
-    
+   
     
 
 # ฟังก์ชันสำหรับดูรายละเอียดข้อมูลผิวหน้า
@@ -640,7 +658,6 @@ def expert_view_detail(request, user_id):
         "expert_responses": expert_responses,  # ส่งคำตอบทั้งหมดไปที่ Template
         "form": form,  # ส่งฟอร์มไปยังเทมเพลต
     })
-
 
 
     

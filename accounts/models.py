@@ -1,11 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.contrib.auth.hashers import make_password, check_password
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.db.models import Avg
-
-
 
 # โมเดลสำหรับโปรไฟล์ผู้ใช้ทั่วไป
 class Profile(models.Model):
@@ -23,10 +20,11 @@ class Profile(models.Model):
     image = models.ImageField(upload_to='profile_pics/', blank=True, null=True)  # รูปโปรไฟล์
     age = models.IntegerField(blank=True, null=True)  # อายุ
     gender = models.CharField(max_length=10, blank=True, null=True)  # เพศ
-    
+
     def __str__(self):
         return f'{self.user.username} Profile'
-    
+
+
 # Signals: สร้าง Profile อัตโนมัติเมื่อ User ใหม่ถูกสร้าง
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
@@ -38,6 +36,7 @@ def create_user_profile(sender, instance, created, **kwargs):
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
     instance.profile.save()
+
 
 # โมเดลสำหรับผู้เชี่ยวชาญ
 class Expert(models.Model):
@@ -71,12 +70,13 @@ class Seller(models.Model):
         return self.business_name
 
 
-#หมวดหมู่สินค้า
+# หมวดหมู่สินค้า
 class Category(models.Model):
     name = models.CharField(max_length=100, verbose_name="ชื่อหมวดหมู่")
 
     def __str__(self):
         return self.name
+
 
 # โมเดลสำหรับสินค้า
 class Product(models.Model):
@@ -96,7 +96,7 @@ class Product(models.Model):
     def __str__(self):
         return self.name
 
-# ฟังก์ชันคำนวณค่าเฉลี่ยเรตติ้งจากรีวิว
+    # ฟังก์ชันคำนวณค่าเฉลี่ยเรตติ้งจากรีวิว
     def average_rating(self):
         reviews = self.reviews.all()
         if reviews.exists():
@@ -116,7 +116,7 @@ class Review(models.Model):
         return f'Review by {self.user.username} on {self.product.name}'
 
 
-#สำหรับเก็บข้อมูลภาพผิวหน้า
+# สำหรับเก็บข้อมูลภาพผิวหน้า
 class SkinUpload(models.Model):
     user = models.ForeignKey('auth.User', on_delete=models.CASCADE, related_name="skin_uploads")  # เชื่อมโยงกับผู้ใช้
     image = models.ImageField(upload_to='skin_uploads/')  # เก็บใน media/skin_uploads/
@@ -126,7 +126,7 @@ class SkinUpload(models.Model):
         return f"Upload by {self.user.username} on {self.uploaded_at}"
 
 
-#สำหรับข้อมูลผิวหน้าของผู้ใช้งาน
+# สำหรับข้อมูลผิวหน้าของผู้ใช้งาน
 class SkinData(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="skin_data")
     skin_type = models.CharField(max_length=50, blank=True, null=True)
@@ -139,6 +139,7 @@ class SkinData(models.Model):
     def __str__(self):
         return f"SkinData of {self.user.username}"
 
+
 class SkinImage(models.Model):
     skin_data = models.ForeignKey(SkinData, on_delete=models.CASCADE, related_name="images")
     image = models.ImageField(upload_to="skin_images/")
@@ -146,7 +147,7 @@ class SkinImage(models.Model):
     def __str__(self):
         return f"Image for {self.skin_data.user.username}"
     
-#สำหรับข้อมูลคำตอบจากผู้เชี่ยวชาญ
+# สำหรับข้อมูลคำตอบจากผู้เชี่ยวชาญ
 class ExpertResponse(models.Model):
     skin_data = models.ForeignKey('SkinData', on_delete=models.CASCADE, related_name='responses')  # Many-to-One
     expert = models.ForeignKey(User, on_delete=models.CASCADE, related_name='expert_responses')  # ผู้เชี่ยวชาญ
@@ -157,7 +158,7 @@ class ExpertResponse(models.Model):
     def __str__(self):
         return f"Response by {self.expert.username} for {self.skin_data.id}"
 
-#สำหรับรีวิวผู้เชี่ยวชาญ
+# สำหรับรีวิวผู้เชี่ยวชาญ
 class ExpertReview(models.Model):
     expert = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviews')  # ผู้เชี่ยวชาญ
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_reviews')  # ผู้รีวิว
@@ -168,7 +169,7 @@ class ExpertReview(models.Model):
     def __str__(self):
         return f"Review by {self.user.username} for {self.expert.username}"
 
-#สำหรับข้อมูลผิวหน้า
+# สำหรับข้อมูลผิวหน้า
 class SkinProfile(models.Model):
     SKIN_TYPE_CHOICES = [
         ('normal', 'ผิวธรรมดา'),
@@ -187,5 +188,4 @@ class SkinProfile(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.skin_type}"
-
 

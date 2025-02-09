@@ -4,17 +4,6 @@
 
 {% block content %}
 
-<!-- ปุ่มให้แอดมินดูข้อมูลผู้ใช้ (อยู่ข้างบนภาพ) -->
-{% if user.is_authenticated and user.is_staff %}
-<div class="flex justify-center mt-6">
-    <a href="{% url 'admin_user_list' %}">
-        <button class="bg-blue-600 text-white px-6 py-3 rounded-lg shadow-md hover:bg-blue-800 transition">
-            👤 ดูข้อมูลผู้ใช้งาน
-        </button>
-    </a>
-</div>
-{% endif %}
-
 <!-- Image Section -->
 <div class="relative mt-4">
     <img src="https://mediwelle.com/wp-content/uploads/2024/05/8.%E0%B8%9B%E0%B8%B1%E0%B8%8D%E0%B8%AB%E0%B8%B2%E0%B8%9C%E0%B8%B4%E0%B8%A7%E0%B8%AB%E0%B8%99%E0%B9%89%E0%B8%B2%E0%B8%AA%E0%B8%A3%E0%B9%89%E0%B8%B2%E0%B8%87%E0%B8%84%E0%B8%A7%E0%B8%B2%E0%B8%A1%E0%B8%AB%E0%B8%99%E0%B8%B1%E0%B8%81%E0%B9%83%E0%B8%88%E0%B9%83%E0%B8%AB%E0%B9%89%E0%B8%AA%E0%B8%B2%E0%B8%A7%E0%B9%84%E0%B8%97%E0%B8%A2%E0%B9%80%E0%B8%9B%E0%B9%87%E0%B8%99%E0%B8%AD%E0%B8%A2%E0%B9%88%E0%B8%B2%E0%B8%87%E0%B8%A1%E0%B8%B2%E0%B8%81.webp" 
@@ -34,7 +23,21 @@
         <a href="{% url 'sensitive_skin' %}" class="bg-gray-300 text-center py-3 rounded-lg shadow-md hover:bg-gray-400 transition">ผิวแพ้ง่าย (Sensitive Skin)</a>
     </div>
 
-    
-    
+    <!-- ปุ่มให้แอดมินดูข้อมูลผู้ใช้และอนุมัติผู้เชี่ยวชาญ -->
+    {% if user.is_authenticated and user.is_staff %}
+    <div class="w-full flex justify-center mt-6 space-x-4">
+        <a href="{% url 'admin_user_list' %}">
+            <button class="bg-blue-600 text-white px-6 py-3 rounded-lg shadow-md hover:bg-blue-800 transition">
+                👤 ดูข้อมูลผู้ใช้งาน
+            </button>
+        </a>
+        <a href="{% url 'verify_expert_list' %}">
+            <button class="bg-green-600 text-white px-6 py-3 rounded-lg shadow-md hover:bg-green-800 transition">
+                ✅ อนุมัติผู้เชี่ยวชาญ
+            </button>
+        </a>
+    </div>
+    {% endif %}
 </div>
+
 {% endblock %}
