@@ -11,10 +11,26 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {% for expert in experts %}
             <div class="bg-white rounded-lg shadow-md p-6 flex flex-col items-center">
-                <img src="{{ expert.image.url }}" alt="{{ expert.name }}" class="w-24 h-24 rounded-full mb-4 border-2 border-gray-300">
-                <h3 class="text-xl font-bold text-gray-800">{{ expert.name }}</h3>
+                <img src="{{ expert.profile_picture.url }}" alt="{{ expert.username }}" class="w-24 h-24 rounded-full mb-4 border-2 border-gray-300">
+                <h3 class="text-xl font-bold text-gray-800">{{ expert.username }}</h3>
                 <p class="text-gray-600">{{ expert.title }}</p>
-                <p class="text-gray-500 mt-4 text-sm italic">"{{ expert.review }}"</p>
+
+                <!-- แสดงรีวิวที่ผู้ใช้เคยให้ -->
+                <div class="text-gray-500 mt-4 text-sm italic">
+                    {% if reviews_by_expert.expert.id %}
+                        <ul>
+                            {% for review in reviews_by_expert.expert.id %}
+                                <li>
+                                    <strong>คะแนน:</strong> {{ review.rating }} ดาว<br>
+                                    <strong>ความคิดเห็น:</strong> {{ review.comment }}<br>
+                                    <small>{{ review.created_at|date:"d M Y" }}</small>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>ยังไม่มีรีวิวจากผู้ใช้</p>
+                    {% endif %}
+                </div>
             </div>
             {% endfor %}
         </div>

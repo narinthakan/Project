@@ -104,7 +104,7 @@ class Product(models.Model):
         return 0
 
 
-# โมเดลสำหรับรีวิว
+# โมเดลสำหรับรีวิวผลิตภัณฑ์
 class Review(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)  # ผู้เขียนรีวิว
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reviews')  # สินค้าที่ถูกรีวิว

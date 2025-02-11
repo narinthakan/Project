@@ -533,7 +533,6 @@ def upload_skin_view(request):
 
 
 
-
 def upload_success(request):
     return render(request, "upload_success.html")
 
@@ -605,8 +604,6 @@ def expert_view(request):
     return render(request, 'expert_view.html', {
         'skin_data_with_status': skin_data_with_status
     })
-
-   
     
 
 # ฟังก์ชันสำหรับดูรายละเอียดข้อมูลผิวหน้า
@@ -660,40 +657,7 @@ def expert_view_detail(request, user_id):
     })
 
 
-    
-    
-# ฟังก์ชันสำหรับรีวิวผู้เชี่ยวชาญ
-@login_required
-def review_expert(request, expert_id):
-    # ดึงข้อมูลผู้เชี่ยวชาญจาก ID
-    expert = get_object_or_404(User, id=expert_id)
 
-    # ตรวจสอบว่าผู้ใช้มีรีวิวอยู่แล้วหรือไม่
-    existing_review = ExpertReview.objects.filter(expert=expert, user=request.user).first()
-
-    if request.method == 'POST':
-        form = ExpertReviewForm(request.POST, instance=existing_review)  # ใช้ instance ถ้ามีรีวิวเดิม
-        if form.is_valid():
-            review = form.save(commit=False)
-            review.expert = expert
-            review.user = request.user
-            review.save()
-            messages.success(request, "รีวิวของคุณถูกบันทึกเรียบร้อยแล้ว!")
-            return redirect('general_advice')
-    else:
-        form = ExpertReviewForm(instance=existing_review)  # โหลดรีวิวเดิมถ้ามี
-
-    # ส่งข้อมูลไปยังเทมเพลต
-    return render(request, 'add-expert-review.html', {'form': form, 'expert': expert})
-
-
-# ฟังก์ชันสำหรับลบรีวิว
-@login_required
-def delete_review(request, review_id):
-    review = get_object_or_404(ExpertReview, id=review_id, user=request.user)
-    review.delete()
-    messages.success(request, "รีวิวของคุณถูกลบเรียบร้อยแล้ว!")
-    return redirect('general_advice')
 
 
 # ฟังก์ชันสำหรับแสดงข้อมูลผู้ใช้และรีวิวของผู้เชี่ยวชาญ
@@ -714,25 +678,7 @@ def general_advice(request):
     # ดึง "รีวิวที่ผู้ใช้เคยให้กับผู้เชี่ยวชาญ"
     expert_reviews = ExpertReview.objects.filter(user=request.user)
 
-    # จัดการการส่งรีวิว
-    if request.method == 'POST':
-        expert_id = request.POST.get('expert_id')  # ดึง ID ผู้เชี่ยวชาญที่รีวิว
-        rating = request.POST.get('rating')
-        comment = request.POST.get('comment')
-
-        if expert_id and rating and comment:
-            expert = get_object_or_404(User, id=expert_id)  # ดึงข้อมูลผู้เชี่ยวชาญ
-            ExpertReview.objects.create(
-                user=request.user,
-                expert=expert,
-                rating=rating,
-                comment=comment
-            )
-            messages.success(request, "รีวิวของคุณถูกบันทึกเรียบร้อยแล้ว!")
-            return redirect('general_advice')
-        else:
-            messages.error(request, "กรุณากรอกคะแนนและความคิดเห็นให้ครบถ้วน")
-
+    # ส่งข้อมูลไปยัง Template
     return render(request, 'general-advice.html', {
         'user_skin_data': user_skin_data,
         'expert_responses': expert_responses,
@@ -740,17 +686,71 @@ def general_advice(request):
         'expert_reviews': expert_reviews,
         'skin_data_without_response': skin_data_without_response,  # ข้อมูลที่ยังไม่ได้รับคำแนะนำ
     })
+    
+    
+# ฟังก์ชันสำหรับเพิ่มรีวิวผู้เชี่ยวชาญ
+@login_required
+def review_expert(request, expert_id):
+    # ดึงข้อมูลผู้เชี่ยวชาญจาก ID
+    expert = get_object_or_404(User, id=expert_id)
+    
+    # ตรวจสอบว่าผู้ใช้มีรีวิวอยู่แล้วหรือไม่
+    existing_review = ExpertReview.objects.filter(expert=expert, user=request.user).first()
+
+    if request.method == 'POST':
+        form = ExpertReviewForm(request.POST, instance=existing_review)
+        
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.expert = expert
+            review.user = request.user
+            review.save()
+            
+            messages.success(request, "รีวิวของคุณถูกบันทึกเรียบร้อยแล้ว!")
+            return redirect('general_advice')  # หรือสามารถ redirect ไปที่หน้ารีวิวที่ต้องการได้
+    else:
+        form = ExpertReviewForm(instance=existing_review)
+
+    return render(request, 'add_expert_review.html', {
+        'form': form,
+        'expert': expert,
+        'existing_review': existing_review  # เพิ่มข้อมูลรีวิวที่มีอยู่
+    })
 
 
 
+# ฟังก์ชันลบรีวิวผู้เชี่ยวชาญ
+@login_required
+def delete_expert_review(request, review_id):
+    review = get_object_or_404(ExpertReview, id=review_id, user=request.user)  # ตรวจสอบว่าเป็นเจ้าของรีวิว
+    if request.user == review.user:
+        review.delete()  # ลบรีวิว
+        messages.success(request, 'ความคิดเห็นของคุณถูกลบแล้ว')
+    else:
+        messages.error(request, 'คุณไม่สามารถลบความคิดเห็นนี้ได้')
+    return redirect('general_advice')  # กลับไปยังหน้าคำแนะนำ
 
 
+@login_required
+def review_list(request):
+    # ดึงข้อมูลผู้เชี่ยวชาญทั้งหมด
+    experts = User.objects.all()
 
+    # ดึงข้อมูลรีวิวของผู้เชี่ยวชาญ
+    expert_reviews = ExpertReview.objects.filter(expert__in=experts).select_related('expert', 'user')
 
+    # สร้างดิกชันนารีเพื่อเก็บรีวิวของผู้เชี่ยวชาญแต่ละคน
+    reviews_by_expert = {}
+    for review in expert_reviews:
+        if review.expert.id not in reviews_by_expert:
+            reviews_by_expert[review.expert.id] = []
+        reviews_by_expert[review.expert.id].append(review)
 
-
-
-
+    # ส่งข้อมูลไปยังเทมเพลต
+    return render(request, 'reviews.html', {
+        'experts': experts,
+        'reviews_by_expert': reviews_by_expert,  # ส่งดิกชันนารีนี้ไปยังเทมเพลต
+    })
 
 
 

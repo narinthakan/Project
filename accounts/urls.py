@@ -91,7 +91,7 @@ urlpatterns = [
     #เส้นทางสำหรับรีวิวผู้เชี่ยวชาญ
     path('review-expert/<int:expert_id>/', views.review_expert, name='review_expert'),
     path('expert-reviews/<int:expert_id>/', views.view_expert_reviews, name='view_expert_reviews'),
-    path('delete-review/<int:review_id>/', views.delete_review, name='delete_review'),
+    path('delete-review-review/<int:review_id>/', views.delete_review, name='delete_expert_review'),
     
     #เส้นทางสำหรับกรอกข้อมูลผิวหน้าของคุณ
     path('skin-data/', views.skin_data_form, name='skin_data_form'),
@@ -114,7 +114,7 @@ urlpatterns = [
     # สำหรับการแสดงหน้ารายละเอียดของผลิตภัณฑ์
     path('product/<int:product_id>/', views.product_detail, name='product_detail'),
 
-    # สำหรับการเพิ่มรีวิวและลบรีวิว
+    # สำหรับการเพิ่มรีวิวและลบรีวิวผลิตภัณฑ์
     path('product/<int:product_id>/review/', views.add_review, name='add_review'),
     path('delete_review/<int:review_id>/', views.delete_review, name='delete_review'),
 

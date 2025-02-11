@@ -17,8 +17,8 @@
             {% for seller in seller_to_verify %}
             <li class="mb-4 p-4 bg-white rounded-lg shadow-md">
                 <p><strong>ชื่อ: </strong>{{ seller.full_name }}</p>
-                <p><strong>ชื่อแบรนด์สินค้า: </strong>{{ Product brand name }}</p>
-                <p><strong>หมวดหมู่สินค้า: </strong>{{ Product category }}</p>
+                <p><strong>ชื่อแบรนด์สินค้า: </strong>{{ Product.brand_name }}</p>
+                <p><strong>หมวดหมู่สินค้า: </strong>{{ Product.category }}</p>
                 <a href="{% url 'verify_seller' seller.id %}">
                     <button class="bg-green-500 text-white px-4 py-2 rounded-full">ตรวจสอบ</button>
                 </a>

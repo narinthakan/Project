@@ -15,7 +15,7 @@
     <div class="max-w-4xl mx-auto bg-white p-8 rounded shadow">
         <h1 class="text-2xl font-bold mb-6 text-center text-blue-700">คำแนะนำจากผู้เชี่ยวชาญ</h1>
 
-        <!-- 🔹 ส่วนแสดงคำแนะนำจากผู้เชี่ยวชาญ -->
+        <!-- ส่วนแสดงคำแนะนำจากผู้เชี่ยวชาญ -->
         {% if expert_responses %}
             {% for response in expert_responses %}
             <div class="p-4 border rounded mb-6 bg-gray-50">
@@ -39,53 +39,23 @@
                 <p class="bg-blue-50 p-3 rounded text-gray-800">{{ response.response_text }}</p>
                 <p><strong>โดย:</strong> {{ response.expert.username }}</p>
                 <p class="text-sm text-gray-500">วันที่ตอบ: {{ response.created_at|date:"d M Y H:i" }}</p>
+
+                <!-- เพิ่มลิงก์รีวิวตรงนี้ -->
+                <div class="mt-4">
+                    <a href="{% url 'review_expert' response.expert.id %}" 
+                       class="bg-blue-500 text-white px-4 py-2 rounded inline-block">
+                        รีวิวผู้เชี่ยวชาญ {{ response.expert.username }}
+                    </a>
+                </div>
             </div>
             {% endfor %}
         {% else %}
-        <p class="text-gray-600">ยังไม่มีคำแนะนำจากผู้เชี่ยวชาญ</p>
+            <p class="text-gray-600">ยังไม่มีคำแนะนำจากผู้เชี่ยวชาญ</p>
         {% endif %}
 
         <hr class="my-8">
 
-        <!-- 🔹 ฟอร์มสำหรับรีวิวผู้เชี่ยวชาญ -->
-        <h2 class="text-xl font-bold mb-6 text-blue-700">รีวิวผู้เชี่ยวชาญ</h2>
-        {% if expert_responses %}
-            <form method="POST">
-                {% csrf_token %}
-                <div class="mb-4">
-                    <label for="expert_id" class="block text-gray-700 mb-2">เลือกผู้เชี่ยวชาญที่ต้องการรีวิว:</label>
-                    <select name="expert_id" id="expert_id" class="w-full border rounded p-2">
-                        {% for response in expert_responses %}
-                            <option value="{{ response.expert.id }}">{{ response.expert.username }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="mb-4">
-                    <label for="rating" class="block text-gray-700 mb-2">ให้คะแนน:</label>
-                    <select name="rating" id="rating" class="w-full border rounded p-2">
-                        <option value="5">5 ดาว</option>
-                        <option value="4">4 ดาว</option>
-                        <option value="3">3 ดาว</option>
-                        <option value="2">2 ดาว</option>
-                        <option value="1">1 ดาว</option>
-                    </select>
-                </div>
-
-                <div class="mb-4">
-                    <label for="comment" class="block text-gray-700 mb-2">แสดงความคิดเห็น:</label>
-                    <textarea name="comment" id="comment" rows="4" class="w-full border rounded p-2" placeholder="แสดงความคิดเห็นของคุณ..."></textarea>
-                </div>
-
-                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">ส่งรีวิว</button>
-            </form>
-        {% else %}
-            <p class="text-gray-600">คุณยังไม่ได้รับคำแนะนำจากผู้เชี่ยวชาญ จึงไม่สามารถรีวิวได้</p>
-        {% endif %}
-
-        <hr class="my-8">
-
-        <!-- 🔹 ส่วนแสดงรีวิว -->
+        <!-- ส่วนแสดงรีวิว -->
         <h2 class="text-xl font-bold mb-6 text-blue-700">ความคิดเห็นจากผู้ใช้งาน</h2>
         {% if expert_reviews %}
             {% for review in expert_reviews %}
@@ -108,6 +78,29 @@
         {% else %}
             <p class="text-gray-600">ยังไม่มีความคิดเห็นสำหรับผู้เชี่ยวชาญนี้</p>
         {% endif %}
+
+        <hr class="my-8">
+
+        <!-- ส่วนแสดงรีวิวผู้เชี่ยวชาญ -->
+        <div class="mt-8">
+            <h2 class="text-xl font-bold mb-4 text-blue-700">รีวิวผู้เชี่ยวชาญ</h2>
+            
+            {% if experts_reviewable %}
+                <div class="space-y-4">
+                    {% for expert in experts_reviewable %}
+                        <div class="p-4 border rounded">
+                            <p class="font-medium">{{ expert.username }}</p>
+                            <a href="{% url 'review_expert' expert.id %}" 
+                               class="mt-2 inline-block bg-blue-500 text-white px-4 py-2 rounded">
+                                เขียนรีวิว
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>ยังไม่มีผู้เชี่ยวชาญที่สามารถรีวิวได้</p>
+            {% endif %}
+        </div>
     </div>
 </body>
 </html>
