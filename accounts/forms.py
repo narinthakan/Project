@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from .models import Profile, Product, Expert, Seller, SkinUpload, SkinProfile, ExpertResponse,Category,SkinData,ExpertReview
+from .models import Profile, Product, Expert, Seller, SkinUpload, SkinProfile, ExpertResponse,Category,SkinData,ExpertReview,ExpertArticle
 
 
 # ฟอร์มสำหรับการลงทะเบียนผู้ใช้ (User)
@@ -235,3 +235,9 @@ class ExpertReviewForm(forms.ModelForm):
             'rating': forms.NumberInput(attrs={'min': 1, 'max': 5, 'class': 'form-control'}),
             'comment': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'เขียนความเห็นของคุณ'}),
         }
+        
+#สำหรับเพิ่มหรือแก้ไขบทความผู้เชี่ยวชาญ
+class ExpertArticleForm(forms.ModelForm):
+    class Meta:
+        model = ExpertArticle
+        fields = ['title', 'content', 'image', 'description', 'how_to_check']

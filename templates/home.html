@@ -14,33 +14,43 @@
 <!-- Content Section -->
 <div class="bg-blue-100 py-10">
     <h2 class="text-center text-2xl font-bold mb-6">บทความเกี่ยวกับการดูแลผิวหน้า</h2>
-    
-    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
-        <a href="{% url 'normal_skin' %}" class="bg-gray-300 text-center py-3 rounded-lg shadow-md hover:bg-gray-400 transition">ผิวธรรมดา (Normal Skin)</a>
-        <a href="{% url 'oily_skin' %}" class="bg-gray-300 text-center py-3 rounded-lg shadow-md hover:bg-gray-400 transition">ผิวมัน (Oily Skin)</a>
-        <a href="{% url 'dry_skin' %}" class="bg-gray-300 text-center py-3 rounded-lg shadow-md hover:bg-gray-400 transition">ผิวแห้ง (Dry Skin)</a>
-        <a href="{% url 'combination_skin' %}" class="bg-gray-300 text-center py-3 rounded-lg shadow-md hover:bg-gray-400 transition">ผิวผสม (Combination Skin)</a>
-        <a href="{% url 'sensitive_skin' %}" class="bg-gray-300 text-center py-3 rounded-lg shadow-md hover:bg-gray-400 transition">ผิวแพ้ง่าย (Sensitive Skin)</a>
+
+    <!-- ปุ่มเลือกประเภทบทความ -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 px-6">
+        <a href="{% url 'articles_web' %}">
+            <button class="bg-blue-400 text-white font-semibold text-lg px-10 py-12 rounded-xl shadow-md hover:bg-blue-500 transition-all duration-300 w-full flex items-center justify-center">
+                📖 บทความจากเว็บ
+            </button>
+        </a>
+        <a href="{% url 'articles_expert' %}">
+            <button class="bg-blue-400 text-white font-semibold text-lg px-10 py-12 rounded-xl shadow-md hover:bg-blue-500 transition-all duration-300 w-full flex items-center justify-center">
+                🧑‍⚕️ บทความจากผู้เชี่ยวชาญ
+            </button>
+        </a>
     </div>
+</div>
+
+
+
 
     <!-- ปุ่มให้แอดมินดูข้อมูลผู้ใช้และอนุมัติผู้เชี่ยวชาญ -->
     {% if user.is_authenticated and user.is_staff %}
     <div class="w-full flex justify-center mt-6 space-x-4">
         <a href="{% url 'admin_user_list' %}">
-            <button class="bg-blue-600 text-white px-6 py-3 rounded-lg shadow-md hover:bg-blue-800 transition">
+            <button class="bg-transparent text-blue-600 font-semibold text-lg px-6 py-3 rounded-lg border border-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-300">
                 👤 ดูข้อมูลผู้ใช้งาน
             </button>
         </a>
         <a href="{% url 'verify_expert_list' %}">
-            <button class="bg-green-600 text-white px-6 py-3 rounded-lg shadow-md hover:bg-green-800 transition">
+            <button class="bg-transparent text-green-600 font-semibold text-lg px-6 py-3 rounded-lg border border-green-600 hover:bg-green-600 hover:text-white transition-all duration-300">
                 ✅ อนุมัติผู้เชี่ยวชาญ
             </button>
         </a>
         <a href="{% url 'verify_seller_list' %}">
-            <button class="bg-yellow-600 text-white px-6 py-3 rounded-lg shadow-md hover:bg-yellow-800 transition">
+            <button class="bg-transparent text-yellow-600 font-semibold text-lg px-6 py-3 rounded-lg border border-yellow-600 hover:bg-yellow-600 hover:text-white transition-all duration-300">
                 🛒 อนุมัติผู้ขาย
             </button>
-        </a    
+        </a>
     </div>
     {% endif %}
 </div>

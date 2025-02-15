@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-{% load static %}
 
 {% block title %}รีวิวผู้เชี่ยวชาญ - Essence The Beauty{% endblock %}
 
@@ -11,15 +10,16 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {% for expert in experts %}
             <div class="bg-white rounded-lg shadow-md p-6 flex flex-col items-center">
+                <!-- แสดงภาพโปรไฟล์ของผู้เชี่ยวชาญ -->
                 <img src="{{ expert.profile_picture.url }}" alt="{{ expert.username }}" class="w-24 h-24 rounded-full mb-4 border-2 border-gray-300">
                 <h3 class="text-xl font-bold text-gray-800">{{ expert.username }}</h3>
                 <p class="text-gray-600">{{ expert.title }}</p>
 
-                <!-- แสดงรีวิวที่ผู้ใช้เคยให้ -->
-                <div class="text-gray-500 mt-4 text-sm italic">
-                    {% if reviews_by_expert.expert.id %}
+                <!-- ตรวจสอบว่ามีรีวิว -->
+                {% if expert.id in reviews_by_expert and reviews_by_expert|length > 0 %}
+                    <div class="text-gray-500 mt-4 text-sm italic">
                         <ul>
-                            {% for review in reviews_by_expert.expert.id %}
+                            {% for review in reviews_by_expert|dictsort:expert.id %}
                                 <li>
                                     <strong>คะแนน:</strong> {{ review.rating }} ดาว<br>
                                     <strong>ความคิดเห็น:</strong> {{ review.comment }}<br>
@@ -27,10 +27,10 @@
                                 </li>
                             {% endfor %}
                         </ul>
-                    {% else %}
-                        <p>ยังไม่มีรีวิวจากผู้ใช้</p>
-                    {% endif %}
-                </div>
+                    </div>
+                {% else %}
+                    <p>ยังไม่มีรีวิวจากผู้ใช้</p>
+                {% endif %}
             </div>
             {% endfor %}
         </div>

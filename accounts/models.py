@@ -189,3 +189,42 @@ class SkinProfile(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.skin_type}"
 
+# สำหรับบทความของผู้เชี่ยวชาญ
+class ExpertArticle(models.Model):
+    expert = models.ForeignKey(User, on_delete=models.CASCADE)
+    title = models.CharField(max_length=100)
+    content = models.TextField()
+    image = models.ImageField(upload_to='articles/', null=True, blank=True)  # ฟิลด์สำหรับอัปโหลดรูป
+    description = models.TextField(null=True, blank=True)  # ฟิลด์สำหรับคำอธิบาย
+    how_to_check = models.TextField(null=True, blank=True)  # ฟิลด์สำหรับวิธีเช็ค
+
+    def __str__(self):
+        return self.title
+    
+# โมเดลสำหรับเก็บรีวิวของผู้เชี่ยวชาญ
+class ExpertReview(models.Model):
+    expert = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviews')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_reviews')
+    rating = models.PositiveIntegerField()  # คะแนน (1-5 ดาว)
+    comment = models.TextField(blank=True, null=True)  # ความคิดเห็น
+    created_at = models.DateTimeField(auto_now_add=True)  # วันที่รีวิว
+
+    def __str__(self):
+        return f"Review by {self.user.username} for {self.expert.username}"
+
+# โมเดลสำหรับเกียรติบัตร
+class Certificate(models.Model):
+    expert = models.OneToOneField(User, on_delete=models.CASCADE, related_name="certificate")
+    certification_level = models.CharField(max_length=50)  # Gold, Silver, Bronze, Top-rated
+    average_rating = models.FloatField()
+    total_reviews = models.PositiveIntegerField()
+    issue_date = models.DateField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Certificate for {self.expert.username} - {self.certification_level}"
+
+    def is_eligible_for_certificate(self):
+        # ตรวจสอบว่าได้รับคะแนนรีวิว 4-5 และจำนวนรีวิวขั้นต่ำ 30 รีวิว
+        if self.average_rating >= 4 and self.total_reviews >= 30:
+            return True
+        return False

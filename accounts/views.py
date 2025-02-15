@@ -6,12 +6,14 @@ from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.contrib import messages
 from django.conf import settings,os
-from .forms import RegistrationForm,LoginForm,ProfileForm,ProductForm,ExpertLoginForm,ExpertVerificationForm,SellerRegistrationForm,ExpertRegistrationForm,ExpertProfileForm,SkinDataForm,ExpertResponseForm,ExpertReviewForm,SkinImageForm
-from .models import Product, Profile, Review, User, Expert, Seller, SkinUpload, SkinProfile, SkinData, ExpertResponse,ExpertReview,SkinImage
+from django.db.models import Avg, Count
+from .forms import RegistrationForm,LoginForm,ProfileForm,ProductForm,ExpertLoginForm,ExpertVerificationForm,SellerRegistrationForm,ExpertRegistrationForm,ExpertProfileForm,SkinDataForm,ExpertResponseForm,ExpertReviewForm,SkinImageForm,ExpertArticleForm
+from .models import Product, Profile, Review, User, Expert, Seller, SkinUpload, SkinProfile, SkinData, ExpertResponse,ExpertReview,SkinImage,ExpertArticle,Certificate
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from django.utils import timezone
 import base64
 import uuid
 
@@ -130,8 +132,6 @@ def search_products(request):
         'products': results,  # ส่งผลลัพธ์ไปที่เทมเพลต
         'query': query,  # ส่งคำค้นไปเพื่อแสดงผล
     })
-    
-
     
     
 # ฟังก์ชันสำหรับการสมัครสมาชิก
@@ -658,8 +658,6 @@ def expert_view_detail(request, user_id):
 
 
 
-
-
 # ฟังก์ชันสำหรับแสดงข้อมูลผู้ใช้และรีวิวของผู้เชี่ยวชาญ
 @login_required
 def general_advice(request):
@@ -691,7 +689,6 @@ def general_advice(request):
 # ฟังก์ชันสำหรับเพิ่มรีวิวผู้เชี่ยวชาญ
 @login_required
 def review_expert(request, expert_id):
-    # ดึงข้อมูลผู้เชี่ยวชาญจาก ID
     expert = get_object_or_404(User, id=expert_id)
     
     # ตรวจสอบว่าผู้ใช้มีรีวิวอยู่แล้วหรือไม่
@@ -707,7 +704,7 @@ def review_expert(request, expert_id):
             review.save()
             
             messages.success(request, "รีวิวของคุณถูกบันทึกเรียบร้อยแล้ว!")
-            return redirect('general_advice')  # หรือสามารถ redirect ไปที่หน้ารีวิวที่ต้องการได้
+            return redirect('review_list')  # เปลี่ยนไปหน้ารีวิวที่แสดงทั้งหมด
     else:
         form = ExpertReviewForm(instance=existing_review)
 
@@ -733,25 +730,29 @@ def delete_expert_review(request, review_id):
 
 @login_required
 def review_list(request):
-    # ดึงข้อมูลผู้เชี่ยวชาญทั้งหมด
-    experts = User.objects.all()
+    # ดึงเฉพาะผู้เชี่ยวชาญที่มีรีวิว
+    experts = User.objects.filter(expertreview__isnull=False).distinct()
 
-    # ดึงข้อมูลรีวิวของผู้เชี่ยวชาญ
-    expert_reviews = ExpertReview.objects.filter(expert__in=experts).select_related('expert', 'user')
+    # ดึงข้อมูลรีวิวทั้งหมด
+    expert_reviews = ExpertReview.objects.select_related('expert', 'user')
 
-    # สร้างดิกชันนารีเพื่อเก็บรีวิวของผู้เชี่ยวชาญแต่ละคน
+    # จัดกลุ่มรีวิวตาม expert_id
     reviews_by_expert = {}
+    for expert in experts:
+        reviews_by_expert[expert.id] = []
+    # ดิกชันนารี
     for review in expert_reviews:
-        if review.expert.id not in reviews_by_expert:
-            reviews_by_expert[review.expert.id] = []
-        reviews_by_expert[review.expert.id].append(review)
+        if review.expert.id in reviews_by_expert:
+            reviews_by_expert[review.expert.id].append(review)
 
-    # ส่งข้อมูลไปยังเทมเพลต
+    # Debug log
+    print("Experts:", list(experts.values("id", "username")))
+    print("Reviews By Expert:", {k: len(v) for k, v in reviews_by_expert.items()})
+
     return render(request, 'reviews.html', {
         'experts': experts,
-        'reviews_by_expert': reviews_by_expert,  # ส่งดิกชันนารีนี้ไปยังเทมเพลต
+        'reviews_by_expert': reviews_by_expert,
     })
-
 
 
 
@@ -763,7 +764,51 @@ def view_expert_reviews(request, expert_id):
      return render(request, 'expert_reviews.html', {'expert': expert, 'reviews': reviews})
 
 
+#ฟังก์ชันคำนวณคะแนนรีวิวและการออกใบเกียรติบัตร
+def generate_certificate_for_expert(expert):
+    # คำนวณคะแนนเฉลี่ยและจำนวนรีวิวของผู้เชี่ยวชาญ
+    reviews = ExpertReview.objects.filter(expert=expert)
+    # คำนวณคะแนนเฉลี่ยจากฟิลด์ rating
+    average_rating = reviews.aggregate(Avg('rating'))['rating__avg']
+    # คำนวณจำนวนรีวิวที่มี
+    total_reviews = reviews.aggregate(Count('id'))['id__count']
+
+    if average_rating >= 4 and total_reviews >= 30:
+        # กำหนดระดับเกียรติบัตร
+        if average_rating >= 4.5:
+            certification_level = "Gold"
+        elif average_rating >= 4:
+            certification_level = "Silver"
+        else:
+            certification_level = "Bronze"
+
+        # สร้างใบเกียรติบัตร
+        certificate = Certificate.objects.create(
+            expert=expert,
+            certification_level=certification_level,
+            average_rating=average_rating,
+            total_reviews=total_reviews,
+            issue_date=timezone.now()
+        )
+
+        return certificate
+    else:
+        return None
+
+#ฟังก์ชันการแสดงใบเกียรติบัตรในหน้าเว็บ
+@login_required
+def expert_certificate_view(request):
+    try:
+        # ดึงใบเกียรติบัตรของผู้เชี่ยวชาญที่ล็อกอินอยู่
+        certificate = Certificate.objects.get(expert=request.user)
+    except Certificate.DoesNotExist:
+        certificate = None
+
+    # ส่งข้อมูลไปที่เทมเพลต
+    return render(request, 'expert_certificate.html', {'certificate': certificate})
     
+# เหลือฟังชันดาวน์โหลดใบเกียรติบัตรเป็น PDF
+
 #ฟังก์ชันสำหรับแสดงข้อมูลผิวหน้าจากผู้เชี่ยวชาญตอบกลับ
 @login_required
 def general_advice(request):
@@ -835,8 +880,64 @@ def logout_view(request):
     logout(request)
     return redirect('home')
 
-# ฟังก์ชันแก้ไขบทความ
+# ฟังก์ชันบทความ
+def articles_web(request):
+    return render(request, "articles_web.html")
 
+# ฟังก์ชันบทความของผู้เชี่ยวชาญ
+def articles_expert(request):
+    """ แสดงรายการบทความของผู้เชี่ยวชาญ """
+    # ผู้ใช้ที่ไม่ล็อกอินก็สามารถดูบทความได้
+    articles = ExpertArticle.objects.all()  # ดึงข้อมูลบทความทั้งหมด
+    return render(request, "articles_expert.html", {"articles": articles})
+
+def load_article(request, article):
+    return render(request, f"{article}.html")
+
+# ฟังก์ชันเพิ่มบทความ
+@login_required
+@user_passes_test(is_expert)
+def add_expert_article(request):
+    if request.method == 'POST':
+        form = ExpertArticleForm(request.POST, request.FILES)  # ใช้ request.FILES สำหรับการอัปโหลดไฟล์
+        if form.is_valid():
+            article = form.save(commit=False)
+            article.expert = request.user  # กำหนดผู้เขียนเป็นผู้เชี่ยวชาญที่เข้าสู่ระบบ
+            article.save()
+            return redirect('articles_expert')  # ไปยังหน้าบทความของผู้เชี่ยวชาญ
+    else:
+        form = ExpertArticleForm()
+    return render(request, 'add_expert_article.html', {'form': form})
+
+# ฟังก์ชันแก้ไขบทความ
+@login_required
+@user_passes_test(is_expert)
+def edit_expert_article(request, article_id):
+    """ แก้ไขบทความ """
+    article = get_object_or_404(ExpertArticle, id=article_id, expert=request.user)
+    if request.method == "POST":
+        form = ExpertArticleForm(request.POST, instance=article)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "แก้ไขบทความเรียบร้อยแล้ว!")
+            return redirect("articles_expert")
+    else:
+        form = ExpertArticleForm(instance=article)
+
+    return render(request, "edit_expert_article.html", {"form": form, "article": article})
+
+# ฟังก์ชันลบบทความ
+@login_required
+@user_passes_test(is_expert)
+def delete_expert_article(request, article_id):
+    """ ลบบทความ """
+    article = get_object_or_404(ExpertArticle, id=article_id, expert=request.user)
+    if request.method == "POST":
+        article.delete()
+        messages.success(request, "ลบบทความเรียบร้อยแล้ว!")
+        return redirect("articles_expert")
+
+    return render(request, "delete_expert_article.html", {"article": article})
 
 # ฟังก์ชันแสดงหน้าโปรไฟล์
 '''

@@ -3,7 +3,7 @@ from . import views
 from django.contrib.auth import views as auth_views  # นำเข้าฟังก์ชันการเข้าสู่ระบบและออกจากระบบจาก Django
 from django.conf import settings
 from django.conf.urls.static import static
-from .views import expert_login, seller_login, register_seller, expert_view, admin_user_list, admin_view_user_profile, verify_expert, verify_seller,upload_success
+from .views import expert_login, seller_login, register_seller, expert_view, admin_user_list, admin_view_user_profile, verify_expert, verify_seller,upload_success, expert_certificate_view
 
 urlpatterns = [
     # เส้นทางสำหรับการสมัครสมาชิก
@@ -59,15 +59,27 @@ urlpatterns = [
     # เส้นทางสำหรับหน้าแดชบอร์ด
     path('dashboard/', views.user_dashboard, name='user_dashboard'),
 
-    # เส้นทางหน้าผลิตภัณฑ์และบทความเกี่ยวกับการดูแลผิว
+    # เส้นทางหน้าผลิตภัณฑ์
     path('products/', views.products_views, name='products'),
+    
+    # เส้นบทความเกี่ยวกับการดูแลผิว
+    path('articles-web/', views.articles_web, name='articles_web'),
+    path('articles-web/<str:article>/', views.load_article, name='load_article'),
     path('normal-skin/', views.normal_skin_view, name='normal_skin'),
     path('oily-skin/', views.oily_skin_view, name='oily_skin'),
     path('dry-skin/', views.dry_skin_view, name='dry_skin'),
     path('combination-skin/', views.combination_skin_view, name='combination_skin'),
     path('sensitive-skin/', views.sensitive_skin_view, name='sensitive_skin'),
     
-    # เส้นทางสำหรับแก้ไขบทความ
+    # เส้นทางสำหรับบทความของผู้เชี่ยวชาญ
+    path('articles-expert/', views.articles_expert, name='articles_expert'),
+    path('articles-expert/add/', views.add_expert_article, name='add_expert_article'),
+    path('articles-expert/edit/<int:article_id>/', views.edit_expert_article, name='edit_expert_article'),
+    path('articles-expert/delete/<int:article_id>/', views.delete_expert_article, name='delete_expert_article'),
+    
+    # เส้นทางสำหรับบทความ
+    path('articles-web/', views.articles_web, name='articles_web'),
+    path('articles-expert/', views.articles_expert, name='articles_expert'),
     
 
     # เส้นทางหน้าวิเคราะห์และรีวิว
@@ -92,6 +104,9 @@ urlpatterns = [
     path('review-expert/<int:expert_id>/', views.review_expert, name='review_expert'),
     path('expert-reviews/<int:expert_id>/', views.view_expert_reviews, name='view_expert_reviews'),
     path('delete-review-review/<int:review_id>/', views.delete_review, name='delete_expert_review'),
+    
+    #เส้นทางสำหรับใบเกียรติบัตรผู้เชี่ยวชาญ
+    path('expert-certificate/', expert_certificate_view, name='expert_certificate_view'),
     
     #เส้นทางสำหรับกรอกข้อมูลผิวหน้าของคุณ
     path('skin-data/', views.skin_data_form, name='skin_data_form'),

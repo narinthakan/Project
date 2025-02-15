@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% load static %}  <!-- ✅ โหลด static ให้ถูกต้อง -->
+
+{% block title %}บทความจากเว็บ - Essence The Beauty{% endblock %}
+
+{% block content %}
+<section class="flex flex-col items-center min-h-screen">
+    <h2 class="text-lg font-bold mb-8 text-center">บทความจากเว็บเกี่ยวกับประเภทผิว</h2>
+
+    <!-- ปุ่มสำหรับบทความแต่ละประเภท -->
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
+        <a href="{% url 'normal_skin' %}" class="bg-gray-300 text-center py-3 rounded-lg shadow-md hover:bg-gray-400 transition">ผิวธรรมดา (Normal Skin)</a>
+        <a href="{% url 'oily_skin' %}" class="bg-gray-300 text-center py-3 rounded-lg shadow-md hover:bg-gray-400 transition">ผิวมัน (Oily Skin)</a>
+        <a href="{% url 'dry_skin' %}" class="bg-gray-300 text-center py-3 rounded-lg shadow-md hover:bg-gray-400 transition">ผิวแห้ง (Dry Skin)</a>
+        <a href="{% url 'combination_skin' %}" class="bg-gray-300 text-center py-3 rounded-lg shadow-md hover:bg-gray-400 transition">ผิวผสม (Combination Skin)</a>
+        <a href="{% url 'sensitive_skin' %}" class="bg-gray-300 text-center py-3 rounded-lg shadow-md hover:bg-gray-400 transition">ผิวแพ้ง่าย (Sensitive Skin)</a>
+    </div>
+</section>
+{% endblock %}

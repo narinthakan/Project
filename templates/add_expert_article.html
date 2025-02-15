@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}เพิ่มบทความใหม่{% endblock %}
+
+{% block content %}
+<div class="container mx-auto mt-6">
+    <h2 class="text-center text-2xl font-bold mb-4">เพิ่มบทความใหม่</h2>
+    
+    <form method="post" enctype="multipart/form-data" class="bg-white p-6 rounded-lg shadow-md w-3/4 mx-auto">
+        {% csrf_token %}
+        
+        <!-- ชื่อบทความ -->
+        <div class="mb-4">
+            <label for="title" class="block text-gray-700 mb-2">ชื่อบทความ:</label>
+            <textarea name="title" id="title" rows="4" class="w-full border rounded p-2">{{ form.title.value }}</textarea>
+            {{ form.title }}  <!-- แสดงฟิลด์ title -->
+        </div>
+        
+        <!-- ฟิลด์สำหรับคำอธิบาย -->
+        <div class="mb-4">
+            <label for="description" class="block text-gray-700 mb-2">คำอธิบาย:</label>
+            <textarea name="description" id="description" rows="4" class="w-full border rounded p-2">{{ form.description.value }}</textarea>
+        </div>
+
+        <!-- ฟิลด์สำหรับวิธีเช็ค -->
+        <div class="mb-4">
+            <label for="how_to_check" class="block text-gray-700 mb-2">วิธีเช็ค:</label>
+            <textarea name="how_to_check" id="how_to_check" rows="4" class="w-full border rounded p-2">{{ form.how_to_check.value }}</textarea>
+        </div>
+
+        <!-- ฟิลด์สำหรับรูปภาพ -->
+        <div class="mb-4">
+            <label for="image" class="block text-gray-700 mb-2">อัปโหลดภาพ:</label>
+            <input type="file" name="image" id="image" class="w-full border rounded p-2">
+        </div>
+        
+        <!-- ฟิลด์สำหรับเนื้อหาบทความ -->
+        {{ form.content }}
+
+        <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded-md">💾 บันทึก</button>
+    </form>
+</div>
+{% endblock %}

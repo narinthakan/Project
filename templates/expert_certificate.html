@@ -1,0 +1,104 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ใบเกียรติบัตรผู้เชี่ยวชาญ</title>
+    <style>
+        body {
+            font-family: 'Kanit', sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background-color: #F8F8F8;
+        }
+
+        .certificate-container {
+            border: 10px solid #E2E8F0;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 900px;
+            margin: 50px auto;
+            background-color: #FFFFFF;
+        }
+
+        .certificate-header {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+
+        .certificate-header img {
+            width: 100px;
+            height: auto;
+        }
+
+        .certificate-title {
+            font-size: 30px;
+            font-weight: bold;
+            color: #3182CE;
+            margin-top: 20px;
+        }
+
+        .certificate-body {
+            font-size: 20px;
+            margin-top: 40px;
+        }
+
+        .certificate-body p {
+            margin: 20px 0;
+        }
+
+        .certificate-footer {
+            margin-top: 60px;
+            font-size: 18px;
+            font-style: italic;
+            color: #555;
+        }
+
+        .bold {
+            font-weight: bold;
+        }
+
+        .divider {
+            margin: 40px 0;
+            border-bottom: 1px solid #D1D5DB;
+            width: 80%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="certificate-container">
+        <!-- โลโก้เว็บ -->
+        <div class="certificate-header">
+            <img src="{% static 'images/EssenceTheBeauty_Logo.png' %}" alt="Essence The Beauty Logo">
+        </div>
+
+        <!-- ชื่อใบเกียรติบัตร -->
+        <div class="certificate-title">
+            ใบเกียรติบัตรผู้เชี่ยวชาญ
+        </div>
+
+        <!-- ข้อมูลของผู้เชี่ยวชาญ -->
+        <div class="certificate-body">
+            <p><span class="bold">ชื่อผู้เชี่ยวชาญ:</span> {{ certificate.expert.username }}</p>
+            <p><span class="bold">ระดับใบเกียรติบัตร:</span> {{ certificate.certification_level }}</p>
+            <p><span class="bold">คะแนนเฉลี่ย:</span> {{ certificate.average_rating }}</p>
+            <p><span class="bold">จำนวนรีวิว:</span> {{ certificate.total_reviews }}</p>
+            <p><span class="bold">วันที่ออกใบเกียรติบัตร:</span> {{ certificate.issue_date|date:"d M Y" }}</p>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- ข้อความขอบคุณ -->
+        <div class="certificate-footer">
+            ขอบคุณที่ให้บริการอย่างยอดเยี่ยม
+        </div>
+    </div>
+
+</body>
+</html>

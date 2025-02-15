@@ -3,6 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <title>รีวิวผู้เชี่ยวชาญ</title>
+    <!-- เพิ่ม Font Awesome สำหรับไอคอนดาว -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+    <style>
+        /* ใช้ CSS เพื่อแสดงดาว */
+        .stars {
+            display: flex;
+            direction: row;
+        }
+        .stars i {
+            color: gold;
+            font-size: 30px; /* เพิ่มขนาดไอคอนดาวให้ใหญ่ขึ้น */
+            cursor: pointer;
+        }
+        .stars i.fa-star-o {
+            color: #ccc; /* เปลี่ยนสีของดาวที่ไม่ได้เลือก */
+        }
+        .stars i:hover,
+        .stars i:hover ~ i {
+            color: #ffcc00; /* เมื่อ hover ให้เปลี่ยนเป็นสีทอง */
+        }
+    </style>
 </head>
 <body>
     <h1>รีวิวผู้เชี่ยวชาญ: {{ expert.username }}</h1>
@@ -10,7 +31,41 @@
     <form method="POST">
         {% csrf_token %}
         {{ form.as_p }}
+        
+        <!-- แสดงดาวสำหรับการเลือก -->
+        <div class="stars">
+            {% for i in range(1, 6) %}
+                <i class="fa {% if review.rating >= i %}fa-star{% else %}fa-star-o{% endif %}" data-index="{{ i }}"></i>
+            {% endfor %}
+        </div>
+
+        <input type="hidden" name="rating" id="rating-input" value="{{ review.rating }}">
+
         <button type="submit">ส่งรีวิว</button>
     </form>
+
+    <script>
+        // เพิ่มฟังก์ชันเพื่อให้ผู้ใช้สามารถคลิกดาวเพื่อเลือกคะแนน
+        const stars = document.querySelectorAll('.stars i');
+        const ratingInput = document.getElementById('rating-input');
+
+        stars.forEach(star => {
+            star.addEventListener('click', function() {
+                const index = this.getAttribute('data-index');
+                ratingInput.value = index;
+
+                // เปลี่ยนสถานะของดาว
+                stars.forEach((star, i) => {
+                    if (i < index) {
+                        star.classList.remove('fa-star-o');
+                        star.classList.add('fa-star');
+                    } else {
+                        star.classList.remove('fa-star');
+                        star.classList.add('fa-star-o');
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>

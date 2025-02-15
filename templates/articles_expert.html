@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}บทความของผู้เชี่ยวชาญ{% endblock %}
+
+{% block content %}
+    <div class="container mx-auto mt-6">
+        <h2 class="text-center text-2xl font-bold mb-4">บทความของผู้เชี่ยวชาญ</h2>
+
+        <!-- เฉพาะผู้เชี่ยวชาญที่สามารถเห็นปุ่มเพิ่มบทความ -->
+        {% if is_expert %}
+            <div class="text-center mb-4">
+                <a href="{% url 'add_expert_article' %}">
+                    <button class="bg-blue-500 text-white px-4 py-2 rounded-md">เพิ่มบทความใหม่</button>
+                </a>
+            </div>
+        {% endif %}
+        
+        <!-- แสดงบทความของผู้เชี่ยวชาญ -->
+        <div class="space-y-4">
+            {% for article in articles %}
+                <div class="bg-white p-4 rounded-lg shadow-md">
+                    <h3 class="text-xl font-bold">{{ article.title }}</h3>
+                    <p>{{ article.description }}</p>
+                    <p><strong>โดย:</strong> {{ article.expert.full_name }}</p> <!-- แสดงชื่อผู้เชี่ยวชาญ -->
+                    <a href="{% url 'load_article' article.id %}" class="text-blue-600">อ่านเพิ่มเติม</a>
+                    
+                    <!-- เฉพาะผู้เชี่ยวชาญที่เป็นเจ้าของบทความสามารถแก้ไขหรือลบได้ -->
+                    {% if article.expert == request.user %}
+                        <div class="mt-2">
+                            <a href="{% url 'edit_expert_article' article.id %}" class="text-green-500">แก้ไข</a> | 
+                            <a href="{% url 'delete_expert_article' article.id %}" class="text-red-500">ลบ</a>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

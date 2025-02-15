@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}ลบบทความ{% endblock %}
+
+{% block content %}
+<div class="container mx-auto mt-6">
+    <h2 class="text-center text-2xl font-bold mb-4">ยืนยันการลบ</h2>
+    <p class="text-center text-gray-700">คุณแน่ใจหรือไม่ว่าต้องการลบบทความ "<strong>{{ article.title }}</strong>"?</p>
+    
+    <form method="post" class="text-center mt-4">
+        {% csrf_token %}
+        <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded-md">🗑️ ลบ</button>
+        <a href="{% url 'articles_expert' %}" class="text-gray-500 ml-4">ยกเลิก</a>
+    </form>
+</div>
+{% endblock %}

@@ -82,6 +82,20 @@
             background-color: #2B6CB0;
         }
 
+        /* Certificate Button */
+        .certificate-button {
+            margin-top: 20px;
+            background-color: #38A169;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .certificate-button:hover {
+            background-color: #2F855A;
+        }
     </style>
 </head>
 <body class="bg-blue-100">
@@ -126,10 +140,18 @@
                 </div>
             </div>
         </div>
+        
+        <!-- เพิ่มปุ่มดูใบเกียรติบัตร -->
+        <div class="flex justify-center mt-8">
+            <a href="{% url 'expert_certificate_view' %}" class="certificate-button">
+                ดูใบเกียรติบัตรของคุณ
+            </a>
+        </div>
     </div>
 
-    <!-- ปุ่มแก้ไขข้อมูลส่วนตัว ข้างล่างช่องสี่เหลี่ยม -->
+    <!-- ปุ่มแก้ไขข้อมูลส่วนตัว -->
     <div class="text-center mt-4">
         <a href="{% url 'edit_expert_profile' %}" class="edit-button">แก้ไขข้อมูลส่วนตัว</a>
     </div>
+</body>
 </html>
