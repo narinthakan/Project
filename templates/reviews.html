@@ -5,32 +5,20 @@
 {% block content %}
 <main class="p-6">
     <section class="text-center">
-        <h2 class="text-2xl font-bold mb-6">รีวิวผู้เชี่ยวชาญ</h2>
-        
+        <h2 class="text-2xl font-bold mb-6">ผู้เชี่ยวชาญ</h2>
+
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {% for expert in experts %}
             <div class="bg-white rounded-lg shadow-md p-6 flex flex-col items-center">
-                <!-- แสดงภาพโปรไฟล์ของผู้เชี่ยวชาญ -->
                 <img src="{{ expert.profile_picture.url }}" alt="{{ expert.username }}" class="w-24 h-24 rounded-full mb-4 border-2 border-gray-300">
                 <h3 class="text-xl font-bold text-gray-800">{{ expert.username }}</h3>
-                <p class="text-gray-600">{{ expert.title }}</p>
+                <p class="text-gray-500">{{ expert.title }}</p>
 
-                <!-- ตรวจสอบว่ามีรีวิว -->
-                {% if expert.id in reviews_by_expert and reviews_by_expert|length > 0 %}
-                    <div class="text-gray-500 mt-4 text-sm italic">
-                        <ul>
-                            {% for review in reviews_by_expert|dictsort:expert.id %}
-                                <li>
-                                    <strong>คะแนน:</strong> {{ review.rating }} ดาว<br>
-                                    <strong>ความคิดเห็น:</strong> {{ review.comment }}<br>
-                                    <small>{{ review.created_at|date:"d M Y" }}</small>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                {% else %}
-                    <p>ยังไม่มีรีวิวจากผู้ใช้</p>
-                {% endif %}
+                <!-- คลิกเพื่อดูรายละเอียดรีวิวของ expert คนนี้ -->
+                <a href="{% url 'expert_detail' expert.id %}"
+                   class="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                   ดูรีวิว
+                </a>
             </div>
             {% endfor %}
         </div>

@@ -3,69 +3,138 @@
 <head>
     <meta charset="UTF-8">
     <title>รีวิวผู้เชี่ยวชาญ</title>
-    <!-- เพิ่ม Font Awesome สำหรับไอคอนดาว -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
     <style>
-        /* ใช้ CSS เพื่อแสดงดาว */
+        body {
+            font-family: "Kanit", sans-serif;
+            text-align: center;
+            background-color: #f0f8ff; /* สีฟ้าอ่อน */
+            padding: 20px;
+        }
+
+        .review-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            margin: auto;
+        }
+
+        h1 {
+            color: #0077cc;
+        }
+
         .stars {
             display: flex;
-            direction: row;
+            gap: 5px;
+            justify-content: center;
+            align-items: center;
+            margin-top: 10px;
         }
+
         .stars i {
-            color: gold;
-            font-size: 30px; /* เพิ่มขนาดไอคอนดาวให้ใหญ่ขึ้น */
+            color: #ccc; /* สีของดาวที่ไม่ได้เลือก */
+            font-size: 40px; /* ขนาดของไอคอนดาว */
             cursor: pointer;
+            transition: color 0.2s ease-in-out;
         }
-        .stars i.fa-star-o {
-            color: #ccc; /* เปลี่ยนสีของดาวที่ไม่ได้เลือก */
+
+        .stars i.selected {
+            color: gold; /* สีของดาวที่ถูกเลือก */
         }
+
         .stars i:hover,
         .stars i:hover ~ i {
-            color: #ffcc00; /* เมื่อ hover ให้เปลี่ยนเป็นสีทอง */
+            color: #ffcc00; /* สีของดาวเมื่อ hover */
+        }
+
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin-top: 10px;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #0077cc;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #005fa3;
         }
     </style>
 </head>
 <body>
-    <h1>รีวิวผู้เชี่ยวชาญ: {{ expert.username }}</h1>
 
-    <form method="POST">
-        {% csrf_token %}
-        {{ form.as_p }}
-        
-        <!-- แสดงดาวสำหรับการเลือก -->
-        <div class="stars">
-            {% for i in range(1, 6) %}
-                <i class="fa {% if review.rating >= i %}fa-star{% else %}fa-star-o{% endif %}" data-index="{{ i }}"></i>
-            {% endfor %}
-        </div>
+    <div class="review-container">
+        <h1>รีวิวผู้เชี่ยวชาญ: {{ expert.username }}</h1>
 
-        <input type="hidden" name="rating" id="rating-input" value="{{ review.rating }}">
+        <form method="POST">
+            {% csrf_token %}
 
-        <button type="submit">ส่งรีวิว</button>
-    </form>
+            <!-- แสดงดาวสำหรับการเลือก -->
+            <div class="stars">
+                <i class="fa fa-star" data-index="1"></i>
+                <i class="fa fa-star" data-index="2"></i>
+                <i class="fa fa-star" data-index="3"></i>
+                <i class="fa fa-star" data-index="4"></i>
+                <i class="fa fa-star" data-index="5"></i>
+            </div>
+
+            <input type="hidden" name="rating" id="rating-input" value="{{ review.rating }}">
+
+            <label for="comment"><strong>ความคิดเห็น:</strong></label>
+            <textarea name="comment" required>{{ review.comment }}</textarea>
+
+            <button type="submit">ส่งรีวิว</button>
+        </form>
+    </div>
 
     <script>
-        // เพิ่มฟังก์ชันเพื่อให้ผู้ใช้สามารถคลิกดาวเพื่อเลือกคะแนน
-        const stars = document.querySelectorAll('.stars i');
-        const ratingInput = document.getElementById('rating-input');
+        document.addEventListener("DOMContentLoaded", function () {
+            const stars = document.querySelectorAll('.stars i');
+            const ratingInput = document.getElementById('rating-input');
 
-        stars.forEach(star => {
-            star.addEventListener('click', function() {
-                const index = this.getAttribute('data-index');
-                ratingInput.value = index;
-
-                // เปลี่ยนสถานะของดาว
-                stars.forEach((star, i) => {
-                    if (i < index) {
-                        star.classList.remove('fa-star-o');
-                        star.classList.add('fa-star');
+            function updateStars(rating) {
+                stars.forEach((star, index) => {
+                    if (index < rating) {
+                        star.classList.add('selected');
                     } else {
-                        star.classList.remove('fa-star');
-                        star.classList.add('fa-star-o');
+                        star.classList.remove('selected');
                     }
                 });
+            }
+
+            stars.forEach(star => {
+                star.addEventListener('click', function () {
+                    const rating = this.getAttribute('data-index');
+                    ratingInput.value = rating;
+                    updateStars(rating);
+                });
+
+                star.addEventListener('mouseover', function () {
+                    updateStars(this.getAttribute('data-index'));
+                });
+
+                star.addEventListener('mouseleave', function () {
+                    updateStars(ratingInput.value);
+                });
             });
+
+            // โหลดค่าเริ่มต้นของรีวิว (ถ้ามี)
+            updateStars(ratingInput.value);
         });
     </script>
+
 </body>
 </html>

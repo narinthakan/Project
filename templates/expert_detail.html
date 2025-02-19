@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load static %}  
+
+{% block title %}ข้อมูลผู้เชี่ยวชาญ - {{ expert.full_name }}{% endblock %}
+
+{% block content %}
+<main class="p-6">
+    <section class="text-center">
+        <h2 class="text-2xl font-bold mb-4">ข้อมูลผู้เชี่ยวชาญ</h2>
+
+        <div class="bg-white rounded-lg shadow-md p-6 flex flex-col items-center max-w-md mx-auto">
+            {% if expert.profile_image %}
+                <img src="{{ expert.profile_image.url }}" alt="{{ expert.full_name }}" class="w-24 h-24 rounded-full mb-4 border-2 border-gray-300 object-cover">
+            {% else %}
+                <img src="{% static 'images/placeholder.png' %}" alt="No Profile" class="w-24 h-24 rounded-full mb-4 border-2 border-gray-300 object-cover">
+            {% endif %}
+            
+            <h3 class="text-xl font-bold text-gray-800">{{ expert.full_name }}</h3>
+            <p class="text-gray-500"><strong>ความเชี่ยวชาญ:</strong> {{ expert.expertise|default:"-" }}</p>
+            <p class="text-gray-500"><strong>สถานที่ทำงาน:</strong> {{ expert.workplace|default:"-" }}</p>
+            <p class="text-gray-500"><strong>เลขใบประกอบวิชาชีพ:</strong> {{ expert.license_number|default:"-" }}</p>
+            <p class="mt-2 text-gray-700">{{ expert.experience|default:"ไม่มีข้อมูล" }}</p>
+        </div>
+
+        <!-- รีวิวทั้งหมดของผู้เชี่ยวชาญ -->
+        <h3 class="text-xl font-bold mt-6 mb-4">รีวิวผู้เชี่ยวชาญ</h3>
+        <div class="space-y-4 max-w-md mx-auto text-left">
+            {% if reviews %}
+                {% for review in reviews %}
+                    <div class="bg-white rounded shadow p-4">
+                        <p><strong>คะแนน:</strong> {{ review.rating }} ดาว</p>
+                        <p><strong>ความคิดเห็น:</strong> {{ review.comment }}</p>
+                        <small class="text-gray-500">{{ review.created_at|date:"d M Y" }}</small>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-gray-500">ยังไม่มีรีวิว</p>
+            {% endif %}
+        </div>
+    </section>
+</main>
+{% endblock %}

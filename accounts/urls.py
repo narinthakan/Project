@@ -82,9 +82,9 @@ urlpatterns = [
     path('articles-expert/', views.articles_expert, name='articles_expert'),
     
 
-    # เส้นทางหน้าวิเคราะห์และรีวิว
+    # เส้นทางหน้าวิเคราะห์
     path('analysis/', views.analysis_view, name='analysis'),
-    path('reviews/', views.reviews_view, name='reviews'),
+    
     
     #เส้นทางสำหรับดูข้อมูลผิวหน้า
     # path('user_skin_data/<int:user_id>/', views.user_skin_data_view, name='user_skin_data'),
@@ -100,10 +100,15 @@ urlpatterns = [
     #path('expert-response/<int:skin_data_id>/', views.expert_response, name='expert_response'),
     path('expert-dashboard/', expert_view, name='expert_dashboard'),
     
-    #เส้นทางสำหรับรีวิวผู้เชี่ยวชาญ
+    # เส้นทางสำหรับรีวิวผู้เชี่ยวชาญ
+    path('reviews/', views.review_list, name='reviews'),  # ใช้ review_list แทน reviews_view
     path('review-expert/<int:expert_id>/', views.review_expert, name='review_expert'),
     path('expert-reviews/<int:expert_id>/', views.view_expert_reviews, name='view_expert_reviews'),
-    path('delete-review-review/<int:review_id>/', views.delete_review, name='delete_expert_review'),
+    path('delete-review/<int:review_id>/', views.delete_review, name='delete_expert_review'),
+    path('expert-list/', views.expert_list, name='expert_list'),  # รายชื่อผู้เชี่ยวชาญ
+    path('expert-detail/<int:expert_id>/', views.expert_detail, name='expert_detail'),  # หน้าแสดงรายละเอียด + รีวิวของผู้เชี่ยวชาญ
+    
+    #path('delete-review-review/<int:review_id>/', views.delete_review, name='delete_expert_review'),
     
     #เส้นทางสำหรับใบเกียรติบัตรผู้เชี่ยวชาญ
     path('expert-certificate/', expert_certificate_view, name='expert_certificate_view'),

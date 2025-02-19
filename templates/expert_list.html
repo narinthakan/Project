@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}ผู้เชี่ยวชาญ - Essence The Beauty{% endblock %}
+
+{% block content %}
+<main class="p-6">
+  <section class="text-center">
+    <h2 class="text-2xl font-bold mb-6">ผู้เชี่ยวชาญ</h2>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {% for expert in experts %}
+        <div class="bg-white rounded-lg shadow-md p-6 flex flex-col items-center">
+          <!-- แสดงภาพโปรไฟล์ของผู้เชี่ยวชาญ -->
+          <img src="{{ expert.profile_picture.url }}" alt="{{ expert.username }}" class="w-24 h-24 rounded-full mb-4 border-2 border-gray-300">
+          
+          <!-- ชื่อผู้เชี่ยวชาญ -->
+          <h3 class="text-xl font-bold text-gray-800">{{ expert.username }}</h3>
+          <p class="text-gray-500">{{ expert.title }}</p>
+          
+          <!-- ลิงก์ไปหน้า expert_detail -->
+          <a href="{% url 'expert_detail' expert.id %}"
+             class="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
+            ดูรีวิว
+          </a>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+</main>
+{% endblock %}

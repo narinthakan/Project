@@ -13,6 +13,7 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from collections import defaultdict
 from django.utils import timezone
 import base64
 import uuid
@@ -704,7 +705,7 @@ def review_expert(request, expert_id):
             review.save()
             
             messages.success(request, "รีวิวของคุณถูกบันทึกเรียบร้อยแล้ว!")
-            return redirect('review_list')  # เปลี่ยนไปหน้ารีวิวที่แสดงทั้งหมด
+            return redirect('reviews_list')  # เปลี่ยนไปหน้ารีวิวที่แสดงทั้งหมด
     else:
         form = ExpertReviewForm(instance=existing_review)
 
@@ -728,31 +729,80 @@ def delete_expert_review(request, review_id):
     return redirect('general_advice')  # กลับไปยังหน้าคำแนะนำ
 
 
+
 @login_required
 def review_list(request):
-    # ดึงเฉพาะผู้เชี่ยวชาญที่มีรีวิว
-    experts = User.objects.filter(expertreview__isnull=False).distinct()
+    # ดึงผู้เชี่ยวชาญที่มีรีวิว
+    experts = User.objects.filter(reviews__isnull=False).distinct()
 
     # ดึงข้อมูลรีวิวทั้งหมด
     expert_reviews = ExpertReview.objects.select_related('expert', 'user')
 
-    # จัดกลุ่มรีวิวตาม expert_id
+    # สร้าง dictionary {expert_id: <QuerySet รีวิวทั้งหมด>}
     reviews_by_expert = {}
     for expert in experts:
-        reviews_by_expert[expert.id] = []
-    # ดิกชันนารี
-    for review in expert_reviews:
-        if review.expert.id in reviews_by_expert:
-            reviews_by_expert[review.expert.id].append(review)
-
-    # Debug log
-    print("Experts:", list(experts.values("id", "username")))
-    print("Reviews By Expert:", {k: len(v) for k, v in reviews_by_expert.items()})
+        rqs = expert_reviews.filter(expert=expert)
+        if rqs.exists():
+            reviews_by_expert[expert.id] = rqs
 
     return render(request, 'reviews.html', {
-        'experts': experts,
         'reviews_by_expert': reviews_by_expert,
+        'experts': experts,  # ส่งข้อมูลผู้เชี่ยวชาญ
     })
+    
+#ดึงข้อมูลผู้เชี่ยวชาญ (User) ที่คุณต้องการมาแสดงเป็นรายการ    
+@login_required
+def expert_list(request):
+    # สมมุติว่าคุณจะดึงผู้เชี่ยวชาญที่เป็น User ทุกคน
+    # หรือถ้ามี field ระบุว่า user นี้เป็นผู้เชี่ยวชาญ ให้กรองตามนั้น
+    experts = User.objects.all()
+    # ตัวอย่างเช่น: User.objects.filter(is_expert=True)
+
+    return render(request, 'expert_list.html', {
+        'experts': experts,
+    })
+
+#ดึงข้อมูล “ผู้เชี่ยวชาญ” และ “รีวิว” ทั้งหมดของเขา
+@login_required
+def expert_detail(request, expert_id):
+    # ดึงข้อมูล Expert ตาม user_id (จะใช้ expert_id จาก URL)
+    expert = get_object_or_404(Expert, user_id=expert_id)
+    
+    # ดึงรีวิวทั้งหมดของผู้เชี่ยวชาญ
+    reviews = ExpertReview.objects.filter(expert=expert.user)  # ใช้ expert.user ซึ่งเป็น User ที่เชื่อมกับ Expert
+    
+    return render(request, 'expert_detail.html', {
+        'expert': expert,  # ส่งข้อมูล Expert ไปที่ Template
+        'reviews': reviews,  # ส่งข้อมูลรีวิวไปที่ Template
+    })
+
+
+
+
+# @login_required
+# def expert_detail(request, expert_id):
+#     # ดึงข้อมูลผู้เชี่ยวชาญจาก ID
+#     expert = get_object_or_404(Expert, id=expert_id)
+    
+#     # ดึงรีวิวทั้งหมดของผู้เชี่ยวชาญ
+#     reviews = ExpertReview.objects.filter(expert=expert.user)  # expert.user คือ User ที่เชื่อมกับ Expert
+    
+#     return render(request, 'expert_detail.html', {
+#         'expert': expert,  # ส่งข้อมูล Expert ไปที่ Template
+#         'reviews': reviews,  # ส่งข้อมูลรีวิวไปที่ Template
+#     })
+
+
+    
+# @login_required
+# def expert_detail(request, expert_id):
+#     expert = get_object_or_404(User, id=expert_id)
+#     reviews = ExpertReview.objects.filter(expert=expert)
+
+#     return render(request, 'expert_detail.html', {
+#         'expert': expert,
+#         'reviews': reviews,
+#     })
 
 
 
@@ -796,17 +846,68 @@ def generate_certificate_for_expert(expert):
         return None
 
 #ฟังก์ชันการแสดงใบเกียรติบัตรในหน้าเว็บ
+# @login_required
+# def expert_certificate_view(request):
+#     try:
+#         # ดึงใบเกียรติบัตรของผู้เชี่ยวชาญที่ล็อกอินอยู่
+#         certificate = Certificate.objects.get(expert=request.user)
+#     except Certificate.DoesNotExist:
+#         certificate = None
+
+#     # ส่งข้อมูลไปที่เทมเพลต
+#    return render(request, 'expert_certificate.html', {'certificate': certificate})
+   
 @login_required
 def expert_certificate_view(request):
     try:
         # ดึงใบเกียรติบัตรของผู้เชี่ยวชาญที่ล็อกอินอยู่
-        certificate = Certificate.objects.get(expert=request.user)
-    except Certificate.DoesNotExist:
+        expert = request.user
+        reviews = Review.objects.filter(expert=expert)
+        
+        # คำนวณคะแนนรีวิวเฉลี่ยและจำนวนรีวิว
+        average_rating = reviews.aggregate(Avg('rating'))['rating__avg']
+        total_reviews = reviews.count()
+
+        # ตรวจสอบว่าเกณฑ์การออกใบเกียรติบัตรตรงหรือไม่
+        if average_rating >= 4 and total_reviews >= 30:
+            # กำหนดระดับใบเกียรติบัตร
+            if average_rating >= 4.5:
+                certification_level = "Top-rated Skincare Consultant"
+            elif average_rating >= 4:
+                certification_level = "Gold"
+            elif average_rating >= 3.5:
+                certification_level = "Silver"
+            else:
+                certification_level = "Bronze"
+
+            # สร้างใบเกียรติบัตรใหม่
+            certificate, created = Certificate.objects.get_or_create(
+                expert=expert,
+                defaults={
+                    'certification_level': certification_level,
+                    'average_rating': average_rating,
+                    'total_reviews': total_reviews,
+                    'issue_date': timezone.now()
+                }
+            )
+
+            message = None  # ไม่มีข้อความแจ้งเตือน
+        else:
+            certificate = None
+            message = "คุณยังไม่ผ่านเกณฑ์การออกใบเกียรติบัตร (คะแนนรีวิวขั้นต่ำ 4 และจำนวนรีวิว 30+)"
+
+    except Exception as e:
         certificate = None
+        message = str(e)
 
     # ส่งข้อมูลไปที่เทมเพลต
-    return render(request, 'expert_certificate.html', {'certificate': certificate})
-    
+    return render(request, 'expert_certificate.html', {
+        'certificate': certificate, 
+        'message': message,
+        'expert': expert
+    })
+        
+        
 # เหลือฟังชันดาวน์โหลดใบเกียรติบัตรเป็น PDF
 
 #ฟังก์ชันสำหรับแสดงข้อมูลผิวหน้าจากผู้เชี่ยวชาญตอบกลับ
