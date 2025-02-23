@@ -112,6 +112,9 @@ urlpatterns = [
     
     #เส้นทางสำหรับใบเกียรติบัตรผู้เชี่ยวชาญ
     path('expert-certificate/', expert_certificate_view, name='expert_certificate_view'),
+    path('generate_certificate/<int:expert_id>/', views.generate_certificate, name='generate_certificate'),
+    path('view_certificate/<int:expert_id>/', views.view_certificate, name='view_certificate'),
+
     
     #เส้นทางสำหรับกรอกข้อมูลผิวหน้าของคุณ
     path('skin-data/', views.skin_data_form, name='skin_data_form'),

@@ -1,22 +1,31 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required, user_passes_test,  permission_required
+from django.contrib.auth.decorators import login_required, user_passes_test, permission_required
 from django.contrib.auth.hashers import make_password, check_password
-from django.core.files.base import ContentFile 
+from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.contrib import messages
-from django.conf import settings,os
+from django.conf import settings
 from django.db.models import Avg, Count
-from .forms import RegistrationForm,LoginForm,ProfileForm,ProductForm,ExpertLoginForm,ExpertVerificationForm,SellerRegistrationForm,ExpertRegistrationForm,ExpertProfileForm,SkinDataForm,ExpertResponseForm,ExpertReviewForm,SkinImageForm,ExpertArticleForm
-from .models import Product, Profile, Review, User, Expert, Seller, SkinUpload, SkinProfile, SkinData, ExpertResponse,ExpertReview,SkinImage,ExpertArticle,Certificate
+from .forms import RegistrationForm, LoginForm, ProfileForm, ProductForm, ExpertLoginForm, ExpertVerificationForm, SellerRegistrationForm, ExpertRegistrationForm, ExpertProfileForm, SkinDataForm, ExpertResponseForm, ExpertReviewForm, SkinImageForm, ExpertArticleForm
+from .models import Product, Profile, Review, User, Expert, Seller, SkinUpload, SkinProfile, SkinData, ExpertResponse, ExpertReview, SkinImage, ExpertArticle, Certificate
 from django.contrib.auth.models import User
-from django.contrib import messages
-from django.shortcuts import redirect, render
 from django.urls import reverse
 from collections import defaultdict
 from django.utils import timezone
+from io import BytesIO
+from PyPDF2 import PdfReader, PdfWriter
+from reportlab.pdfgen import canvas
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from django.http import HttpResponse
+from reportlab.lib.pagesizes import letter
+from django.http import FileResponse
+
 import base64
 import uuid
+import os 
+
 
 # Helper function to check if user is an expert or admin
 def is_expert_or_admin(user):
@@ -816,35 +825,185 @@ def view_expert_reviews(request, expert_id):
 
 #ฟังก์ชันคำนวณคะแนนรีวิวและการออกใบเกียรติบัตร
 def generate_certificate_for_expert(expert):
-    # คำนวณคะแนนเฉลี่ยและจำนวนรีวิวของผู้เชี่ยวชาญ
-    reviews = ExpertReview.objects.filter(expert=expert)
-    # คำนวณคะแนนเฉลี่ยจากฟิลด์ rating
-    average_rating = reviews.aggregate(Avg('rating'))['rating__avg']
-    # คำนวณจำนวนรีวิวที่มี
-    total_reviews = reviews.aggregate(Count('id'))['id__count']
+    """
+    สร้างใบเกียรติบัตรสำหรับผู้เชี่ยวชาญ
+    """
+    if expert:
+        # คำนวณคะแนนเฉลี่ยและจำนวนรีวิวของผู้เชี่ยวชาญ
+        reviews = ExpertReview.objects.filter(expert=expert)
+        # คำนวณคะแนนเฉลี่ยจากฟิลด์ rating
+        average_rating = reviews.aggregate(Avg('rating'))['rating__avg']
+        # คำนวณจำนวนรีวิวที่มี
+        total_reviews = reviews.aggregate(Count('id'))['id__count']
 
-    if average_rating >= 4 and total_reviews >= 30:
-        # กำหนดระดับเกียรติบัตร
-        if average_rating >= 4.5:
-            certification_level = "Gold"
-        elif average_rating >= 4:
-            certification_level = "Silver"
+        if average_rating >= 4 and total_reviews >= 30:
+            # กำหนดระดับเกียรติบัตร
+            if average_rating >= 4.5:
+                certification_level = "Gold"
+            elif average_rating >= 4:
+                certification_level = "Silver"
+            else:
+                certification_level = "Bronze"
+
+            # สร้างใบเกียรติบัตร
+            certificate = Certificate.objects.create(
+                expert=expert,
+                certification_level=certification_level,
+                average_rating=average_rating,
+                total_reviews=total_reviews,
+                issue_date=timezone.now()
+            )
+            return certificate
         else:
-            certification_level = "Bronze"
-
-        # สร้างใบเกียรติบัตร
-        certificate = Certificate.objects.create(
-            expert=expert,
-            certification_level=certification_level,
-            average_rating=average_rating,
-            total_reviews=total_reviews,
-            issue_date=timezone.now()
-        )
-
-        return certificate
+            return None
     else:
         return None
 
+
+# ฟังก์ชันสำหรับสร้างไฟล์ PDF จากข้อมูลใบเกียรติบัตรที่สร้างขึ้น
+def generate_certificate_for_expert(expert):
+    """
+    สร้างใบเกียรติบัตรสำหรับผู้เชี่ยวชาญ
+    """
+    if expert:
+        # เส้นทางของไฟล์ PDF template (Certificate.pdf)
+        input_pdf = os.path.join(settings.BASE_DIR, "Certificate.pdf")
+        
+        # ใช้ expert.user.username แทน expert.username
+        output_pdf = os.path.join(settings.BASE_DIR, "output", f"{expert.user.username}_certificate.pdf")
+        
+        # ตรวจสอบว่าไฟล์ PDF template มีอยู่จริง
+        if not os.path.exists(input_pdf):
+            print(f"ไม่พบไฟล์ Template: {input_pdf}")
+            return None
+        
+        # เรียกใช้ฟังก์ชันในการเพิ่มข้อความลงในเทมเพลต PDF
+        add_text_to_certificate_template(input_pdf, output_pdf, expert)
+        
+        return output_pdf
+    else:
+        print("ไม่พบข้อมูลของผู้เชี่ยวชาญ")
+        return None
+
+
+
+    
+#ฟังก์ชันสำหรับสร้างไฟล์ PDF จากข้อมูลใบเกียรติบัตรที่สร้างขึ้น
+
+def add_text_to_certificate_template(input_pdf, output_pdf, expert):
+    """
+    เพิ่มข้อความลงในเทมเพลต PDF (Certificate.pdf) โดยใช้ข้อมูลจาก expert
+    """
+    try:
+        # อ่าน PDF template
+        pdf_reader = PdfReader(input_pdf)
+        pdf_writer = PdfWriter()
+
+        page = pdf_reader.pages[0]
+
+        # สร้างไฟล์ PDF ใหม่ในหน่วยความจำ
+        packet = BytesIO()
+        canvas_obj = canvas.Canvas(packet, pagesize=letter)
+
+        # ตรวจสอบฟอนต์
+        custom_font_path = os.path.join(settings.BASE_DIR, "static", "fonts", "Pinyon_Script", "PinyonScript-Regular.ttf")
+        
+        # หากไม่พบฟอนต์ในเส้นทางนี้, ให้ใช้ฟอนต์สำรอง
+        if not os.path.exists(custom_font_path):
+            print(f"ไม่พบฟอนต์: {custom_font_path}")
+            custom_font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf"  # ฟอนต์สำรอง
+        
+        # ลงทะเบียนฟอนต์
+        pdfmetrics.registerFont(TTFont('PinyonScript-Regular', custom_font_path))
+
+        # กำหนดฟอนต์ที่ใช้
+        font_name = "PinyonScript-Regular"
+        font_size = 45  # ขนาดฟอนต์
+        canvas_obj.setFont(font_name, font_size)
+        canvas_obj.setFillColorRGB(1, 0, 0.84, 0.0)  # สีของข้อความ (สีทอง)
+
+        # เพิ่มข้อความลงใน PDF
+        canvas_obj.drawString(280, 500, expert.username)  # ใส่ชื่อผู้เชี่ยวชาญ
+        canvas_obj.drawString(280, 460, expert.certification_level)  # ใส่ระดับ
+        canvas_obj.drawString(280, 420, f"คะแนนเฉลี่ย: {expert.average_rating}")  # ใส่คะแนนเฉลี่ย
+        canvas_obj.drawString(280, 380, f"จำนวนรีวิว: {expert.total_reviews}")  # ใส่จำนวนรีวิว
+        canvas_obj.drawString(280, 340, f"วันที่ออก: {expert.issue_date.strftime('%d %B %Y')}")  # ใส่วันที่ออกใบเกียรติบัตร
+
+        canvas_obj.save()  # บันทึกงานลงใน BytesIO
+        packet.seek(0)
+
+        # รวมการเปลี่ยนแปลงลงในหน้าแรกของ PDF template
+        overlay_reader = PdfReader(packet)
+        overlay_page = overlay_reader.pages[0]
+
+        # รวมหน้า PDF ที่มีการเพิ่มข้อความ
+        page.merge_page(overlay_page)
+        pdf_writer.add_page(page)
+
+        # เพิ่มหน้าที่เหลือจาก PDF template (ถ้ามี)
+        for page in pdf_reader.pages[1:]:
+            pdf_writer.add_page(page)
+
+        # เขียนไฟล์ PDF ลงใน output_pdf
+        with open(output_pdf, 'wb') as output_file:
+            pdf_writer.write(output_file)
+
+        print(f"ใบเกียรติบัตรสำหรับ {expert.username} ถูกสร้างแล้ว!")
+
+    except Exception as e:
+        print(f"Error creating certificate PDF: {e}")
+        
+        
+def generate_certificate(request, expert_id):
+    expert = get_object_or_404(Expert, id=expert_id)  # ดึงข้อมูลจากฐานข้อมูล Expert
+    certificate = generate_certificate_for_expert(expert)  # สร้างใบเกียรติบัตรในฐานข้อมูล
+    
+    if certificate:
+        certificate_path = os.path.join(settings.BASE_DIR, "output", f"{expert.username}_certificate.pdf")
+        add_text_to_certificate_template(os.path.join(settings.BASE_DIR, "Certificate.pdf"), certificate_path, expert)
+
+        # อ่านไฟล์ PDF ที่สร้างขึ้น
+        with open(certificate_path, 'rb') as f:
+            file_data = f.read()
+
+        response = HttpResponse(file_data, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename={expert.username}_certificate.pdf'
+        return response
+    else:
+        return HttpResponse("ไม่สามารถออกใบเกียรติบัตรได้ เนื่องจากไม่ผ่านเงื่อนไข")
+
+
+# ฟังก์ชันเพื่อตรวจสอบและสร้างใบเกียรติบัตรจากข้อมูลของผู้เชี่ยวชาญ และแปลงเป็น PDF เพื่อส่งให้ผู้ใช้:
+def generate_certificate(request, expert_id):
+    expert = get_object_or_404(Expert, id=expert_id)  # ดึงข้อมูลจากฐานข้อมูล Expert
+    
+    # สร้างใบเกียรติบัตรในฐานข้อมูล
+    certificate = generate_certificate_for_expert(expert)
+
+    if certificate:
+        # สร้างไฟล์ PDF จากใบเกียรติบัตร
+        certificate_path = os.path.join(settings.BASE_DIR, "output", f"{expert.username}_certificate.pdf")
+        add_text_to_certificate_template(os.path.join(settings.BASE_DIR, "Certificate.pdf"), certificate_path, expert)
+
+        # อ่านไฟล์ PDF ที่สร้างขึ้น
+        with open(certificate_path, 'rb') as f:
+            file_data = f.read()
+
+        # ส่งไฟล์ PDF กลับให้ผู้ใช้ดาวน์โหลด
+        response = HttpResponse(file_data, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename={expert.username}_certificate.pdf'
+        return response
+    else:
+        return HttpResponse("ไม่สามารถออกใบเกียรติบัตรได้ เนื่องจากไม่ผ่านเงื่อนไข")
+
+#แสดงใบเกียรติบัตร (PDF) ให้กับผู้ใช้
+def view_certificate(request, expert_id):
+    expert = get_object_or_404(Expert, id=expert_id)
+    certificate_path = generate_certificate_for_expert(expert)  # สร้างใบเกียรติบัตร
+    
+    # ส่งไฟล์ PDF ไปให้ผู้ใช้ดู
+    return FileResponse(open(certificate_path, 'rb'), content_type='application/pdf')
+      
 #ฟังก์ชันการแสดงใบเกียรติบัตรในหน้าเว็บ
 # @login_required
 # def expert_certificate_view(request):
@@ -860,52 +1019,29 @@ def generate_certificate_for_expert(expert):
 @login_required
 def expert_certificate_view(request):
     try:
-        # ดึงใบเกียรติบัตรของผู้เชี่ยวชาญที่ล็อกอินอยู่
+        # ดึงข้อมูลผู้เชี่ยวชาญที่ล็อกอินอยู่
         expert = request.user
-        reviews = Review.objects.filter(expert=expert)
-        
-        # คำนวณคะแนนรีวิวเฉลี่ยและจำนวนรีวิว
-        average_rating = reviews.aggregate(Avg('rating'))['rating__avg']
-        total_reviews = reviews.count()
+        certificate = Certificate.objects.filter(expert=expert).first()
 
-        # ตรวจสอบว่าเกณฑ์การออกใบเกียรติบัตรตรงหรือไม่
-        if average_rating >= 4 and total_reviews >= 30:
-            # กำหนดระดับใบเกียรติบัตร
-            if average_rating >= 4.5:
-                certification_level = "Top-rated Skincare Consultant"
-            elif average_rating >= 4:
-                certification_level = "Gold"
-            elif average_rating >= 3.5:
-                certification_level = "Silver"
-            else:
-                certification_level = "Bronze"
-
-            # สร้างใบเกียรติบัตรใหม่
-            certificate, created = Certificate.objects.get_or_create(
-                expert=expert,
-                defaults={
-                    'certification_level': certification_level,
-                    'average_rating': average_rating,
-                    'total_reviews': total_reviews,
-                    'issue_date': timezone.now()
-                }
-            )
-
-            message = None  # ไม่มีข้อความแจ้งเตือน
+        if certificate:
+            # URL ของ PDF ใน `static/pdf/`
+            pdf_url = f"{settings.STATIC_URL}Certificate.pdf"
         else:
-            certificate = None
-            message = "คุณยังไม่ผ่านเกณฑ์การออกใบเกียรติบัตร (คะแนนรีวิวขั้นต่ำ 4 และจำนวนรีวิว 30+)"
+            pdf_url = None  # ถ้ายังไม่มีใบเกียรติบัตร ไม่ต้องแสดง PDF
+
+        return render(request, 'expert_certificate.html', {
+            'certificate': certificate,
+            'pdf_url': pdf_url,
+            'expert': expert
+        })
 
     except Exception as e:
-        certificate = None
-        message = str(e)
-
-    # ส่งข้อมูลไปที่เทมเพลต
-    return render(request, 'expert_certificate.html', {
-        'certificate': certificate, 
-        'message': message,
-        'expert': expert
-    })
+        return render(request, 'expert_certificate.html', {
+            'certificate': None,
+            'pdf_url': None,
+            'expert': None,
+            'message': str(e)
+        })
         
         
 # เหลือฟังชันดาวน์โหลดใบเกียรติบัตรเป็น PDF

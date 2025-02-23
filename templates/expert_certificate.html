@@ -4,198 +4,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ใบประกาศนียบัตรดิจิทัล</title>
-    <!-- โหลดฟอนต์ -->
+    <title>ใบรับรองผู้เชี่ยวชาญ</title>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Prompt', sans-serif;
-            margin: 0;
-            padding: 0;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background: #F0F9FF; /* ✅ พื้นหลังสีฟ้าอ่อน */
+            background: #F0F9FF;
+            text-align: center;
         }
-
         .certificate-container {
-            width: 700px;
-            height: 500px;
-            background: linear-gradient(135deg, #E0F2FE, #BEE3F8); 
-            position: relative;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            background: linear-gradient(135deg, #E0F2FE, #BEE3F8);
             padding: 40px;
-            overflow: hidden;
             border-radius: 15px;
             color: #1E3A8A;
-            text-align: center;
+            width: 80%;
+            max-width: 800px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
         }
-
-        /* ✅ องค์ประกอบเรขาคณิต */
-        .background-design {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            z-index: 1;
-        }
-
-        .circle-top-left {
-            position: absolute;
-            top: -30px;
-            left: -30px;
-            width: 120px;
-            height: 120px;
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-        }
-
-        .circle-bottom-right {
-            position: absolute;
-            bottom: -30px;
-            right: -30px;
-            width: 150px;
-            height: 150px;
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-        }
-
-        /* โลโก้ */
-        .certificate-header {
-            text-align: center;
-            margin-bottom: 15px;
-            position: relative;
-            z-index: 2;
-        }
-
-        .certificate-header img {
-            width: 70px;
-        }
-
-        /* หัวข้อหลัก */
         .certificate-title {
             font-size: 24px;
             font-weight: bold;
-            text-transform: uppercase;
-            color: #1E3A8A;
-            position: relative;
-            z-index: 2;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
-
-        .certificate-subtitle {
-            font-size: 16px;
-            font-weight: 500;
-            margin-bottom: 30px;
-            color: #3B82F6;
-            position: relative;
-            z-index: 2;
-        }
-
-        .certificate-body {
-            font-size: 14px;
-            position: relative;
-            z-index: 2;
-            color: #333;
-            margin-top: 20px;
-        }
-
         .certificate-body p {
+            font-size: 16px;
             margin: 10px 0;
         }
-
-        /* ✅ ลบตัวหนาออกจากข้อมูลผู้เชี่ยวชาญ */
-        .certificate-body span {
-            font-weight: normal;
-            color: #1E3A8A;
-        }
-
-        .divider {
-            width: 60%;
-            height: 2px;
-            background: rgba(0, 0, 0, 0.1);
-            margin: 30px auto;
-        }
-
-        /* ลายเซ็น */
         .certificate-footer {
-            font-size: 12px;
             margin-top: 30px;
-            position: relative;
-            z-index: 2;
         }
-
-        .signature {
-            font-size: 16px;
-            font-weight: bold;
-            margin-top: 5px;
-            color: #2563EB;
+        iframe {
+            width: 100%;
+            height: 500px;
+            border: none;
         }
-
-        .position {
-            font-size: 12px;
-            color: #6B7280;
+        .download-link {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 10px 20px;
+            background: #2563EB;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
         }
-
-        /* ✅ ปรับให้รองรับอุปกรณ์มือถือ */
-        @media (max-width: 600px) {
-            .certificate-container {
-                width: 95%;
-                height: auto;
-                padding: 30px;
-            }
-
-            .certificate-title {
-                font-size: 20px;
-            }
-
-            .certificate-body {
-                font-size: 12px;
-            }
+        .download-link:hover {
+            background: #1E3A8A;
         }
     </style>
 </head>
 <body>
 
     <div class="certificate-container">
-        <!-- ✅ พื้นหลังแบบไล่เฉดสีฟ้าอ่อน + วงกลมโปร่งแสง -->
-        <div class="background-design">
-            <div class="circle-top-left"></div>
-            <div class="circle-bottom-right"></div>
-        </div>
+        <h1 class="certificate-title">ใบรับรองผู้เชี่ยวชาญ</h1>
 
-        <!-- โลโก้ -->
-        <div class="certificate-header">
-            <img src="{% static 'images/EssenceTheBeauty_Logo.png' %}" alt="Logo">
-        </div>
+        {% if certificate %}
+            <p><strong>ชื่อผู้เชี่ยวชาญ:</strong> {{ expert.username }}</p>
+            <p><strong>ระดับใบเกียรติบัตร:</strong> {{ certificate.certification_level }}</p>
+            <p><strong>คะแนนเฉลี่ย:</strong> {{ certificate.average_rating }}</p>
+            <p><strong>จำนวนรีวิว:</strong> {{ certificate.total_reviews }}</p>
+            <p><strong>วันที่ออกใบเกียรติบัตร:</strong> {{ certificate.issue_date|date:"d M Y" }}</p>
 
-        <!-- หัวข้อ -->
-        <div class="certificate-title">
-            ใบรับรองการแนะนำผลิตภัณฑ์ผิวหน้า
-        </div>
-
-        <div class="certificate-subtitle">
-            Certificate of Skin Product Recommendation
-        </div>
-
-        <!-- ✅ ข้อมูลของผู้เชี่ยวชาญ (ไม่เป็นตัวหนา) -->
-        <div class="certificate-body">
-            <p><span>ชื่อผู้เชี่ยวชาญ:</span> {{ expert.username }}</p>
-            <p><span>ระดับใบเกียรติบัตร:</span> {{ certificate.certification_level }}</p>
-            <p><span>คะแนนเฉลี่ย:</span> {{ certificate.average_rating }}</p>
-            <p><span>จำนวนรีวิว:</span> {{ certificate.total_reviews }}</p>
-            <p><span>วันที่ออกใบเกียรติบัตร:</span> {{ certificate.issue_date|date:"d M Y" }}</p>
-        </div>
-
-        <div class="divider"></div>
-
-        <!-- ✅ อัปเดตชื่อผู้ลงนาม -->
-        <div class="certificate-footer">
-            <p class="signature">Essence The Beauty</p>
-            <p class="position">แพลตฟอร์มแนะนำผลิตภัณฑ์ดูแลผิว</p>
-        </div>
+            <div class="certificate-footer">
+                <h3>ใบเกียรติบัตร PDF</h3>
+                
+                {% if pdf_url %}
+                    <!-- แสดง PDF ในหน้าเว็บ -->
+                    <iframe src="{{ pdf_url }}"></iframe>
+                    
+                    <!-- ปุ่มดาวน์โหลด -->
+                    <a href="{{ pdf_url }}" class="download-link" download>ดาวน์โหลดใบเกียรติบัตร</a>
+                {% else %}
+                    <p>ยังไม่มีใบเกียรติบัตร</p>
+                {% endif %}
+            </div>
+        {% else %}
+            <p>คุณยังไม่ผ่านเกณฑ์การรับใบเกียรติบัตร</p>
+        {% endif %}
     </div>
 
 </body>
