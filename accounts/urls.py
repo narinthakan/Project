@@ -117,11 +117,13 @@ urlpatterns = [
     #path('delete-review-review/<int:review_id>/', views.delete_review, name='delete_expert_review'),
     
     #เส้นทางสำหรับใบเกียรติบัตรผู้เชี่ยวชาญ
-    path('expert-certificate/', expert_certificate_view, name='expert_certificate_view'),
-    path('generate_certificate/<int:expert_id>/', views.generate_certificate, name='generate_certificate'),
+    path('expert-certificate/', views.expert_certificate_view, name='expert_certificate_view'),
+    path('generate_certificate/<int:expert_id>/', views.generate_and_view_certificate, name='generate_certificate'),
     path('view_certificate/<int:expert_id>/', views.view_certificate, name='view_certificate'),
-
     
+    # เส้นทางสำหรับแก้ไขชื่อใบเกียรติบัตร
+    path('edit_expert_name/', views.edit_expert_name, name='edit_expert_name'),
+
     #เส้นทางสำหรับกรอกข้อมูลผิวหน้าของคุณ
     path('skin-data/', views.skin_data_form, name='skin_data_form'),
     
@@ -156,3 +158,4 @@ urlpatterns = [
     path('product/delete/<int:product_id>/', views.delete_product, name='delete_product'),  # ลบผลิตภัณฑ์
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

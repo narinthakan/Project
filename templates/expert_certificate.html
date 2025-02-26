@@ -73,18 +73,22 @@
                 
                 {% if pdf_url %}
                     <!-- แสดง PDF ในหน้าเว็บ -->
-                    <iframe src="{{ pdf_url }}"></iframe>
+                    <iframe src="{% static 'pdf/Certificate.pdf' %}"></iframe>
                     
                     <!-- ปุ่มดาวน์โหลด -->
-                    <a href="{{ pdf_url }}" class="download-link" download>ดาวน์โหลดใบเกียรติบัตร</a>
+                    <a href="{% static 'pdf/Certificate.pdf' %}" class="download-link" download>ดาวน์โหลดใบเกียรติบัตร</a>
                 {% else %}
                     <p>ยังไม่มีใบเกียรติบัตร</p>
                 {% endif %}
+
+                <!-- ปุ่มสำหรับแก้ไขชื่อ -->
+                <a href="{% url 'edit_expert_name' %}" class="edit-button">แก้ไขชื่อผู้เชี่ยวชาญ</a>
             </div>
         {% else %}
             <p>คุณยังไม่ผ่านเกณฑ์การรับใบเกียรติบัตร</p>
         {% endif %}
+
     </div>
 
 </body>
-</html>
+</html> 

@@ -241,3 +241,13 @@ class ExpertArticleForm(forms.ModelForm):
     class Meta:
         model = ExpertArticle
         fields = ['title', 'content', 'image', 'description', 'how_to_check']
+        
+
+#สำหรับแก้ไขชื่อในใบเกียรติบัตร
+class ExpertNameEditForm(forms.ModelForm):
+    class Meta:
+        model = Expert
+        fields = ['full_name']
+        widgets = {
+            'full_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'กรุณากรอกชื่อใหม่'})
+        }
