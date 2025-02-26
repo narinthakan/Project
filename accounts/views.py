@@ -484,109 +484,159 @@ def edit_expert_profile(request):
 
     return render(request, 'edit_expert_profile.html', {'form': form})
 
-#ฟังก์ชันกรอกข้อมูลผิวหน้า
-def skin_data_form(request):
-    return render(request, 'skin_data_form.html')
+# #ฟังก์ชันกรอกข้อมูลผิวหน้า
+# def skin_data_form(request):
+#     return render(request, 'skin_data_form.html')
 
-#ฟังก์ชันสำหรับอัปโหลดผิวหน้า
+# #ฟังก์ชันสำหรับอัปโหลดผิวหน้า
+# @login_required
+# def upload_skin_view(request):
+#     if request.method == 'POST':
+#         print("🔍 DEBUG: request.FILES =", request.FILES)
+#         skin_data_form = SkinDataForm(request.POST)
+#         skin_image_form = SkinImageForm(request.POST, request.FILES)
+#         print("🔍 fields in form:", list(skin_image_form.fields.keys()))
+#         for k, v in request.FILES.lists():
+#             print(f"🔍 FILES key='{k}', value={v}")
+
+#         print(skin_data_form.is_valid())
+#         print(skin_image_form.is_valid())
+
+#         if skin_data_form.is_valid():#and skin_image_form.is_valid():
+#             try:
+#                 skin_data = skin_data_form.save(commit=False)
+#                 skin_data.user = request.user
+#                 skin_data.save()
+
+#                 images = request.FILES.getlist('images')
+#                 print(f"✅ DEBUG: Images uploaded ({len(images)} files)")
+                
+#                 for img in images:
+#                     new_image = SkinImage.objects.create(skin_data=skin_data, image=img)
+#                     print(f"✅ DEBUG: Image saved -> {new_image.image.url}")
+
+
+#                 messages.success(request, "✅ อัปโหลดข้อมูลและภาพสำเร็จ!")
+
+#                 print("🔄 DEBUG: Redirecting to upload_success!")  # เช็คจุด Redirect
+#                 return redirect("upload_success")  
+
+#             except Exception as e:
+#                 messages.error(request, f"❌ เกิดข้อผิดพลาด: {str(e)}")
+#                 print(f"❌ ERROR: {e}")
+#                 return redirect("upload_skin")
+#         else:
+#             print("❌ Form validation failed.")  # เช็คว่าฟอร์มไม่ผ่าน
+#             print("SkinDataForm Errors:", skin_data_form.errors)
+#             print("SkinImageForm Errors:", skin_image_form.errors)
+
+#             messages.error(request, "❌ กรุณาตรวจสอบข้อมูลที่กรอก")
+
+#     skin_data_form = SkinDataForm()
+#     skin_image_form = SkinImageForm()
+
+#     return render(request, "upload_skin.html", {
+#         "skin_data_form": skin_data_form,
+#         "skin_image_form": skin_image_form,
+#     })
+
+#ฟังก์ชันข้อมูลผิวหน้าและอัปโหลภาพ
 @login_required
 def upload_skin_view(request):
     if request.method == 'POST':
-        print("🔍 DEBUG: request.FILES =", request.FILES)
         skin_data_form = SkinDataForm(request.POST)
         skin_image_form = SkinImageForm(request.POST, request.FILES)
-        print("🔍 fields in form:", list(skin_image_form.fields.keys()))
-        for k, v in request.FILES.lists():
-            print(f"🔍 FILES key='{k}', value={v}")
 
-        print(skin_data_form.is_valid())
-        print(skin_image_form.is_valid())
+        print("🔍 DEBUG: Form Data Received")  # ✅ ตรวจสอบว่ามีการส่งข้อมูลมา
+        print("SkinDataForm Valid:", skin_data_form.is_valid())
+        print("SkinImageForm Valid:", skin_image_form.is_valid())
 
-        if skin_data_form.is_valid():#and skin_image_form.is_valid():
+        if skin_data_form.is_valid():
             try:
                 skin_data = skin_data_form.save(commit=False)
                 skin_data.user = request.user
                 skin_data.save()
+                print(f"✅ Data Saved: {skin_data.skin_type}, {skin_data.concern}")
 
+                # ✅ ตรวจสอบว่ามีไฟล์ที่ถูกอัปโหลดหรือไม่
                 images = request.FILES.getlist('images')
-                print(f"✅ DEBUG: Images uploaded ({len(images)} files)")
-                
-                for img in images:
-                    new_image = SkinImage.objects.create(skin_data=skin_data, image=img)
-                    print(f"✅ DEBUG: Image saved -> {new_image.image.url}")
+                if not images:
+                    print("❌ ไม่มีภาพถูกอัปโหลด")
+                    messages.error(request, "❌ กรุณาอัปโหลดอย่างน้อย 2 ภาพ")
+                    return redirect("skin_data_upload")
 
+                for img in images:
+                    skin_image = SkinImage.objects.create(skin_data=skin_data, image=img)
+                    print(f"✅ Image Saved: {skin_image.image.url}")
 
                 messages.success(request, "✅ อัปโหลดข้อมูลและภาพสำเร็จ!")
-
-                print("🔄 DEBUG: Redirecting to upload_success!")  # เช็คจุด Redirect
-                return redirect("upload_success")  
+                return redirect("upload_success")
 
             except Exception as e:
-                messages.error(request, f"❌ เกิดข้อผิดพลาด: {str(e)}")
                 print(f"❌ ERROR: {e}")
-                return redirect("upload_skin")
+                messages.error(request, f"❌ เกิดข้อผิดพลาด: {str(e)}")
+                return redirect("skin_data_upload")
+
         else:
-            print("❌ Form validation failed.")  # เช็คว่าฟอร์มไม่ผ่าน
+            print("❌ Form Validation Failed")
             print("SkinDataForm Errors:", skin_data_form.errors)
             print("SkinImageForm Errors:", skin_image_form.errors)
-
             messages.error(request, "❌ กรุณาตรวจสอบข้อมูลที่กรอก")
 
-    skin_data_form = SkinDataForm()
-    skin_image_form = SkinImageForm()
-
-    return render(request, "upload_skin.html", {
-        "skin_data_form": skin_data_form,
-        "skin_image_form": skin_image_form,
+    return render(request, "skin_data_upload.html", {
+        "skin_data_form": SkinDataForm(),
+        "skin_image_form": SkinImageForm(),
     })
 
 
+def skin_data_upload(request):
+    return render(request, 'skin_data_upload.html')
 
 
 def upload_success(request):
     return render(request, "upload_success.html")
 
-#ฟังก์ชันสำหรับกรอกข้อมูลผิวหน้า
-@login_required
-def add_skin_profile(request):
-    if request.method == 'POST':
-        skin_type = request.POST.get('skin_type')
-        concern = request.POST.get('concern')
-        allergies = request.POST.get('allergies')
-        current_products = request.POST.get('current_products')
-        skincare_goal = request.POST.get('skincare_goal')
+# #ฟังก์ชันสำหรับกรอกข้อมูลผิวหน้า
+# @login_required
+# def add_skin_profile(request):
+#     if request.method == 'POST':
+#         skin_type = request.POST.get('skin_type')
+#         concern = request.POST.get('concern')
+#         allergies = request.POST.get('allergies')
+#         current_products = request.POST.get('current_products')
+#         skincare_goal = request.POST.get('skincare_goal')
 
-        SkinProfile.objects.create(
-            user=request.user,
-            skin_type=skin_type,
-            concern=concern,
-            allergies=allergies,
-            current_products=current_products,
-            skincare_goal=skincare_goal
-        )
-        return redirect('expert_view_page')  # เปลี่ยนเส้นทางไปหน้าแสดงข้อมูล
-    return render(request, 'add_skin_profile.html')
+#         SkinProfile.objects.create(
+#             user=request.user,
+#             skin_type=skin_type,
+#             concern=concern,
+#             allergies=allergies,
+#             current_products=current_products,
+#             skincare_goal=skincare_goal
+#         )
+#         return redirect('expert_view_page')  # เปลี่ยนเส้นทางไปหน้าแสดงข้อมูล
+#     return render(request, 'add_skin_profile.html')
 
-# ฟังก์ชันสำหรับข้อมูลจากฟอร์มและบันทึกลงฐานข้อมูล
-@login_required
-def submit_skin_data(request):
-    if request.method == "POST":
-        form = SkinDataForm(request.POST, request.FILES)
-        if form.is_valid():
-            skin_data = form.save(commit=False)
-            skin_data.user = request.user  # เชื่อมข้อมูลกับผู้ใช้งานที่ล็อกอิน
-            try:
-                skin_data.save()
-                messages.success(request, "บันทึกข้อมูลผิวหน้าเรียบร้อยแล้ว!")
-                return redirect('home')  # เปลี่ยนเป็นหน้า home หลังจากบันทึกข้อมูล
-            except Exception as e:
-                messages.error(request, "เกิดข้อผิดพลาดในการบันทึกข้อมูล")
-        else:
-            messages.error(request, "เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาตรวจสอบข้อมูลอีกครั้ง")
-    else:
-        form = SkinDataForm()
+# # ฟังก์ชันสำหรับข้อมูลจากฟอร์มและบันทึกลงฐานข้อมูล
+# @login_required
+# def submit_skin_data(request):
+#     if request.method == "POST":
+#         form = SkinDataForm(request.POST, request.FILES)
+#         if form.is_valid():
+#             skin_data = form.save(commit=False)
+#             skin_data.user = request.user  # เชื่อมข้อมูลกับผู้ใช้งานที่ล็อกอิน
+#             try:
+#                 skin_data.save()
+#                 messages.success(request, "บันทึกข้อมูลผิวหน้าเรียบร้อยแล้ว!")
+#                 return redirect('home')  # เปลี่ยนเป็นหน้า home หลังจากบันทึกข้อมูล
+#             except Exception as e:
+#                 messages.error(request, "เกิดข้อผิดพลาดในการบันทึกข้อมูล")
+#         else:
+#             messages.error(request, "เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาตรวจสอบข้อมูลอีกครั้ง")
+#     else:
+#         form = SkinDataForm()
     
-    return render(request, 'skin-data.html', {'form': form})
+#     return render(request, 'skin-data.html', {'form': form})
 
 
 # ตรวจสอบว่าผู้ใช้เป็นผู้เชี่ยวชาญหรือไม่
@@ -700,28 +750,28 @@ def general_advice(request):
 @login_required
 def review_expert(request, expert_id):
     expert = get_object_or_404(User, id=expert_id)
-    
-    # ตรวจสอบว่าผู้ใช้มีรีวิวอยู่แล้วหรือไม่
-    existing_review = ExpertReview.objects.filter(expert=expert, user=request.user).first()
 
     if request.method == 'POST':
-        form = ExpertReviewForm(request.POST, instance=existing_review)
+        form = ExpertReviewForm(request.POST)
         
         if form.is_valid():
             review = form.save(commit=False)
             review.expert = expert
-            review.user = request.user
+            review.user = request.user  # กำหนดให้ผู้ใช้ที่ล็อกอินเป็นเจ้าของรีวิว
             review.save()
-            
-            messages.success(request, "รีวิวของคุณถูกบันทึกเรียบร้อยแล้ว!")
-            return redirect('reviews_list')  # เปลี่ยนไปหน้ารีวิวที่แสดงทั้งหมด
-    else:
-        form = ExpertReviewForm(instance=existing_review)
 
-    return render(request, 'add_expert_review.html', {
+            messages.success(request, "รีวิวของคุณถูกบันทึกเรียบร้อยแล้ว!")
+            return redirect('expert_detail', expert_id=expert.id)  # กลับไปหน้าผู้เชี่ยวชาญ
+    else:
+        form = ExpertReviewForm()
+
+    # **ดึงรีวิวทั้งหมดของผู้เชี่ยวชาญ**
+    reviews = ExpertReview.objects.filter(expert=expert).order_by('-created_at')
+
+    return render(request, 'review_expert.html', {
         'form': form,
         'expert': expert,
-        'existing_review': existing_review  # เพิ่มข้อมูลรีวิวที่มีอยู่
+        'reviews': reviews,  # ส่งรายการรีวิวไปยังเทมเพลต
     })
 
 
@@ -735,7 +785,7 @@ def delete_expert_review(request, review_id):
         messages.success(request, 'ความคิดเห็นของคุณถูกลบแล้ว')
     else:
         messages.error(request, 'คุณไม่สามารถลบความคิดเห็นนี้ได้')
-    return redirect('general_advice')  # กลับไปยังหน้าคำแนะนำ
+    return redirect('reviews_list')  # กลับไปยังหน้าคำแนะนำ
 
 
 
@@ -823,187 +873,188 @@ def view_expert_reviews(request, expert_id):
      return render(request, 'expert_reviews.html', {'expert': expert, 'reviews': reviews})
 
 
-#ฟังก์ชันคำนวณคะแนนรีวิวและการออกใบเกียรติบัตร
+# 🔹 ฟังก์ชันคำนวณคะแนนรีวิวและการออกใบเกียรติบัตร
 def generate_certificate_for_expert(expert):
     """
-    สร้างใบเกียรติบัตรสำหรับผู้เชี่ยวชาญ
+    ตรวจสอบและสร้างใบเกียรติบัตรให้กับผู้เชี่ยวชาญ
     """
-    if expert:
-        # คำนวณคะแนนเฉลี่ยและจำนวนรีวิวของผู้เชี่ยวชาญ
-        reviews = ExpertReview.objects.filter(expert=expert)
-        # คำนวณคะแนนเฉลี่ยจากฟิลด์ rating
-        average_rating = reviews.aggregate(Avg('rating'))['rating__avg']
-        # คำนวณจำนวนรีวิวที่มี
-        total_reviews = reviews.aggregate(Count('id'))['id__count']
+    if not expert:
+        print("❌ ไม่พบข้อมูลผู้เชี่ยวชาญ")
+        return None
+
+    # ตรวจสอบว่ามีรีวิวหรือไม่
+    if not ExpertReview.objects.exists():
+        print("❌ ไม่มีรีวิวในระบบ")
+        return None
+
+    # ตรวจสอบว่า ExpertReview.expert เชื่อมกับ Expert หรือ User
+    first_review = ExpertReview.objects.first()
+    expert_field = expert if isinstance(first_review.expert, Expert) else expert.user
+
+    # ดึงข้อมูลรีวิวของผู้เชี่ยวชาญ
+    reviews = ExpertReview.objects.filter(expert=expert_field)
+
+    if reviews.exists():
+        review_data = reviews.aggregate(avg_rating=Avg("rating"), total_reviews=Count("id"))
+        average_rating = review_data["avg_rating"]
+        total_reviews = review_data["total_reviews"]
+
+        print(f"✅ Expert: {expert.full_name}")
+        print(f"📊 คะแนนเฉลี่ย: {average_rating}, รีวิวทั้งหมด: {total_reviews}")
 
         if average_rating >= 4 and total_reviews >= 30:
-            # กำหนดระดับเกียรติบัตร
-            if average_rating >= 4.5:
-                certification_level = "Gold"
-            elif average_rating >= 4:
-                certification_level = "Silver"
-            else:
-                certification_level = "Bronze"
+            certification_level = "Gold" if average_rating >= 4.5 else "Silver"
 
-            # สร้างใบเกียรติบัตร
-            certificate = Certificate.objects.create(
-                expert=expert,
-                certification_level=certification_level,
-                average_rating=average_rating,
-                total_reviews=total_reviews,
-                issue_date=timezone.now()
+            # สร้างหรือดึงใบเกียรติบัตร (ใช้ expert.user)
+            certificate, created = Certificate.objects.get_or_create(
+                expert=expert.user,  # ✅ ต้องใช้ expert.user
+                defaults={
+                    "certification_level": certification_level,
+                    "average_rating": average_rating,
+                    "total_reviews": total_reviews,
+                    "issue_date": timezone.now().date()
+                }
             )
+
+            if created:
+                print(f"🏆 สร้างใบเกียรติบัตรระดับ {certification_level} ให้ {expert.full_name}")
+            else:
+                print(f"⚠️ มีใบเกียรติบัตรอยู่แล้ว: {certificate.certification_level}")
+
             return certificate
         else:
-            return None
+            print("❌ ไม่ผ่านเงื่อนไขการออกใบเกียรติบัตร")
     else:
-        return None
+        print("❌ ไม่พบรีวิวของผู้เชี่ยวชาญ")
+
+    return None
 
 
-# ฟังก์ชันสำหรับสร้างไฟล์ PDF จากข้อมูลใบเกียรติบัตรที่สร้างขึ้น
-def generate_certificate_for_expert(expert):
+# 🔹 ฟังก์ชันเพิ่มข้อมูลลงใน PDF เทมเพลต
+def add_text_to_certificate_template(input_pdf, output_pdf, expert, certificate):
     """
-    สร้างใบเกียรติบัตรสำหรับผู้เชี่ยวชาญ
-    """
-    if expert:
-        # เส้นทางของไฟล์ PDF template (Certificate.pdf)
-        input_pdf = os.path.join(settings.BASE_DIR, "Certificate.pdf")
-        
-        # ใช้ expert.user.username แทน expert.username
-        output_pdf = os.path.join(settings.BASE_DIR, "output", f"{expert.user.username}_certificate.pdf")
-        
-        # ตรวจสอบว่าไฟล์ PDF template มีอยู่จริง
-        if not os.path.exists(input_pdf):
-            print(f"ไม่พบไฟล์ Template: {input_pdf}")
-            return None
-        
-        # เรียกใช้ฟังก์ชันในการเพิ่มข้อความลงในเทมเพลต PDF
-        add_text_to_certificate_template(input_pdf, output_pdf, expert)
-        
-        return output_pdf
-    else:
-        print("ไม่พบข้อมูลของผู้เชี่ยวชาญ")
-        return None
-
-
-
-    
-#ฟังก์ชันสำหรับสร้างไฟล์ PDF จากข้อมูลใบเกียรติบัตรที่สร้างขึ้น
-
-def add_text_to_certificate_template(input_pdf, output_pdf, expert):
-    """
-    เพิ่มข้อความลงในเทมเพลต PDF (Certificate.pdf) โดยใช้ข้อมูลจาก expert
+    เพิ่มข้อมูลลงในไฟล์ PDF เทมเพลต
     """
     try:
-        # อ่าน PDF template
+        from reportlab.pdfbase.ttfonts import TTFont
+        from reportlab.pdfbase import pdfmetrics
+
         pdf_reader = PdfReader(input_pdf)
         pdf_writer = PdfWriter()
-
         page = pdf_reader.pages[0]
 
-        # สร้างไฟล์ PDF ใหม่ในหน่วยความจำ
         packet = BytesIO()
         canvas_obj = canvas.Canvas(packet, pagesize=letter)
 
-        # ตรวจสอบฟอนต์
-        custom_font_path = os.path.join(settings.BASE_DIR, "static", "fonts", "Pinyon_Script", "PinyonScript-Regular.ttf")
-        
-        # หากไม่พบฟอนต์ในเส้นทางนี้, ให้ใช้ฟอนต์สำรอง
-        if not os.path.exists(custom_font_path):
-            print(f"ไม่พบฟอนต์: {custom_font_path}")
-            custom_font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf"  # ฟอนต์สำรอง
-        
-        # ลงทะเบียนฟอนต์
-        pdfmetrics.registerFont(TTFont('PinyonScript-Regular', custom_font_path))
+        # ✅ กำหนดฟอนต์ Sarabun
+        font_path = os.path.join(settings.BASE_DIR, "static", "fonts", "Sarabun", "Sarabun-Regular.ttf")
+        if not os.path.exists(font_path):
+            print(f"❌ ไม่พบฟอนต์: {font_path}")
+            return
 
-        # กำหนดฟอนต์ที่ใช้
-        font_name = "PinyonScript-Regular"
-        font_size = 45  # ขนาดฟอนต์
-        canvas_obj.setFont(font_name, font_size)
-        canvas_obj.setFillColorRGB(1, 0, 0.84, 0.0)  # สีของข้อความ (สีทอง)
+        pdfmetrics.registerFont(TTFont("Sarabun", font_path))
+        canvas_obj.setFont("Sarabun", 36)
 
-        # เพิ่มข้อความลงใน PDF
-        canvas_obj.drawString(280, 500, expert.username)  # ใส่ชื่อผู้เชี่ยวชาญ
-        canvas_obj.drawString(280, 460, expert.certification_level)  # ใส่ระดับ
-        canvas_obj.drawString(280, 420, f"คะแนนเฉลี่ย: {expert.average_rating}")  # ใส่คะแนนเฉลี่ย
-        canvas_obj.drawString(280, 380, f"จำนวนรีวิว: {expert.total_reviews}")  # ใส่จำนวนรีวิว
-        canvas_obj.drawString(280, 340, f"วันที่ออก: {expert.issue_date.strftime('%d %B %Y')}")  # ใส่วันที่ออกใบเกียรติบัตร
+        # ✅ เพิ่มข้อมูลลงในใบเกียรติบัตร
+        canvas_obj.drawString(280, 500, expert.full_name)  # ชื่อผู้เชี่ยวชาญ
+        canvas_obj.drawString(280, 460, certificate.certification_level)  # ระดับเกียรติบัตร
+        canvas_obj.drawString(280, 420, f"คะแนนเฉลี่ย: {certificate.average_rating}")  # คะแนนเฉลี่ย
+        canvas_obj.drawString(280, 380, f"จำนวนรีวิว: {certificate.total_reviews}")  # จำนวนรีวิว
+        canvas_obj.drawString(280, 340, f"วันที่ออก: {certificate.issue_date.strftime('%d %B %Y')}")  # วันที่ออก
 
-        canvas_obj.save()  # บันทึกงานลงใน BytesIO
+        canvas_obj.save()
         packet.seek(0)
 
-        # รวมการเปลี่ยนแปลงลงในหน้าแรกของ PDF template
         overlay_reader = PdfReader(packet)
         overlay_page = overlay_reader.pages[0]
 
-        # รวมหน้า PDF ที่มีการเพิ่มข้อความ
         page.merge_page(overlay_page)
         pdf_writer.add_page(page)
 
-        # เพิ่มหน้าที่เหลือจาก PDF template (ถ้ามี)
-        for page in pdf_reader.pages[1:]:
-            pdf_writer.add_page(page)
-
-        # เขียนไฟล์ PDF ลงใน output_pdf
-        with open(output_pdf, 'wb') as output_file:
+        with open(output_pdf, "wb") as output_file:
             pdf_writer.write(output_file)
 
-        print(f"ใบเกียรติบัตรสำหรับ {expert.username} ถูกสร้างแล้ว!")
+        print(f"✅ ใบเกียรติบัตรสำหรับ {expert.full_name} ถูกสร้างแล้ว!")
 
     except Exception as e:
-        print(f"Error creating certificate PDF: {e}")
-        
-        
+        print(f"❌ Error: {e}")
+
+
+
+
+
+
+
+# 🔹 ฟังก์ชันสร้างไฟล์ PDF สำหรับใบเกียรติบัตร
 def generate_certificate(request, expert_id):
-    expert = get_object_or_404(Expert, id=expert_id)  # ดึงข้อมูลจากฐานข้อมูล Expert
-    certificate = generate_certificate_for_expert(expert)  # สร้างใบเกียรติบัตรในฐานข้อมูล
-    
-    if certificate:
-        certificate_path = os.path.join(settings.BASE_DIR, "output", f"{expert.username}_certificate.pdf")
-        add_text_to_certificate_template(os.path.join(settings.BASE_DIR, "Certificate.pdf"), certificate_path, expert)
-
-        # อ่านไฟล์ PDF ที่สร้างขึ้น
-        with open(certificate_path, 'rb') as f:
-            file_data = f.read()
-
-        response = HttpResponse(file_data, content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename={expert.username}_certificate.pdf'
-        return response
-    else:
-        return HttpResponse("ไม่สามารถออกใบเกียรติบัตรได้ เนื่องจากไม่ผ่านเงื่อนไข")
-
-
-# ฟังก์ชันเพื่อตรวจสอบและสร้างใบเกียรติบัตรจากข้อมูลของผู้เชี่ยวชาญ และแปลงเป็น PDF เพื่อส่งให้ผู้ใช้:
-def generate_certificate(request, expert_id):
-    expert = get_object_or_404(Expert, id=expert_id)  # ดึงข้อมูลจากฐานข้อมูล Expert
-    
-    # สร้างใบเกียรติบัตรในฐานข้อมูล
+    """
+    สร้างและดาวน์โหลดใบเกียรติบัตรเป็น PDF
+    """
+    expert = get_object_or_404(Expert, id=expert_id)
     certificate = generate_certificate_for_expert(expert)
 
     if certificate:
-        # สร้างไฟล์ PDF จากใบเกียรติบัตร
-        certificate_path = os.path.join(settings.BASE_DIR, "output", f"{expert.username}_certificate.pdf")
-        add_text_to_certificate_template(os.path.join(settings.BASE_DIR, "Certificate.pdf"), certificate_path, expert)
+        output_dir = os.path.join(settings.BASE_DIR, "static", "certificates")
+        os.makedirs(output_dir, exist_ok=True)
 
-        # อ่านไฟล์ PDF ที่สร้างขึ้น
-        with open(certificate_path, 'rb') as f:
+        output_pdf = os.path.join(output_dir, f"{expert.user.username}_certificate.pdf")
+        input_pdf = os.path.join(settings.BASE_DIR, "static", "pdf", "Certificate.pdf")
+
+        if not os.path.exists(input_pdf):
+            return HttpResponse("❌ ไม่พบไฟล์เทมเพลต PDF", status=404)
+
+        add_text_to_certificate_template(input_pdf, output_pdf, expert)
+
+        with open(output_pdf, "rb") as f:
             file_data = f.read()
 
-        # ส่งไฟล์ PDF กลับให้ผู้ใช้ดาวน์โหลด
-        response = HttpResponse(file_data, content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename={expert.username}_certificate.pdf'
+        response = HttpResponse(file_data, content_type="application/pdf")
+        response["Content-Disposition"] = f"attachment; filename={expert.user.username}_certificate.pdf"
         return response
-    else:
-        return HttpResponse("ไม่สามารถออกใบเกียรติบัตรได้ เนื่องจากไม่ผ่านเงื่อนไข")
 
-#แสดงใบเกียรติบัตร (PDF) ให้กับผู้ใช้
+    return HttpResponse("❌ ไม่สามารถออกใบเกียรติบัตรได้", status=400)
+
+
+# 🔹 ฟังก์ชันแสดงใบเกียรติบัตรเป็น PDF
 def view_certificate(request, expert_id):
+    """
+    แสดงใบเกียรติบัตรเป็น PDF
+    """
     expert = get_object_or_404(Expert, id=expert_id)
-    certificate_path = generate_certificate_for_expert(expert)  # สร้างใบเกียรติบัตร
-    
-    # ส่งไฟล์ PDF ไปให้ผู้ใช้ดู
-    return FileResponse(open(certificate_path, 'rb'), content_type='application/pdf')
-      
+    certificate_path = os.path.join(settings.BASE_DIR, "static", "certificates", f"{expert.user.username}_certificate.pdf")
+
+    if not os.path.exists(certificate_path):
+        return HttpResponse("❌ ไม่พบไฟล์ใบเกียรติบัตร", status=404)
+
+    return FileResponse(open(certificate_path, "rb"), content_type="application/pdf")
+
+
+# 🔹 ฟังก์ชันแสดงใบเกียรติบัตรในหน้าเว็บ
+@login_required
+def expert_certificate_view(request):
+    """
+    แสดงใบเกียรติบัตรของผู้เชี่ยวชาญในหน้าเว็บ
+    """
+    try:
+        expert = request.user
+        certificate = Certificate.objects.filter(expert=expert).first()
+
+        pdf_url = f"{settings.STATIC_URL}certificates/{expert.user.username}_certificate.pdf" if certificate else None
+
+        return render(request, 'expert_certificate.html', {
+            'certificate': certificate,
+            'pdf_url': pdf_url,
+            'expert': expert
+        })
+
+    except Exception as e:
+        return render(request, 'expert_certificate.html', {
+            'certificate': None,
+            'pdf_url': None,
+            'expert': None,
+            'message': str(e)
+        })
+
 #ฟังก์ชันการแสดงใบเกียรติบัตรในหน้าเว็บ
 # @login_required
 # def expert_certificate_view(request):
@@ -1131,19 +1182,29 @@ def articles_expert(request):
 def load_article(request, article):
     return render(request, f"{article}.html")
 
-# ฟังก์ชันเพิ่มบทความ
+# ฟังก์ชันตรวจสอบว่าผู้ใช้เป็นผู้เชี่ยวชาญหรือไม่
+def is_expert(user):
+    return user.is_authenticated and getattr(user, 'is_expert', False)
+
+
+# ฟังก์ชันเพิ่มบทความใหม่
 @login_required
 @user_passes_test(is_expert)
 def add_expert_article(request):
+    """ เพิ่มบทความใหม่ """
     if request.method == 'POST':
-        form = ExpertArticleForm(request.POST, request.FILES)  # ใช้ request.FILES สำหรับการอัปโหลดไฟล์
+        form = ExpertArticleForm(request.POST, request.FILES)
         if form.is_valid():
             article = form.save(commit=False)
-            article.expert = request.user  # กำหนดผู้เขียนเป็นผู้เชี่ยวชาญที่เข้าสู่ระบบ
+            article.expert = request.user
             article.save()
-            return redirect('articles_expert')  # ไปยังหน้าบทความของผู้เชี่ยวชาญ
+            messages.success(request, "เพิ่มบทความเรียบร้อยแล้ว!")
+            return redirect('articles_expert')
+        else:
+            messages.error(request, "เกิดข้อผิดพลาด กรุณาตรวจสอบข้อมูลของคุณ")
     else:
         form = ExpertArticleForm()
+    
     return render(request, 'add_expert_article.html', {'form': form})
 
 # ฟังก์ชันแก้ไขบทความ
@@ -1152,12 +1213,15 @@ def add_expert_article(request):
 def edit_expert_article(request, article_id):
     """ แก้ไขบทความ """
     article = get_object_or_404(ExpertArticle, id=article_id, expert=request.user)
+    
     if request.method == "POST":
-        form = ExpertArticleForm(request.POST, instance=article)
+        form = ExpertArticleForm(request.POST, request.FILES, instance=article)
         if form.is_valid():
             form.save()
             messages.success(request, "แก้ไขบทความเรียบร้อยแล้ว!")
             return redirect("articles_expert")
+        else:
+            messages.error(request, "เกิดข้อผิดพลาด กรุณาตรวจสอบข้อมูลของคุณ")
     else:
         form = ExpertArticleForm(instance=article)
 
@@ -1169,6 +1233,7 @@ def edit_expert_article(request, article_id):
 def delete_expert_article(request, article_id):
     """ ลบบทความ """
     article = get_object_or_404(ExpertArticle, id=article_id, expert=request.user)
+    
     if request.method == "POST":
         article.delete()
         messages.success(request, "ลบบทความเรียบร้อยแล้ว!")

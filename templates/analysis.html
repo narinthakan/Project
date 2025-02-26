@@ -4,55 +4,56 @@
 {% block title %}วิเคราะห์ผิวหน้า{% endblock %}
 
 {% block content %}
-<div class="bg-blue-100 py-10">
-
-    <!-- ปุ่มส่งข้อมูล (อยู่ข้างบนภาพ) -->
-    <div class="flex justify-center space-x-4 mb-4">
-        <a href="{% if user.is_authenticated %}{% url 'skin_data_form' %}{% else %}{% url 'login' %}{% endif %}">
-            <button class="bg-white text-black font-semibold border px-6 py-3 rounded-lg shadow hover:shadow-md">
-                ข้อมูลผิวหน้าของคุณ
+<div class="bg-blue-100 py-10 px-6">
+    
+    <!-- ✅ ปุ่มไปยังหน้า กรอกข้อมูลผิวหน้า -->
+    <div class="flex justify-center mt-8">
+        <a href="{% url 'skin_data_upload' %}">
+            <button class="bg-blue-500 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-blue-600 transition">
+                📝 ข้อมูลผิวหน้าของคุณ
             </button>
         </a>
-        <a href="{% if user.is_authenticated %}{% url 'upload_skin' %}{% else %}{% url 'login' %}{% endif %}">
-            <button class="bg-white text-black font-semibold border px-6 py-3 rounded-lg shadow hover:shadow-md">
-                อัปโหลดผิวหน้า
-            </button>
-        </a>
+    </div>  
+
+    <!-- ✅ คำแนะนำเกี่ยวกับการอัปโหลดภาพ -->
+    <div class="text-center mt-6 bg-white shadow-md rounded-lg p-6 max-w-lg mx-auto">
+        <h2 class="text-xl font-bold text-gray-700 mb-2">📌 คำแนะนำในการอัปโหลดภาพ</h2>
+        <p class="text-gray-600">
+            - อัปโหลดภาพที่มีปัญหาผิว<br>
+            - ถ่ายภาพในที่มีแสงสว่างเพียงพอ และไม่มีการแต่งหน้า<br>
+            - ควรเป็นภาพถ่ายเฉพาะผิวหน้าที่มีปัญหาเท่านั้น เช่น แก้ม คาง หน้าผาก
+        </p>
     </div>
 
-    <!-- คำแนะนำ (อยู่ข้างใต้ปุ่มและข้างบนภาพ) -->
-    <p class="mt-2 text-gray-600 text-center">
-        - อัปโหลดภาพที่มีปัญหาผิว<br>
-        - ควรถ่ายภาพในที่มีแสงสว่างเพียงพอ และไม่มีการแต่งหน้า 
-        ควรเป็นภาพถ่ายเฉพาะผิวหน้าที่มีปัญหาเท่านั้น เช่น แก้ม คาง หน้าผาก
-    </p>
-
-    <!-- ภาพตัวอย่างผิวหน้า -->
-    <div class="relative mt-4">
-        <img src="{% static 'images/ตัวอย่างหน้า.jpg' %}" alt="ตัวอย่างผิวหน้า" class="mx-auto rounded-lg shadow-md">
+    <!-- ✅ ภาพตัวอย่าง -->
+    <div class="relative mt-6 flex justify-center">
+        <img src="{% static 'images/ตัวอย่างหน้า.jpg' %}" alt="ตัวอย่างผิวหน้า" class="rounded-lg shadow-md w-1/2">
     </div>
 
-    <!-- ปุ่มเพิ่มเติมสำหรับผู้ใช้และผู้เชี่ยวชาญ -->
-    <div class="flex justify-center space-x-4 mt-8">
+    <!-- ✅ ปุ่มเพิ่มเติมสำหรับผู้ใช้และผู้เชี่ยวชาญ -->
+    <div class="flex flex-col items-center space-y-4 mt-8">
         {% if user.is_authenticated %}
             {% if user.profile.role == "Expert" %}
-                <a href="{% url 'expert_view' %}">
-                    <button class="bg-blue-500 text-white font-semibold border px-6 py-3 rounded-lg shadow hover:shadow-md focus:outline-none">
-                        สำหรับผู้เชี่ยวชาญ: ดูข้อมูลผิวหน้าผู้ใช้งาน
+                <a href="{% url 'expert_view' %}" class="w-full max-w-md">
+                    <button class="bg-blue-500 text-white font-semibold border px-6 py-3 w-full rounded-lg shadow hover:bg-blue-600 transition">
+                        🧑‍⚕️ สำหรับผู้เชี่ยวชาญ: ดูข้อมูลผิวหน้าผู้ใช้งาน
                     </button>
                 </a>
             {% endif %}
 
             {% if user.profile.role == "User" %}
-                <a href="{% url 'general_advice' %}">
-                    <button class="bg-green-500 text-white font-semibold border px-6 py-3 rounded-lg shadow hover:shadow-md focus:outline-none">
-                        คำแนะนำของผู้เชี่ยวชาญ
+                <a href="{% url 'general_advice' %}" class="w-full max-w-md">
+                    <button class="bg-green-500 text-white font-semibold border px-6 py-3 w-full rounded-lg shadow hover:bg-green-600 transition">
+                        📝 คำแนะนำของผู้เชี่ยวชาญ
                     </button>
                 </a>
             {% endif %}
         {% else %}
-            <p class="text-center text-red-500">กรุณา <a href="{% url 'login' %}" class="underline">เข้าสู่ระบบ</a> เพื่อดูข้อมูลเพิ่มเติม</p>
+            <p class="text-center text-red-500 font-semibold">
+                ❌ กรุณา <a href="{% url 'login' %}" class="underline text-blue-500 hover:text-blue-700">เข้าสู่ระบบ</a> เพื่อดูข้อมูลเพิ่มเติม
+            </p>
         {% endif %}
     </div>
+
 </div>
 {% endblock %}

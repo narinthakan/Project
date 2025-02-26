@@ -85,6 +85,8 @@ urlpatterns = [
     # เส้นทางหน้าวิเคราะห์
     path('analysis/', views.analysis_view, name='analysis'),
     
+    #เส้นทางสำหรับกรอกข้อมูลผิวหน้าและอัปโหลดภาพผิวหน้า
+    path('skin-data-upload/', views.upload_skin_view, name='skin_data_upload'),
     
     #เส้นทางสำหรับดูข้อมูลผิวหน้า
     # path('user_skin_data/<int:user_id>/', views.user_skin_data_view, name='user_skin_data'),
@@ -92,7 +94,7 @@ urlpatterns = [
     # path('expert/skin_data/<int:user_id>/', views.expert_user_skin_data, name='expert_user_skin_data'),
     path('expert-view/', views.expert_view, name='expert_view'),
     path('general-advice/', views.general_advice, name='general_advice'),
-    path('add-skin-profile/', views.add_skin_profile, name='add_skin_profile'),
+    #path('add-skin-profile/', views.add_skin_profile, name='add_skin_profile'),
     #path('expert-view/', views.expert_view_page, name='expert_view_page'),
     path('expert-view/<int:skin_data_id>/', views.expert_view_detail, name='expert_view_detail'),
     #path('skin-data-list/', views.skin_data_list_view, name='skin_data_list'),  # เส้นทางแสดงรายการ
@@ -101,12 +103,16 @@ urlpatterns = [
     path('expert-dashboard/', expert_view, name='expert_dashboard'),
     
     # เส้นทางสำหรับรีวิวผู้เชี่ยวชาญ
-    path('reviews/', views.review_list, name='reviews'),  # ใช้ review_list แทน reviews_view
-    path('review-expert/<int:expert_id>/', views.review_expert, name='review_expert'),
-    path('expert-reviews/<int:expert_id>/', views.view_expert_reviews, name='view_expert_reviews'),
-    path('delete-review/<int:review_id>/', views.delete_review, name='delete_expert_review'),
+    path('reviews/', views.review_list, name='reviews'),  # แสดงรายการรีวิวทั้งหมด
+    path('reviews/', views.review_list, name='reviews_list'),
+    path('review-expert/<int:expert_id>/', views.review_expert, name='review_expert'),  # เพิ่มหรือแก้ไขรีวิวของผู้เชี่ยวชาญ
+    path('expert-reviews/<int:expert_id>/', views.view_expert_reviews, name='view_expert_reviews'),  # ดูรีวิวของผู้เชี่ยวชาญ
+    path('delete-review/<int:review_id>/', views.delete_expert_review, name='delete_expert_review'),  # ลบรีวิว
+
+    # เส้นทางเกี่ยวกับผู้เชี่ยวชาญ
     path('expert-list/', views.expert_list, name='expert_list'),  # รายชื่อผู้เชี่ยวชาญ
-    path('expert-detail/<int:expert_id>/', views.expert_detail, name='expert_detail'),  # หน้าแสดงรายละเอียด + รีวิวของผู้เชี่ยวชาญ
+    path('expert-detail/<int:expert_id>/', views.expert_detail, name='expert_detail'),  # หน้าแสดงรายละเอียดของผู้เชี่ยวชาญ
+
     
     #path('delete-review-review/<int:review_id>/', views.delete_review, name='delete_expert_review'),
     
@@ -120,9 +126,10 @@ urlpatterns = [
     path('skin-data/', views.skin_data_form, name='skin_data_form'),
     
     #เส้นทางสำหรับอัปโหลดผิวหน้า
-    path('upload-skin/', views.upload_skin_view, name='upload_skin'),
+    #path('upload-skin/', views.upload_skin_view, name='upload_skin'),
     path('upload-success/', views.upload_success, name='upload_success'),
     path('accounts/expert-view/<int:user_id>/', views.expert_view_detail, name='expert_view_detail'),
+    
 
     
     # เส้นทางสำหรับส่งข้อมูลโปรไฟล์เพิ่มเติมหลังจากสมัครสมาชิก

@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}กรอกข้อมูลผิวหน้า{% endblock %}
+
+{% block content %}
+<div class="bg-blue-100 p-6">
+    <div class="max-w-lg mx-auto bg-white p-6 rounded shadow">
+        <h1 class="text-xl font-bold mb-4 text-center">📄 กรอกข้อมูลผิวหน้า</h1>
+
+        <form id="uploadForm" method="POST" enctype="multipart/form-data" action="{% url 'skin_data_upload' %}" onsubmit="return validateUpload()">
+            {% csrf_token %}
+
+            <!-- ประเภทผิว -->
+            <div class="mb-4">
+                <label class="block text-gray-700 font-bold mb-2">ประเภทผิว:</label>
+                <select id="skin_type" name="skin_type" class="w-full p-2 border border-gray-300 rounded-lg">
+                    <option value="normal">ผิวธรรมดา</option>
+                    <option value="oily">ผิวมัน</option>
+                    <option value="dry">ผิวแห้ง</option>
+                    <option value="combination">ผิวผสม</option>
+                    <option value="sensitive">ผิวแพ้ง่าย</option>
+                </select>
+            </div>
+
+            <!-- ✅ ปัญหาผิว -->
+            <div class="mb-4">
+                <label class="block text-gray-700 font-bold mb-2">ปัญหาผิวหน้าของคุณ:</label>
+                <textarea name="concern" rows="4" class="w-full p-2 border border-gray-300 rounded-lg"></textarea>
+            </div>
+
+            <!-- อาการแพ้ -->
+            <div class="mb-4">
+                <label class="block text-gray-700 font-bold mb-2">อาการแพ้หรือปัญหาที่พบมาก่อน:</label>
+                <textarea name="allergy_history" rows="4" class="w-full p-2 border border-gray-300 rounded-lg"></textarea>
+            </div>
+
+            <!-- ผลิตภัณฑ์ที่ใช้ -->
+            <div class="mb-4">
+                <label class="block text-gray-700 font-bold mb-2">ผลิตภัณฑ์ที่ใช้ปัจจุบัน:</label>
+                <textarea name="current_products" rows="4" class="w-full p-2 border border-gray-300 rounded-lg"></textarea>
+            </div>
+
+            <!-- เป้าหมาย -->
+            <div class="mb-4">
+                <label class="block text-gray-700 font-bold mb-2">เป้าหมายการดูแลผิวหน้า:</label>
+                <textarea name="skincare_goal" rows="4" class="w-full p-2 border border-gray-300 rounded-lg"></textarea>
+            </div>
+
+
+            <!-- ✅ อัปโหลดภาพ -->
+            <div class="mb-4">
+                <label class="block text-gray-700 font-bold">เลือกภาพจากอุปกรณ์ (ต้องเลือกอย่างน้อย 2 รูป):</label>
+                <input type="file" id="fileInput" name="images" accept="image/*" multiple class="block w-full border rounded p-2">
+                <p id="file-error" class="text-red-500 text-sm hidden">❌ กรุณาเลือกอย่างน้อย 2 รูป</p>
+                <div id="uploadedPreview" class="flex flex-wrap mt-2"></div>
+            </div>
+
+            <!-- ✅ เปิดกล้อง -->
+            <div class="mb-4 text-center">
+                <button type="button" id="openCamera" class="bg-blue-500 text-white px-4 py-2 rounded">
+                    📸 เปิดกล้อง
+                </button>
+                <button type="button" id="closeCamera" class="bg-gray-500 text-white px-4 py-2 rounded hidden">
+                    ❌ ปิดกล้อง
+                </button>
+            </div>
+
+            <div id="cameraContainer" class="mb-4 hidden">
+                <video id="video" autoplay class="border rounded mb-2 w-full"></video>
+                <canvas id="canvas" class="hidden"></canvas>
+                <button type="button" id="capture" class="bg-green-500 text-white px-4 py-2 rounded w-full">📸 ถ่ายภาพ</button>
+                <div id="capturedPreview" class="flex flex-wrap mt-2"></div>
+            </div>
+
+            <!-- ✅ ปุ่มส่ง -->
+            <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded w-full">📤 อัปโหลด</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    const video = document.getElementById("video");
+    const canvas = document.getElementById("canvas");
+    const captureButton = document.getElementById("capture");
+    const fileInput = document.getElementById("fileInput");
+    const uploadedPreview = document.getElementById("uploadedPreview");
+    const capturedPreview = document.getElementById("capturedPreview");
+    const fileError = document.getElementById("file-error");
+    const cameraContainer = document.getElementById("cameraContainer");
+    const openCamera = document.getElementById("openCamera");
+    const closeCamera = document.getElementById("closeCamera");
+
+    let selectedFiles = [];
+    let cameraStream = null;
+
+    openCamera.addEventListener("click", () => {
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                cameraStream = stream;
+                video.srcObject = stream;
+                cameraContainer.classList.remove("hidden");
+                openCamera.classList.add("hidden");
+                closeCamera.classList.remove("hidden");
+            })
+            .catch(err => {
+                alert("❌ ไม่สามารถเปิดกล้องได้ กรุณาให้สิทธิ์เข้าถึงกล้อง");
+            });
+    });
+
+    closeCamera.addEventListener("click", () => {
+        if (cameraStream) {
+            cameraStream.getTracks().forEach(track => track.stop());
+        }
+        cameraContainer.classList.add("hidden");
+        openCamera.classList.remove("hidden");
+        closeCamera.classList.add("hidden");
+    });
+
+    captureButton.addEventListener("click", () => {
+        const context = canvas.getContext("2d");
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        canvas.toBlob(blob => {
+            const imageFile = new File([blob], `capture-${Date.now()}.png`, { type: "image/png" });
+            selectedFiles.push(imageFile);
+            const imgElement = document.createElement("img");
+            imgElement.src = URL.createObjectURL(blob);
+            capturedPreview.appendChild(imgElement);
+        }, "image/png");
+    });
+</script>
+
+{% endblock %}

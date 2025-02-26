@@ -1,19 +1,16 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>อัปโหลดสำเร็จ</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        * { font-family: "Kanit", sans-serif; }
-    </style>
-</head>
-<body class="bg-blue-100 flex items-center justify-center h-screen">
-    <div class="bg-white p-6 rounded shadow text-center">
-        <h1 class="text-xl font-bold text-green-600">✅ อัปโหลดภาพสำเร็จ!</h1>
-        <p class="text-gray-700 mt-2">ข้อมูลของคุณถูกบันทึกเรียบร้อย</p>
-        <a href="{% url 'home' %}" class="mt-4 block bg-blue-500 text-white px-4 py-2 rounded">กลับสู่หน้าหลัก</a>
+{% extends "base.html" %}
+
+{% block title %}อัปโหลดสำเร็จ{% endblock %}
+
+{% block content %}
+<div class="bg-green-100 py-10 flex flex-col items-center">
+    <h1 class="text-3xl font-bold text-green-600">✅ อัปโหลดข้อมูลสำเร็จ!</h1>
+    <p class="mt-4 text-gray-700">ข้อมูลผิวหน้าของคุณถูกบันทึกเรียบร้อยแล้ว 🎉</p>
+
+    <div class="mt-6">
+        <a href="{% url 'analysis' %}" class="bg-blue-500 text-white px-6 py-3 rounded-lg shadow hover:bg-blue-600">
+            🔙 กลับไปที่หน้าวิเคราะห์
+        </a>
     </div>
-</body>
-</html>
+</div>
+{% endblock %}
