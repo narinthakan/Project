@@ -6,8 +6,8 @@
 <div class="container mx-auto mt-6">
     <h2 class="text-center text-2xl font-bold mb-4">📚 บทความผู้เชี่ยวชาญ</h2>
 
-    <!-- ปุ่มเพิ่มบทความ -->
-    {% if user.is_authenticated and user.groups.all.0.name == "Expert" %}
+    <!-- ปุ่มเพิ่มบทความ (เฉพาะผู้เชี่ยวชาญ) -->
+    {% if user_is_expert %}
         <div class="text-right mb-4">
             <a href="{% url 'add_expert_article' %}" class="bg-blue-500 text-white px-4 py-2 rounded-md">
                 ➕ เพิ่มบทความ
@@ -28,7 +28,7 @@
 
                 <p class="text-sm text-gray-500 mt-2">🖊 โดย {{ article.expert.username }} | 📅 {{ article.created_at|date:"d M Y" }}</p>
 
-                <!-- ปุ่มแก้ไข/ลบ เฉพาะเจ้าของบทความ -->
+                <!-- ปุ่มแก้ไข/ลบ (เฉพาะเจ้าของบทความ) -->
                 {% if user == article.expert %}
                     <div class="mt-3 flex justify-between">
                         <a href="{% url 'edit_expert_article' article.id %}" class="text-blue-500">✏ แก้ไข</a>

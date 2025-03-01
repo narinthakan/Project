@@ -1,59 +1,96 @@
 {% extends "base.html" %}
 {% load static %}
-
 {% block title %}วิเคราะห์ผิวหน้า{% endblock %}
-
 {% block content %}
-<div class="bg-blue-100 py-10 px-6">
-    
-    <!-- ✅ ปุ่มไปยังหน้า กรอกข้อมูลผิวหน้า -->
-    <div class="flex justify-center mt-8">
-        <a href="{% url 'skin_data_upload' %}">
-            <button class="bg-blue-500 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-blue-600 transition">
-                📝 ข้อมูลผิวหน้าของคุณ
-            </button>
-        </a>
-    </div>  
-
-    <!-- ✅ คำแนะนำเกี่ยวกับการอัปโหลดภาพ -->
-    <div class="text-center mt-6 bg-white shadow-md rounded-lg p-6 max-w-lg mx-auto">
-        <h2 class="text-xl font-bold text-gray-700 mb-2">📌 คำแนะนำในการอัปโหลดภาพ</h2>
-        <p class="text-gray-600">
-            - อัปโหลดภาพที่มีปัญหาผิว<br>
-            - ถ่ายภาพในที่มีแสงสว่างเพียงพอ และไม่มีการแต่งหน้า<br>
-            - ควรเป็นภาพถ่ายเฉพาะผิวหน้าที่มีปัญหาเท่านั้น เช่น แก้ม คาง หน้าผาก
-        </p>
-    </div>
-
-    <!-- ✅ ภาพตัวอย่าง -->
-    <div class="relative mt-6 flex justify-center">
-        <img src="{% static 'images/ตัวอย่างหน้า.jpg' %}" alt="ตัวอย่างผิวหน้า" class="rounded-lg shadow-md w-1/2">
-    </div>
-
-    <!-- ✅ ปุ่มเพิ่มเติมสำหรับผู้ใช้และผู้เชี่ยวชาญ -->
-    <div class="flex flex-col items-center space-y-4 mt-8">
+<div class="bg-gray-50 py-16 px-6">
+    <div class="max-w-3xl mx-auto">
+        <h1 class="text-2xl font-medium text-center text-gray-800 mb-12">วิเคราะห์ผิวหน้าของคุณ</h1>
+        
+        <!-- Hero Section -->
+        <div class="relative mb-16 overflow-hidden rounded-2xl shadow-sm">
+            <img src="{% static 'images/ตัวอย่างหน้า.jpg' %}" alt="ตัวอย่างผิวหน้า" class="w-full h-64 object-cover">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-end">
+                <div class="p-6">
+                    <a href="{% url 'skin_data_upload' %}" class="inline-block">
+                        <button class="bg-white text-gray-800 font-medium px-6 py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-400 flex items-center gap-2">
+                            <span class="text-blue-500">📷</span> เริ่มวิเคราะห์ผิวหน้าของคุณ
+                        </button>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- คำแนะนำ -->
+        <div class="bg-white rounded-xl shadow-sm p-8 mb-10">
+            <h2 class="text-lg font-medium text-gray-800 mb-5 flex items-center">
+                <span class="text-blue-500 mr-2">📌</span> คำแนะนำในการอัปโหลดภาพ
+            </h2>
+            <ul class="space-y-3 text-gray-600">
+                <li class="flex items-start">
+                    <span class="text-blue-400 mr-2">•</span>
+                    <span>อัปโหลดภาพที่แสดงปัญหาผิวหน้าอย่างชัดเจน</span>
+                </li>
+                <li class="flex items-start">
+                    <span class="text-blue-400 mr-2">•</span>
+                    <span>ถ่ายภาพในที่มีแสงสว่างเพียงพอ และไม่มีการแต่งหน้า</span>
+                </li>
+                <li class="flex items-start">
+                    <span class="text-blue-400 mr-2">•</span>
+                    <span>ควรเป็นภาพถ่ายเฉพาะบริเวณที่มีปัญหาเท่านั้น เช่น แก้ม คาง หน้าผาก</span>
+                </li>
+            </ul>
+        </div>
+        
+        <!-- ปุ่มสำหรับผู้ใช้งานต่างๆ -->
         {% if user.is_authenticated %}
             {% if user.profile.role == "Expert" %}
-                <a href="{% url 'expert_view' %}" class="w-full max-w-md">
-                    <button class="bg-blue-500 text-white font-semibold border px-6 py-3 w-full rounded-lg shadow hover:bg-blue-600 transition">
-                        🧑‍⚕️ สำหรับผู้เชี่ยวชาญ: ดูข้อมูลผิวหน้าผู้ใช้งาน
-                    </button>
+                <a href="{% url 'expert_view' %}" class="block w-full">
+                    <div class="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow transition-all duration-300 border border-gray-100">
+                        <div class="p-6 flex items-center">
+                            <div class="bg-blue-50 rounded-full p-3 mr-4">
+                                <span class="text-xl">🧑‍⚕️</span>
+                            </div>
+                            <div>
+                                <h3 class="font-medium text-gray-800">สำหรับผู้เชี่ยวชาญ</h3>
+                                <p class="text-gray-500 text-sm mt-1">ดูข้อมูลผิวหน้าและให้คำแนะนำแก่ผู้ใช้งาน</p>
+                            </div>
+                            <div class="ml-auto">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 group-hover:text-blue-500 transition-colors" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
                 </a>
             {% endif %}
-
             {% if user.profile.role == "User" %}
-                <a href="{% url 'general_advice' %}" class="w-full max-w-md">
-                    <button class="bg-green-500 text-white font-semibold border px-6 py-3 w-full rounded-lg shadow hover:bg-green-600 transition">
-                        📝 คำแนะนำของผู้เชี่ยวชาญ
-                    </button>
+                <a href="{% url 'general_advice' %}" class="block w-full">
+                    <div class="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow transition-all duration-300 border border-gray-100">
+                        <div class="p-6 flex items-center">
+                            <div class="bg-green-50 rounded-full p-3 mr-4">
+                                <span class="text-xl">📝</span>
+                            </div>
+                            <div>
+                                <h3 class="font-medium text-gray-800">คำแนะนำของผู้เชี่ยวชาญ</h3>
+                                <p class="text-gray-500 text-sm mt-1">ดูคำแนะนำและข้อมูลที่เป็นประโยชน์สำหรับผิวของคุณ</p>
+                            </div>
+                            <div class="ml-auto">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 group-hover:text-green-500 transition-colors" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
                 </a>
             {% endif %}
         {% else %}
-            <p class="text-center text-red-500 font-semibold">
-                ❌ กรุณา <a href="{% url 'login' %}" class="underline text-blue-500 hover:text-blue-700">เข้าสู่ระบบ</a> เพื่อดูข้อมูลเพิ่มเติม
-            </p>
+            <div class="bg-white rounded-xl shadow-sm p-6 text-center border border-gray-100">
+                <p class="text-gray-600 mb-3">คุณยังไม่ได้เข้าสู่ระบบ</p>
+                <a href="{% url 'login' %}" class="inline-block bg-white text-blue-500 font-medium px-6 py-2 rounded-lg border border-blue-500 hover:bg-blue-50 transition-colors">
+                    เข้าสู่ระบบเพื่อดูข้อมูลเพิ่มเติม
+                </a>
+            </div>
         {% endif %}
     </div>
-
 </div>
 {% endblock %}

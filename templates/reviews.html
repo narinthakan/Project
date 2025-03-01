@@ -1,24 +1,21 @@
 {% extends "base.html" %}
-
 {% block title %}รีวิวผู้เชี่ยวชาญ - Essence The Beauty{% endblock %}
-
 {% block content %}
-<main class="p-6">
-    <section class="text-center">
-        <h2 class="text-2xl font-bold mb-6">ผู้เชี่ยวชาญ</h2>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<main class="max-w-6xl mx-auto px-4 py-12">
+    <section>
+        <h2 class="text-3xl font-light text-center mb-12 tracking-wide">ผู้เชี่ยวชาญ</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {% for expert in experts %}
-            <div class="bg-white rounded-lg shadow-md p-6 flex flex-col items-center">
-                <img src="{{ expert.profile_picture.url }}" alt="{{ expert.username }}" class="w-24 h-24 rounded-full mb-4 border-2 border-gray-300">
-                <h3 class="text-xl font-bold text-gray-800">{{ expert.username }}</h3>
-                <p class="text-gray-500">{{ expert.title }}</p>
-
-                <!-- คลิกเพื่อดูรายละเอียดรีวิวของ expert คนนี้ -->
-                <a href="{% url 'expert_detail' expert.id %}"
-                   class="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                   ดูรีวิว
-                </a>
+            <div class="bg-white hover:shadow-md transition-shadow duration-300 rounded-lg overflow-hidden border border-gray-100">
+                <div class="p-8 flex flex-col items-center">
+                    <img src="{{ expert.profile_picture.url }}" alt="{{ expert.username }}" class="w-28 h-28 rounded-full object-cover shadow-sm mb-6">
+                    <h3 class="text-lg font-medium text-gray-800 mb-1">{{ expert.username }}</h3>
+                    <p class="text-gray-500 text-sm mb-6">{{ expert.title }}</p>
+                    <a href="{% url 'expert_detail' expert.id %}" 
+                       class="mt-auto text-sm px-6 py-2 border border-gray-300 text-gray-700 rounded-full hover:bg-gray-50 transition-colors duration-200">
+                        ดูรีวิว
+                    </a>
+                </div>
             </div>
             {% endfor %}
         </div>

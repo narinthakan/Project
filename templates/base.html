@@ -17,6 +17,7 @@
             border-bottom: 4px solid transparent; /* ขีดล่างลิงก์ปกติ */
             color: #4A5568; /* สีลิงก์ปกติ */
             text-decoration: none;
+            transition: all 0.3s ease;
         }
 
         .nav-link-active {
@@ -41,14 +42,14 @@
         }
     </script>
 </head>
-<body class="bg-blue-100">
+<body class="bg-blue-50"> <!-- เปลี่ยนเป็นสีฟ้าอ่อนที่สุด -->
 
     <!-- Navbar -->
-    <nav class="flex justify-between items-center p-6">
+    <nav class="flex justify-between items-center p-6 bg-blue-100 shadow-md"> <!-- เปลี่ยนเป็นฟ้าอ่อน -->
         <!-- Left Section: Search -->
         <div class="flex items-center">
-            <input id="searchInput" type="text" placeholder="ค้นหา" class="w-60 p-2 rounded-full border border-gray-300 focus:outline-none">
-            <button onclick="searchFunction()" class="ml-2 bg-gray-200 px-4 py-2 rounded-full">ค้นหา</button>
+            <input id="searchInput" type="text" placeholder="ค้นหา" class="w-60 p-2 rounded-l-full border border-gray-300 focus:outline-none">
+            <button onclick="searchFunction()" class="ml-2 bg-gray-200 px-4 py-2 rounded-r-full hover:bg-gray-300 transition">ค้นหา</button>
         </div>
 
         <!-- Middle Section: Logo -->
@@ -56,32 +57,32 @@
             <img src="{% static 'images/EssenceTheBeauty_Logo.png' %}" alt="Essence The Beauty Logo" class="w-48 h-auto">
         </div>
 
-        <!-- Right Section: ชื่อผู้ใช้หรือปุ่มเข้าสู่ระบบ -->
+        <!-- Right Section: User Account -->
         <div class="flex items-center space-x-4">
             {% if user.is_authenticated %}
-                <!-- ทำให้ชื่อผู้ใช้คลิกได้และลิงก์ไปยังหน้าโปรไฟล์ -->
                 <a href="{% url 'user_profile' %}" class="text-black hover:underline">{{ user.username }}</a>
-                <a href="{% url 'logout' %}" class="user-link">ออกจากระบบ</a>
+                <a href="{% url 'logout' %}" class="bg-red-500 text-white px-4 py-2 rounded-lg shadow hover:bg-red-600 transition">ออกจากระบบ</a>
             {% elif request.session.seller_id %}
                 <a href="{% url 'seller_profile' %}" class="text-black hover:underline">{{ request.session.seller_fullname }}</a>
-                <a href="{% url 'logout' %}" class="user-link">ออกจากระบบ</a>
+                <a href="{% url 'logout' %}" class="bg-red-500 text-white px-4 py-2 rounded-lg shadow hover:bg-red-600 transition">ออกจากระบบ</a>
             {% else %}
-                <!-- แสดงปุ่มเข้าสู่ระบบถ้ายังไม่เข้าสู่ระบบ -->
-                <button onclick="window.location.href='{% url 'login' %}'" class="bg-white text-black px-6 py-2 rounded-full border border-gray-300">เข้าสู่ระบบ</button>
+                <button onclick="window.location.href='{% url 'login' %}'" class="bg-white text-black px-6 py-2 rounded-full border border-gray-300 hover:bg-gray-200 transition">เข้าสู่ระบบ</button>
             {% endif %}
         </div>
     </nav>
 
     <!-- Navigation Links -->
-    <div class="flex justify-center space-x-16 py-6">
+    <div class="flex justify-center space-x-16 py-6 bg-blue-100 shadow-md"> <!-- เปลี่ยนเป็นสีฟ้าอ่อนที่สุด -->
         <a href="{% url 'home' %}" class="{% if request.resolver_match.url_name == 'home' %}nav-link-active{% else %}nav-link{% endif %}">หน้าหลัก</a>
         <a href="{% url 'products' %}" class="{% if request.resolver_match.url_name == 'products' %}nav-link-active{% else %}nav-link{% endif %}">ผลิตภัณฑ์</a>
         <a href="{% url 'analysis' %}" class="{% if request.resolver_match.url_name == 'analysis' %}nav-link-active{% else %}nav-link{% endif %}">วิเคราะห์</a>
         <a href="{% url 'reviews' %}" class="{% if request.resolver_match.url_name == 'reviews' %}nav-link-active{% else %}nav-link{% endif %}">รีวิว</a>
     </div>
 
+    <!-- Main Content -->
     <div class="container mx-auto p-6">
         {% block content %}{% endblock %}
     </div>
+
 </body>
 </html>

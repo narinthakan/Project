@@ -6,39 +6,59 @@
 {% block content %}
 <main class="p-8 bg-gradient-to-b from-blue-50 to-blue-100">
     <!-- ปุ่มเพิ่มผลิตภัณฑ์สำหรับแอดมิน, ผู้เชี่ยวชาญ, และผู้ขาย -->
-    {% if user.is_authenticated %}
-        {% if user.is_staff or user.profile.role == 'Expert' or user.profile.role == 'Seller' %}
-            <div class="mb-6 text-center">
-                <a href="{% url 'add_product' %}" class="bg-gradient-to-r from-green-400 to-green-600 text-white px-6 py-3 rounded-full text-lg font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-transform">
-                    + เพิ่มผลิตภัณฑ์
-                </a>
-            </div>
-        {% endif %}
+    {% if user.is_authenticated and user.is_staff %}
+        <div class="mb-6 text-center">
+            <a href="{% url 'add_product' %}" class="bg-gradient-to-r from-green-400 to-green-600 text-white px-6 py-3 rounded-full text-lg font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-transform">
+                + เพิ่มผลิตภัณฑ์
+            </a>
+        </div>
+    {% elif user.is_authenticated and user.profile.role == 'Expert' %}
+        <div class="mb-6 text-center">
+            <a href="{% url 'add_product' %}" class="bg-gradient-to-r from-green-400 to-green-600 text-white px-6 py-3 rounded-full text-lg font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-transform">
+                + เพิ่มผลิตภัณฑ์
+            </a>
+        </div>
+    {% elif user.is_authenticated and user.profile.role == 'Seller' %}
+        <div class="mb-6 text-center">
+            <a href="{% url 'add_product' %}" class="bg-gradient-to-r from-green-400 to-green-600 text-white px-6 py-3 rounded-full text-lg font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-transform">
+                + เพิ่มผลิตภัณฑ์
+            </a>
+        </div>
     {% endif %}
 
-    <!-- Product Grid -->
+    <!-- แสดงรายการผลิตภัณฑ์ -->
     <section class="mb-12">
-        <h2 class="text-2xl font-bold text-center text-gray-700 mb-6"> ผลิตภัณฑ์ของเรา</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <!-- Product Loop -->
-            {% for i in products %}
-            <div class="bg-white rounded-lg shadow-xl hover:shadow-2xl p-6 transition-transform transform hover:scale-105">
-                <!-- ตรวจสอบว่ามีไฟล์ภาพหรือไม่ -->
-                {% if i.image %}
-                    <img src="{{ i.image.url }}" alt="{{ i.name }}" class="w-full h-64 object-cover bg-gray-100 rounded-lg">
-                {% else %}
-                    <!-- ใช้ภาพ Default ถ้าไม่มีภาพที่อัปโหลด -->
-                    <img src="{% static 'images/default-image.png' %}" alt="Default Image" class="w-full h-64 object-cover bg-gray-100 rounded-lg">
-                {% endif %}
-                <h3 class="text-lg font-semibold mt-4 text-gray-800">
-                    <a href="{% url 'product_detail' i.id %}" class="hover:underline hover:text-blue-600 transition">{{ i.name }}</a>
-                </h3>
-                <p class="text-gray-500 text-sm">{{ i.category }}</p>
-                <p class="text-gray-900 font-bold text-lg mt-2">${{ i.price }}</p>
+        <h2 class="text-2xl font-bold text-center text-gray-700 mb-6">ผลิตภัณฑ์ของเรา</h2>
 
-                <!-- ปุ่มแก้ไขและลบ (เฉพาะแอดมิน, ผู้เชี่ยวชาญ, และผู้ขาย) -->
-                {% if user.is_authenticated %}
-                    {% if user.is_staff or user.profile.role == 'Expert' or user.profile.role == 'Seller' %}
+        {% if products %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {% for i in products %}
+                <div class="bg-white rounded-lg shadow-xl hover:shadow-2xl p-6 transition-transform transform hover:scale-105">
+                    {% if i.image %}
+                        <img src="{{ i.image.url }}" alt="{{ i.name }}" class="w-full h-64 object-cover bg-gray-100 rounded-lg">
+                    {% else %}
+                        <img src="{% static 'images/default-image.png' %}" alt="Default Image" class="w-full h-64 object-cover bg-gray-100 rounded-lg">
+                    {% endif %}
+                    <h3 class="text-lg font-semibold mt-4 text-gray-800">
+                        <a href="{% url 'product_detail' i.id %}" class="hover:underline hover:text-blue-600 transition">{{ i.name }}</a>
+                    </h3>
+                    <p class="text-gray-500 text-sm">{{ i.category }}</p>
+                    <p class="text-gray-900 font-bold text-lg mt-2">{{ i.price }} บาท</p>
+
+                    <!-- ปุ่มแก้ไขและลบ -->
+                    {% if user.is_authenticated and user.is_staff %}
+                        <div class="mt-4 flex space-x-3">
+                            <a href="{% url 'edit_product' i.id %}" class="bg-blue-500 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-600 transition">✏️ แก้ไข</a>
+                            <form method="POST" action="{% url 'delete_product' i.id %}" class="inline">
+                                {% csrf_token %}
+                                <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded-lg shadow hover:bg-red-600 transition" onclick="return confirm('คุณต้องการลบผลิตภัณฑ์นี้หรือไม่?');">🗑️ ลบ</button>
+                            </form>
+                        </div>
+                    {% elif user.is_authenticated and user.profile.role == 'Expert' %}
+                        <div class="mt-4 flex space-x-3">
+                            <a href="{% url 'edit_product' i.id %}" class="bg-blue-500 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-600 transition">✏️ แก้ไข</a>
+                        </div>
+                    {% elif user.is_authenticated and user.profile.role == 'Seller' %}
                         <div class="mt-4 flex space-x-3">
                             <a href="{% url 'edit_product' i.id %}" class="bg-blue-500 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-600 transition">✏️ แก้ไข</a>
                             <form method="POST" action="{% url 'delete_product' i.id %}" class="inline">
@@ -47,10 +67,12 @@
                             </form>
                         </div>
                     {% endif %}
-                {% endif %}
+                </div>
+                {% endfor %}
             </div>
-            {% endfor %}
-        </div>
+        {% else %}
+            <p class="text-gray-500 text-center">ไม่พบผลิตภัณฑ์</p>
+        {% endif %}
     </section>
 </main>
 {% endblock %}

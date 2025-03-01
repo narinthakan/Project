@@ -202,15 +202,15 @@ class ExpertArticle(models.Model):
         return self.title
     
 # โมเดลสำหรับเก็บรีวิวของผู้เชี่ยวชาญ
-class ExpertReview(models.Model):
-    expert = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviews')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_reviews')
-    rating = models.PositiveIntegerField()  # คะแนน (1-5 ดาว)
-    comment = models.TextField(blank=True, null=True)  # ความคิดเห็น
-    created_at = models.DateTimeField(auto_now_add=True)  # วันที่รีวิว
+# class ExpertReview(models.Model):
+#     expert = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviews')
+#     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_reviews')
+#     rating = models.PositiveIntegerField()  # คะแนน (1-5 ดาว)
+#     comment = models.TextField(blank=True, null=True)  # ความคิดเห็น
+#     created_at = models.DateTimeField(auto_now_add=True)  # วันที่รีวิว
 
-    def __str__(self):
-        return f"Review by {self.user.username} for {self.expert.username}"
+#     def __str__(self):
+#         return f"Review by {self.user.username} for {self.expert.username}"
 
 # โมเดลสำหรับเกียรติบัตร
 class Certificate(models.Model):

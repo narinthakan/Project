@@ -4,17 +4,20 @@
 {% block title %}กรอกข้อมูลผิวหน้า{% endblock %}
 
 {% block content %}
-<div class="bg-blue-100 p-6">
-    <div class="max-w-lg mx-auto bg-white p-6 rounded shadow">
-        <h1 class="text-xl font-bold mb-4 text-center">📄 กรอกข้อมูลผิวหน้า</h1>
+<div class="min-h-screen bg-blue-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md mx-auto bg-white rounded-lg shadow-sm border border-blue-100 overflow-hidden">
+        <div class="px-8 pt-8 pb-6 border-b border-blue-100 bg-blue-50">
+            <h1 class="text-3xl font-medium text-center text-blue-800 tracking-wide">กรอกข้อมูลผิวหน้า</h1>
+            <p class="mt-2 text-center text-blue-600 text-sm">ข้อมูลของคุณจะช่วยให้เราแนะนำผลิตภัณฑ์ที่เหมาะสม</p>
+        </div>
 
-        <form id="uploadForm" method="POST" enctype="multipart/form-data" action="{% url 'skin_data_upload' %}" onsubmit="return validateUpload()">
+        <form id="uploadForm" method="POST" enctype="multipart/form-data" action="{% url 'skin_data_upload' %}" onsubmit="return validateUpload()" class="px-8 py-6 space-y-6">
             {% csrf_token %}
 
             <!-- ประเภทผิว -->
-            <div class="mb-4">
-                <label class="block text-gray-700 font-bold mb-2">ประเภทผิว:</label>
-                <select id="skin_type" name="skin_type" class="w-full p-2 border border-gray-300 rounded-lg">
+            <div>
+                <label class="block text-sm font-medium text-blue-800 mb-2">ประเภทผิว</label>
+                <select id="skin_type" name="skin_type" class="w-full px-3 py-2 border border-blue-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-300 focus:border-blue-300 text-gray-700 text-sm">
                     <option value="normal">ผิวธรรมดา</option>
                     <option value="oily">ผิวมัน</option>
                     <option value="dry">ผิวแห้ง</option>
@@ -23,58 +26,82 @@
                 </select>
             </div>
 
-            <!-- ✅ ปัญหาผิว -->
-            <div class="mb-4">
-                <label class="block text-gray-700 font-bold mb-2">ปัญหาผิวหน้าของคุณ:</label>
-                <textarea name="concern" rows="4" class="w-full p-2 border border-gray-300 rounded-lg"></textarea>
+            <!-- ปัญหาผิว -->
+            <div>
+                <label class="block text-sm font-medium text-blue-800 mb-2">ปัญหาผิวหน้าของคุณ</label>
+                <textarea name="concern" rows="3" class="w-full px-3 py-2 border border-blue-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-300 focus:border-blue-300 text-gray-700 text-sm resize-none"></textarea>
             </div>
 
             <!-- อาการแพ้ -->
-            <div class="mb-4">
-                <label class="block text-gray-700 font-bold mb-2">อาการแพ้หรือปัญหาที่พบมาก่อน:</label>
-                <textarea name="allergy_history" rows="4" class="w-full p-2 border border-gray-300 rounded-lg"></textarea>
+            <div>
+                <label class="block text-sm font-medium text-blue-800 mb-2">อาการแพ้หรือปัญหาที่พบมาก่อน</label>
+                <textarea name="allergy_history" rows="3" class="w-full px-3 py-2 border border-blue-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-300 focus:border-blue-300 text-gray-700 text-sm resize-none"></textarea>
             </div>
 
             <!-- ผลิตภัณฑ์ที่ใช้ -->
-            <div class="mb-4">
-                <label class="block text-gray-700 font-bold mb-2">ผลิตภัณฑ์ที่ใช้ปัจจุบัน:</label>
-                <textarea name="current_products" rows="4" class="w-full p-2 border border-gray-300 rounded-lg"></textarea>
+            <div>
+                <label class="block text-sm font-medium text-blue-800 mb-2">ผลิตภัณฑ์ที่ใช้ปัจจุบัน</label>
+                <textarea name="current_products" rows="3" class="w-full px-3 py-2 border border-blue-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-300 focus:border-blue-300 text-gray-700 text-sm resize-none"></textarea>
             </div>
 
             <!-- เป้าหมาย -->
-            <div class="mb-4">
-                <label class="block text-gray-700 font-bold mb-2">เป้าหมายการดูแลผิวหน้า:</label>
-                <textarea name="skincare_goal" rows="4" class="w-full p-2 border border-gray-300 rounded-lg"></textarea>
+            <div>
+                <label class="block text-sm font-medium text-blue-800 mb-2">เป้าหมายการดูแลผิวหน้า</label>
+                <textarea name="skincare_goal" rows="3" class="w-full px-3 py-2 border border-blue-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-300 focus:border-blue-300 text-gray-700 text-sm resize-none"></textarea>
             </div>
 
-
-            <!-- ✅ อัปโหลดภาพ -->
-            <div class="mb-4">
-                <label class="block text-gray-700 font-bold">เลือกภาพจากอุปกรณ์ (ต้องเลือกอย่างน้อย 2 รูป):</label>
-                <input type="file" id="fileInput" name="images" accept="image/*" multiple class="block w-full border rounded p-2">
-                <p id="file-error" class="text-red-500 text-sm hidden">❌ กรุณาเลือกอย่างน้อย 2 รูป</p>
-                <div id="uploadedPreview" class="flex flex-wrap mt-2"></div>
+            <!-- อัปโหลดภาพ -->
+            <div>
+                <label class="block text-sm font-medium text-blue-800 mb-3">รูปภาพผิวหน้า</label>
+                <div class="border-2 border-dashed border-blue-200 rounded-lg px-6 py-8 text-center bg-blue-50">
+                    <input type="file" id="fileInput" name="images" accept="image/*" multiple class="hidden">
+                    <label for="fileInput" class="cursor-pointer inline-flex items-center px-4 py-2 border border-blue-300 rounded-md text-sm font-medium text-blue-700 bg-white hover:bg-blue-50">
+                        เลือกรูปภาพ
+                    </label>
+                    <p class="mt-2 text-xs text-blue-600">กรุณาเลือกอย่างน้อย 2 รูป</p>
+                    <p id="file-error" class="text-red-500 text-xs mt-1 hidden">กรุณาเลือกอย่างน้อย 2 รูป</p>
+                </div>
+                <div id="uploadedPreview" class="flex flex-wrap gap-2 mt-3"></div>
             </div>
 
-            <!-- ✅ เปิดกล้อง -->
-            <div class="mb-4 text-center">
-                <button type="button" id="openCamera" class="bg-blue-500 text-white px-4 py-2 rounded">
-                    📸 เปิดกล้อง
-                </button>
-                <button type="button" id="closeCamera" class="bg-gray-500 text-white px-4 py-2 rounded hidden">
-                    ❌ ปิดกล้อง
-                </button>
+            <!-- กล้อง -->
+            <div class="space-y-3">
+                <div class="flex justify-center">
+                    <button type="button" id="openCamera" class="inline-flex items-center justify-center px-4 py-2 border border-blue-300 rounded-md text-sm font-medium text-blue-700 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        เปิดกล้อง
+                    </button>
+                    <button type="button" id="closeCamera" class="hidden inline-flex items-center justify-center px-4 py-2 border border-blue-300 rounded-md text-sm font-medium text-blue-700 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-300">
+                        ปิดกล้อง
+                    </button>
+                </div>
+
+                <div id="cameraContainer" class="hidden space-y-3">
+                    <div class="relative rounded-lg overflow-hidden border border-blue-200">
+                        <video id="video" autoplay class="w-full object-cover"></video>
+                    </div>
+                    <canvas id="canvas" class="hidden"></canvas>
+                    <button type="button" id="capture" class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        ถ่ายภาพ
+                    </button>
+                    <div id="capturedPreview" class="flex flex-wrap gap-2"></div>
+                </div>
             </div>
 
-            <div id="cameraContainer" class="mb-4 hidden">
-                <video id="video" autoplay class="border rounded mb-2 w-full"></video>
-                <canvas id="canvas" class="hidden"></canvas>
-                <button type="button" id="capture" class="bg-green-500 text-white px-4 py-2 rounded w-full">📸 ถ่ายภาพ</button>
-                <div id="capturedPreview" class="flex flex-wrap mt-2"></div>
-            </div>
-
-            <!-- ✅ ปุ่มส่ง -->
-            <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded w-full">📤 อัปโหลด</button>
+            <!-- ปุ่มส่ง -->
+            <button type="submit" class="w-full inline-flex items-center justify-center px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                </svg>
+                บันทึกข้อมูลผิวหน้า
+            </button>
         </form>
     </div>
 </div>
@@ -94,6 +121,26 @@
     let selectedFiles = [];
     let cameraStream = null;
 
+    // เมื่อผู้ใช้อัปโหลดไฟล์
+    fileInput.addEventListener("change", function() {
+        uploadedPreview.innerHTML = "";
+        
+        for(let i = 0; i < fileInput.files.length; i++) {
+            const file = fileInput.files[i];
+            const img = document.createElement("img");
+            img.src = URL.createObjectURL(file);
+            img.className = "w-20 h-20 object-cover rounded border border-blue-200";
+            uploadedPreview.appendChild(img);
+        }
+        
+        if(fileInput.files.length < 2) {
+            fileError.classList.remove("hidden");
+        } else {
+            fileError.classList.add("hidden");
+        }
+    });
+
+    // เปิดกล้อง
     openCamera.addEventListener("click", () => {
         navigator.mediaDevices.getUserMedia({ video: true })
             .then(stream => {
@@ -104,10 +151,11 @@
                 closeCamera.classList.remove("hidden");
             })
             .catch(err => {
-                alert("❌ ไม่สามารถเปิดกล้องได้ กรุณาให้สิทธิ์เข้าถึงกล้อง");
+                alert("ไม่สามารถเปิดกล้องได้ กรุณาให้สิทธิ์เข้าถึงกล้อง");
             });
     });
 
+    // ปิดกล้อง
     closeCamera.addEventListener("click", () => {
         if (cameraStream) {
             cameraStream.getTracks().forEach(track => track.stop());
@@ -117,6 +165,7 @@
         closeCamera.classList.add("hidden");
     });
 
+    // ถ่ายภาพ
     captureButton.addEventListener("click", () => {
         const context = canvas.getContext("2d");
         canvas.width = video.videoWidth;
@@ -126,11 +175,46 @@
         canvas.toBlob(blob => {
             const imageFile = new File([blob], `capture-${Date.now()}.png`, { type: "image/png" });
             selectedFiles.push(imageFile);
+            
+            const imgContainer = document.createElement("div");
+            imgContainer.className = "relative";
+            
             const imgElement = document.createElement("img");
             imgElement.src = URL.createObjectURL(blob);
-            capturedPreview.appendChild(imgElement);
+            imgElement.className = "w-20 h-20 object-cover rounded border border-blue-200";
+            
+            imgContainer.appendChild(imgElement);
+            capturedPreview.appendChild(imgContainer);
         }, "image/png");
     });
-</script>
 
+    // ตรวจสอบก่อนส่งฟอร์ม
+    function validateUpload() {
+        const totalImages = fileInput.files.length + selectedFiles.length;
+        
+        if(totalImages < 2) {
+            fileError.classList.remove("hidden");
+            return false;
+        }
+        
+        // เพิ่มรูปภาพจากกล้องเข้า formData
+        for(let i = 0; i < selectedFiles.length; i++) {
+            const dataTransfer = new DataTransfer();
+            
+            // เพิ่มไฟล์จากการอัปโหลด
+            Array.from(fileInput.files).forEach(file => {
+                dataTransfer.items.add(file);
+            });
+            
+            // เพิ่มไฟล์จากกล้อง
+            selectedFiles.forEach(file => {
+                dataTransfer.items.add(file);
+            });
+            
+            fileInput.files = dataTransfer.files;
+        }
+        
+        return true;
+    }
+</script>
 {% endblock %}
