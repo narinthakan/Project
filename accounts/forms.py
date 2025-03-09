@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from .models import Profile, Product, Expert, Seller, SkinUpload, SkinProfile, ExpertResponse,Category,SkinData,ExpertReview,ExpertArticle
+from .models import Profile, Product, Expert, Seller, SkinUpload, SkinProfile, ExpertResponse,SkinData,ExpertReview,ExpertArticle
 
 
 # ฟอร์มสำหรับการลงทะเบียนผู้ใช้ (User)
@@ -105,15 +105,33 @@ class SellerRegistrationForm(forms.ModelForm):
 
 
 # ฟอร์มสำหรับสินค้า (Product Form)
-class ProductForm(forms.ModelForm):
-    category = forms.ModelChoiceField(
-        queryset=Category.objects.all(),  # ดึงข้อมูลหมวดหมู่จากฐานข้อมูล
-        empty_label="เลือกหมวดหมู่",  # ตัวเลือกเริ่มต้นใน Dropdown
-        required=True,
-        widget=forms.Select(attrs={'class': 'form-select'}),
-        label='หมวดหมู่สินค้า'
-    )
+# class ProductForm(forms.ModelForm):
+#     category = forms.ModelChoiceField(
+#         queryset=Category.objects.all(),  # ดึงข้อมูลหมวดหมู่จากฐานข้อมูล
+#         empty_label="เลือกหมวดหมู่",  # ตัวเลือกเริ่มต้นใน Dropdown
+#         required=True,
+#         widget=forms.Select(attrs={'class': 'form-select'}),
+#         label='หมวดหมู่สินค้า'
+#     )
+# category_choice=[
+    
+# ]
 
+    # class Meta:
+    #     model = Product
+    #     fields = ['name', 'description', 'price', 'image', 'category', 'usage', 'link', 'rating', 'popular']
+    #     labels = {
+    #         'name': 'ชื่อสินค้า',
+    #         'description': 'คำอธิบายสินค้า',
+    #         'price': 'ราคา (บาท)',
+    #         'image': 'ภาพสินค้า',
+    #         'category': 'หมวดหมู่สินค้า',
+    #         'usage': 'วิธีการใช้งาน',
+    #         'link': 'ลิงก์สำหรับซื้อสินค้า',
+    #         'rating': 'คะแนนสินค้า (0-5)',
+    #         'popular': 'สินค้ายอดนิยม',
+    #     }
+class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
         fields = ['name', 'description', 'price', 'image', 'category', 'usage', 'link', 'rating', 'popular']
@@ -127,6 +145,12 @@ class ProductForm(forms.ModelForm):
             'link': 'ลิงก์สำหรับซื้อสินค้า',
             'rating': 'คะแนนสินค้า (0-5)',
             'popular': 'สินค้ายอดนิยม',
+        }
+        widgets = {
+            'category': forms.Select(choices=Product.TYPE_CHOICES),  # ใช้ Select สำหรับหมวดหมู่
+            'price': forms.NumberInput(attrs={'step': '0.01'}),  # กำหนดรูปแบบราคาที่มีจุดทศนิยม 2 ตำแหน่ง
+            'rating': forms.NumberInput(attrs={'min': '0', 'max': '5'}),  # กำหนดช่วงคะแนนให้เป็น 0-5
+            'popular': forms.CheckboxInput(),  # ใช้ Checkbox สำหรับสินค้ายอดนิยม
         }
 
 # ฟอร์มแก้ไขโปรไฟล์ผู้ใช้ (Profile Form)

@@ -9,7 +9,7 @@ from django.conf import settings
 from django.db.models import Avg, Count
 from .forms import RegistrationForm, LoginForm, ProfileForm, ProductForm, ExpertLoginForm, ExpertVerificationForm, SellerRegistrationForm, ExpertRegistrationForm, ExpertProfileForm, SkinDataForm, ExpertResponseForm, ExpertReviewForm, SkinImageForm, ExpertArticleForm, ExpertNameEditForm
 from .models import Product, Profile, Review, User, Expert, Seller, SkinUpload, SkinProfile, SkinData, ExpertResponse, ExpertReview, SkinImage, ExpertArticle, Certificate
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.db.models import Q
 from django.core.paginator import Paginator 
 from django.urls import reverse
@@ -132,7 +132,6 @@ def user_profile(request):
             return render(request, 'user_profile.html', {'profile': profile})
     except Profile.DoesNotExist:
         return render(request, 'error.html', {'message': 'โปรไฟล์ไม่พบ'})
-
 
 
 #ฟังก์ชันสำหรับการค้นหาเพราะผลิตภัณฑ์
@@ -272,7 +271,7 @@ def register_expert(request):
             )
 
             # สร้าง Expert ที่เชื่อมกับ User
-            Expert.objects.create(
+            expert = Expert.objects.create(
                 user=user,
                 full_name=full_name,
                 license_number=form.cleaned_data['license_number'],
@@ -281,6 +280,11 @@ def register_expert(request):
                 experience=form.cleaned_data['experience'],
                 profile_image=form.cleaned_data['profile_image']
             )
+
+            # เพิ่ม User ไปที่ Group 'Expert'
+            expert_group = Group.objects.get(name='Expert')
+            user.groups.add(expert_group)
+            user.save()  # บันทึกการเปลี่ยนแปลง
 
             messages.success(request, "ลงทะเบียนผู้เชี่ยวชาญสำเร็จ!")
             return redirect('login')  # เปลี่ยนไปยังหน้า login
@@ -377,7 +381,7 @@ def analysis_view(request):
         if profile.role == "Expert":
             user_role = "expert"
         elif profile.role == "User":
-            user_role = "general"
+            user_role = "user"
         else:
             user_role = None  # Admin หรือ Role อื่น
 
@@ -876,6 +880,7 @@ def expert_detail(request, expert_id):
 
 @login_required
 def view_expert_reviews(request, expert_id):
+    
      expert = get_object_or_404(User, id=expert_id)
      reviews = ExpertReview.objects.filter(expert=expert)
 
@@ -905,7 +910,7 @@ def add_text_to_certificate_template(input_pdf, output_pdf, expert, certificate)
         canvas_obj.setFont("Sarabun", 36)
 
         # เพิ่มข้อมูลลงในใบเกียรติบัตร
-        canvas_obj.drawString(280, 500, expert.full_name)  # ชื่อผู้เชี่ยวชาญ
+        canvas_obj.drawString(280, 500, expert.user.get_full_name)  # ชื่อผู้เชี่ยวชาญ
         canvas_obj.drawString(280, 460, certificate.certification_level)  # ระดับเกียรติบัตร
         canvas_obj.drawString(280, 420, f"คะแนนเฉลี่ย: {certificate.average_rating}")  # คะแนนเฉลี่ย
         canvas_obj.drawString(280, 380, f"จำนวนรีวิว: {certificate.total_reviews}")  # จำนวนรีวิว
@@ -933,61 +938,94 @@ def add_text_to_certificate_template(input_pdf, output_pdf, expert, certificate)
         return False
 
 
-
-
 # 🔹 ฟังก์ชันสร้างไฟล์ PDF สำหรับใบเกียรติบัตรและแสดงในหน้าเว็บ
 @login_required
 def generate_and_view_certificate(request, expert_id):
     """
-    สร้างและดาวน์โหลดใบเกียรติบัตรเป็น PDF หรือแสดงใบเกียรติบัตร
+    ตรวจสอบฐานข้อมูล → ตรวจสอบเงื่อนไข → สร้างใบเกียรติบัตรหากผ่านเกณฑ์
     """
+    print("🔹 ฟังก์ชัน generate_and_view_certificate ถูกเรียกใช้งานแล้ว!")
+
+    #  1. ตรวจสอบว่าผู้เชี่ยวชาญมีอยู่จริงหรือไม่
     expert = get_object_or_404(Expert, id=expert_id)
-    certificate = Certificate.objects.filter(expert=expert).first()
+    print(f"📌 กำลังตรวจสอบข้อมูลของผู้เชี่ยวชาญ: {expert.user.username}")
 
-    # เช็คเกณฑ์การได้รับใบเกียรติบัตร
-    if not certificate:
-        # คำนวณคะแนนเฉลี่ยและจำนวนรีวิว
-        reviews = ExpertReview.objects.filter(expert=expert)
-        total_reviews = reviews.count()
-        average_rating = sum([review.rating for review in reviews]) / total_reviews if total_reviews > 0 else 0
+    #  2. ตรวจสอบว่ามีใบเกียรติบัตรอยู่ในฐานข้อมูลหรือไม่
+    certificate = Certificate.objects.filter(expert=expert.user).first()
 
-        # หากผู้เชี่ยวชาญผ่านเกณฑ์
-        if average_rating >= 4 and total_reviews >= 30:
-            # สร้างใบเกียรติบัตรใหม่
-            certificate = Certificate.objects.create(
-                expert=expert,
-                certification_level="Gold",  # หรือเลือกจากระดับอื่นๆ เช่น Silver, Bronze
-                average_rating=average_rating,
-                total_reviews=total_reviews
-            )
-            certificate.save()
-
-    # หากมีใบเกียรติบัตรแล้วหรือสร้างใหม่เสร็จแล้ว
     if certificate:
-        # สร้างไฟล์ PDF
-        output_dir = os.path.join(settings.BASE_DIR, "static", "certificates")
-        os.makedirs(output_dir, exist_ok=True)
+        print(f" พบใบเกียรติบัตรของ {expert.user.username} แล้ว")
 
-        output_pdf = os.path.join(output_dir, f"{expert.user.username}_certificate.pdf")
-        input_pdf = os.path.join(settings.BASE_DIR, "static", "pdf", "Certificate.pdf")
+    #  3. ตรวจสอบรีวิวของผู้เชี่ยวชาญ
+    reviews = ExpertReview.objects.filter(expert=expert.user)
+    total_reviews = reviews.count()
+    average_rating = sum([review.rating for review in reviews]) / total_reviews if total_reviews > 0 else 0
 
+    print(f" มีรีวิวทั้งหมด: {total_reviews} | คะแนนเฉลี่ย: {average_rating}")
+
+    #  4. ตรวจสอบว่าเพราะอะไรถึงไม่ได้ใบเกียรติบัตร
+    if total_reviews < 30:
+        return HttpResponse(" ไม่สามารถออกใบเกียรติบัตรได้: จำนวนรีวิวไม่ถึง 30", status=400)
+
+    if average_rating < 4:
+        return HttpResponse(" ไม่สามารถออกใบเกียรติบัตรได้: คะแนนเฉลี่ยต่ำกว่า 4.0", status=400)
+
+    #  5. ถ้ายังไม่มีใบเกียรติบัตร → สร้างใหม่
+    if not certificate:
+        print(f" สร้างใบเกียรติบัตรใหม่ให้ {expert.user.username}")
+        print(f"🔹 คะแนนเฉลี่ย: {average_rating}")
+        print(f"🔹 จำนวนรีวิว: {total_reviews}")
+
+
+        certificate = Certificate.objects.create(
+            expert=expert.user,
+            average_rating=average_rating,
+            total_reviews=total_reviews
+        )
+
+        certificate.save()
+        print(f"✅ บันทึกใบเกียรติบัตรสำเร็จ!")
+
+
+    #  6. อัปเดตใบเกียรติบัตรถ้าข้อมูลเปลี่ยนแปลง
+    elif certificate.average_rating != average_rating or certificate.total_reviews != total_reviews:
+        print(f" อัปเดตใบเกียรติบัตรของ {expert.user.username}")
+        certificate.average_rating = average_rating
+        certificate.total_reviews = total_reviews
+        certificate.save()
+
+    #  7. ตรวจสอบโฟลเดอร์เก็บไฟล์ PDF
+    output_dir = os.path.join(settings.BASE_DIR, "static", "certificates")
+    os.makedirs(output_dir, exist_ok=True)
+
+    #  8. ตรวจสอบว่าใบเกียรติบัตร PDF มีอยู่หรือไม่
+    output_pdf = os.path.join(output_dir, f"{expert.user.username}_certificate.pdf")
+    input_pdf = os.path.join(settings.BASE_DIR, "static", "pdf", "Certificate.pdf")
+
+    certificate_exists = os.path.exists(output_pdf)
+    print(f" ตรวจสอบไฟล์ PDF: {'พบ' if certificate_exists else 'ไม่พบ'}")
+
+    #  9. ถ้าไม่มีไฟล์ PDF → สร้างใหม่
+    if not certificate_exists:
         if not os.path.exists(input_pdf):
-            return HttpResponse("ไม่พบไฟล์เทมเพลต PDF", status=404)
+            print(f" ไม่พบไฟล์เทมเพลต PDF ที่ {input_pdf}")
+            return HttpResponse(" ไม่พบไฟล์เทมเพลต PDF", status=404)
 
-        # เพิ่มข้อมูลในใบเกียรติบัตร
-        add_text_to_certificate_template(input_pdf, output_pdf, expert, certificate)
+        print(f"🔹 กำลังสร้างไฟล์ PDF สำหรับ {expert.user.username}")
+        success = add_text_to_certificate_template(input_pdf, output_pdf, expert, certificate)
 
-        # แสดงใบเกียรติบัตรในเว็บ
-        pdf_url = f"{settings.STATIC_URL}certificates/{expert.user.username}_certificate.pdf"
+        if not success:
+            return HttpResponse(" เกิดข้อผิดพลาดในการสร้างใบเกียรติบัตร", status=500)
 
-        return render(request, 'expert_certificate.html', {
-            'certificate': certificate,
-            'pdf_url': pdf_url,
-            'expert': expert
-        })
+    #  10. คืนค่า URL ของใบเกียรติบัตร
+    pdf_url = f"{settings.STATIC_URL}certificates/{expert.user.username}_certificate.pdf"
+    print(f" ใบเกียรติบัตรอยู่ที่: {pdf_url}")
 
-    return HttpResponse("ไม่สามารถออกใบเกียรติบัตรได้", status=400)
-
+    return render(request, 'expert_certificate.html', {
+        'certificate': certificate,
+        'pdf_url': pdf_url,
+        'expert': expert
+    })
 
 # 🔹 ฟังก์ชันแสดงใบเกียรติบัตรเป็น PDF
 def view_certificate(request, expert_id):
@@ -1086,12 +1124,18 @@ def expert_certificate_view(request):
     try:
         # ดึงข้อมูลผู้เชี่ยวชาญที่ล็อกอินอยู่
         expert = request.user
+        print('id',expert)
         certificate = Certificate.objects.filter(expert=expert).first()
+        print('expert certificate')
 
         if certificate:
+            print('id',certificate)
             # URL ของ PDF ใน `static/pdf/`
             pdf_url = f"{settings.STATIC_URL}Certificate.pdf"
+            
+            
         else:
+            print('xxx',)
             pdf_url = None  # ถ้ายังไม่มีใบเกียรติบัตร ไม่ต้องแสดง PDF
 
         return render(request, 'expert_certificate.html', {
@@ -1272,26 +1316,26 @@ def member_home(request):
 def home(request):
     return render(request, 'home.html')
 
-# ฟังก์ชันตรวจสอบสิทธิ์ (Admin, Expert, หรือ Seller)
-def is_expert_seller_or_admin(request):
-    return request.user.is_staff or hasattr(request.user, 'expert_profile') or hasattr(request.user, 'seller')
+# ฟังก์ชันตรวจสอบสิทธิ์ (Admin, หรือ Seller)
+def is_seller_or_admin(request):
+    return request.user.is_staff  or hasattr(request.user, 'seller')
 
 # ฟังก์ชันหน้าผลิตภัณฑ์
 #@login_required
 def products_views(request):
     products = Product.objects.all()
     # ตรวจสอบสิทธิ์ว่าผู้ใช้งานสามารถแก้ไขได้หรือไม่
-    can_edit = request.user.is_staff or hasattr(request.user, 'expert_profile') or hasattr(request.user, 'seller')
+    can_edit = request.user.is_staff  or hasattr(request.user, 'seller')
     return render(request, 'products.html', {'products': products, 'can_edit': can_edit})
 
 
-# ตรวจสอบสิทธิ์ของผู้ใช้ (Admin, Expert, Seller)
-def is_expert_seller_or_admin(user):
-    return user.is_staff or user.groups.filter(name__in=['Expert', 'Seller']).exists()
+# ตรวจสอบสิทธิ์ของผู้ใช้ (Admin, Seller)
+def is_seller_or_admin(user):
+    return user.is_authenticated and (user.is_staff or user.groups.filter(name='Seller').exists())
 
 # ฟังก์ชันสำหรับเพิ่มผลิตภัณฑ์
 @login_required
-@user_passes_test(is_expert_seller_or_admin)
+@user_passes_test(is_seller_or_admin)
 def add_product(request):
     if request.method == 'POST':
         form = ProductForm(request.POST, request.FILES)
@@ -1310,7 +1354,7 @@ def add_product(request):
 
 # แก้ไขผลิตภัณฑ์
 @login_required
-@user_passes_test(is_expert_seller_or_admin)
+@user_passes_test(is_seller_or_admin)
 def edit_product(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     if request.method == 'POST':
@@ -1323,9 +1367,10 @@ def edit_product(request, product_id):
         form = ProductForm(instance=product)
     return render(request, 'edit_product.html', {'form': form, 'product': product})
 
+
 # ลบผลิตภัณฑ์
 @login_required
-@user_passes_test(is_expert_seller_or_admin)
+@user_passes_test(is_seller_or_admin)
 def delete_product(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     if request.method == 'POST':
@@ -1335,6 +1380,7 @@ def delete_product(request, product_id):
     else:
         messages.error(request, 'เกิดข้อผิดพลาดในการลบผลิตภัณฑ์')
     return redirect('products')
+
 
 
 # ฟังก์ชันสำหรับเพิ่มรีวิว

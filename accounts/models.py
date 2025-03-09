@@ -71,20 +71,27 @@ class Seller(models.Model):
 
 
 # หมวดหมู่สินค้า
-class Category(models.Model):
-    name = models.CharField(max_length=100, verbose_name="ชื่อหมวดหมู่")
+# class Category(models.Model):
+#     name = models.CharField(max_length=100, verbose_name="ชื่อหมวดหมู่")
 
-    def __str__(self):
-        return self.name
+#     def __str__(self):
+#         return self.name
 
 
 # โมเดลสำหรับสินค้า
 class Product(models.Model):
+    TYPE_CHOICES = [
+        ('Mask', 'sohk'),
+        ('oily', 'ผิวมัน'),
+        ('dry', 'ผิวแห้ง'),
+        ('combination', 'ผิวผสม'),
+        ('sensitive', 'ผิวแพ้ง่าย'),
+    ]
     name = models.CharField(max_length=200)  # ชื่อสินค้า
     description = models.TextField(blank=True, null=True)  # คำอธิบายสินค้า
     price = models.DecimalField(max_digits=10, decimal_places=2)  # ราคา
     image = models.ImageField(upload_to='products/', blank=True, null=True)  # รูปภาพสินค้า
-    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, related_name="products")  # หมวดหมู่สินค้า
+    category = models.CharField(max_length=100, choices=TYPE_CHOICES)# หมวดหมู่สินค้า
     usage = models.TextField(blank=True, null=True)  # วิธีใช้
     link = models.URLField(max_length=500, blank=True, null=True)  # ลิงก์สำหรับซื้อสินค้า
     added_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="products")  # ผู้เพิ่มสินค้า
@@ -95,6 +102,7 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
+    
 
     # ฟังก์ชันคำนวณค่าเฉลี่ยเรตติ้งจากรีวิว
     def average_rating(self):
@@ -102,6 +110,7 @@ class Product(models.Model):
         if reviews.exists():
             return reviews.aggregate(Avg('rating'))['rating__avg']
         return 0
+
 
 
 # โมเดลสำหรับรีวิวผลิตภัณฑ์
@@ -215,13 +224,13 @@ class ExpertArticle(models.Model):
 # โมเดลสำหรับเกียรติบัตร
 class Certificate(models.Model):
     expert = models.OneToOneField(User, on_delete=models.CASCADE, related_name="certificate")
-    certification_level = models.CharField(max_length=50)  # Gold, Silver, Bronze, Top-rated
-    average_rating = models.FloatField()
-    total_reviews = models.PositiveIntegerField()
-    issue_date = models.DateField(auto_now_add=True)
+    average_rating = models.FloatField()  # คะแนนเฉลี่ย
+    total_reviews = models.PositiveIntegerField()  # จำนวนรีวิวทั้งหมด
+    issue_date = models.DateField(auto_now_add=True)  # วันที่ออกใบเกียรติบัตร
+    certificate_file = models.FileField(upload_to='certificates/', null=True, blank=True)  # สำหรับเก็บไฟล์ใบเกียรติบัตร PDF
 
     def __str__(self):
-        return f"Certificate for {self.expert.username} - {self.certification_level}"
+        return f"Certificate for {self.expert.username}"
 
     def is_eligible_for_certificate(self):
         # ตรวจสอบว่าได้รับคะแนนรีวิว 4-5 และจำนวนรีวิวขั้นต่ำ 30 รีวิว

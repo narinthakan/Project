@@ -2,138 +2,183 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>รีวิวผู้เชี่ยวชาญ</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary-color: #4a6bdf;
+            --primary-hover: #3a5bcf;
+            --secondary-color: #f8f9fa;
+            --text-color: #333;
+            --light-text: #6c757d;
+            --border-radius: 12px;
+            --box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            --border-color: #e9ecef;
+        }
+
         body {
             font-family: "Kanit", sans-serif;
-            text-align: center;
-            background-color: #f0f8ff;
+            background-color: #f5f7ff;
+            color: var(--text-color);
+            line-height: 1.6;
             padding: 20px;
+        }
+
+        .page-container {
+            max-width: 800px;
+            margin: 40px auto;
         }
 
         .review-container {
             background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            max-width: 500px;
-            margin: auto;
-        }
-
-        h1 {
-            color: #0077cc;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            margin-bottom: 30px;
         }
 
         .profile-container {
-            text-align: center;
-            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
         }
 
         .profile-image {
-            width: 80px;
-            height: 80px;
+            width: 100px;
+            height: 100px;
             border-radius: 50%;
-            border: 2px solid #ccc;
+            border: 3px solid var(--primary-color);
             object-fit: cover;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .profile-info {
+            margin-left: 20px;
+            text-align: left;
         }
 
         .stars {
             display: flex;
-            gap: 5px;
+            gap: 8px;
             justify-content: center;
             align-items: center;
-            margin-top: 10px;
+            margin: 20px 0;
         }
 
         .stars i {
-            color: #ccc;
-            font-size: 40px;
+            color: #ddd;
+            font-size: 30px;
             cursor: pointer;
-            transition: color 0.2s ease-in-out;
+            transition: all 0.2s ease;
         }
 
         .stars i.selected {
-            color: gold;
+            color: #ffc107;
         }
 
         textarea {
             width: 100%;
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            margin-top: 10px;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background-color: #f9f9f9;
             font-size: 16px;
+            resize: vertical;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(74, 107, 223, 0.2);
         }
 
         button {
-            background-color: #0077cc;
+            background-color: var(--primary-color);
             color: white;
-            padding: 10px 20px;
+            padding: 12px 25px;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 18px;
-            margin-top: 10px;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-block;
+            letter-spacing: 0.5px;
         }
 
         button:hover {
-            background-color: #005fa3;
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(74, 107, 223, 0.3);
         }
 
         .review-list {
-            margin-top: 20px;
-            text-align: left;
+            margin-top: 30px;
         }
 
         .review-item {
-            background: #fff;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 10px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            background: var(--secondary-color);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-bottom: 15px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid var(--primary-color);
         }
     </style>
 </head>
 <body>
-
-    <div class="review-container">
-        <div class="profile-container">
-            <img src="{{ expert.profile_image.url }}" alt="{{ expert.full_name }}" class="profile-image">
-            <h2>{{ expert.full_name }}</h2>
-        </div>
-
-        <h1>รีวิวผู้เชี่ยวชาญ</h1>
-
-        <form method="POST">
-            {% csrf_token %}
-
-            <div class="stars">
-                {% for i in "12345"|make_list %}
-                    <i class="fa fa-star" data-index="{{ i|add:0 }}"></i>
-                {% endfor %}
+    <div class="page-container">
+        <!-- ✅ ส่วนข้อมูลผู้เชี่ยวชาญ -->
+        <div class="review-container">
+            <div class="profile-container">
+                <img src="{{ expert.profile_image.url }}" alt="{{ expert.full_name }}" class="profile-image">
+                <div class="profile-info">
+                    <h2>{{ expert.full_name }}</h2>
+                    <p>ผู้เชี่ยวชาญ</p>
+                </div>
             </div>
 
-            <input type="hidden" name="rating" id="rating-input" value="0">
+            <h1>แสดงความคิดเห็นของคุณ</h1>
 
-            <label for="comment"><strong>ความคิดเห็น:</strong></label>
-            <textarea name="comment" required></textarea>
+            <form method="POST">
+                {% csrf_token %}
 
-            <button type="submit">ส่งรีวิว</button>
-        </form>
-
-        <!-- ✅ แสดงรายการรีวิวทั้งหมด -->
-        <div class="review-list">
-            <h2>รีวิวล่าสุด</h2>
-            {% for review in reviews %}
-                <div class="review-item">
-                    <strong>{{ review.user.username }}</strong> ⭐ {{ review.rating }}/5
-                    <p>{{ review.comment }}</p>
-                    <small>{{ review.created_at|date:"d M Y H:i" }}</small>
+                <div class="stars">
+                    {% for i in "12345"|make_list %}
+                        <i class="fas fa-star" data-index="{{ i|add:0 }}"></i>
+                    {% endfor %}
                 </div>
-            {% empty %}
-                <p>ยังไม่มีรีวิว</p>
-            {% endfor %}
+
+                <input type="hidden" name="rating" id="rating-input" value="0">
+
+                <label for="comment">แบ่งปันประสบการณ์ของคุณ:</label>
+                <textarea name="comment" id="comment" placeholder="บอกเล่าประสบการณ์ของคุณกับผู้เชี่ยวชาญท่านนี้..." required></textarea>
+
+                <button type="submit">
+                    <i class="fas fa-paper-plane"></i> ส่งรีวิว
+                </button>
+            </form>
+        </div>
+
+        <!-- ✅ รายการรีวิวล่าสุด -->
+        <div class="review-container">
+            <h2><i class="fas fa-comments"></i> รีวิวล่าสุด</h2>
+            
+            <div class="review-list">
+                {% for review in reviews %}
+                    <div class="review-item">
+                        <strong>{{ review.user.username }}</strong> ⭐ {{ review.rating }}/5
+                        <p>{{ review.comment }}</p>
+                        <small>{{ review.created_at|date:"d M Y H:i" }}</small>
+                    </div>
+                {% empty %}
+                    <p>ยังไม่มีรีวิว</p>
+                {% endfor %}
+            </div>
         </div>
     </div>
 
@@ -171,6 +216,5 @@
             updateStars(parseInt(ratingInput.value));
         });
     </script>
-
 </body>
 </html>

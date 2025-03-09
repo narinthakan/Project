@@ -4,171 +4,417 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>รายละเอียดข้อมูลผิวหน้า</title>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
+        :root {
+            --primary: #6366f1;
+            --primary-light: #e0e7ff;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --danger: #ef4444;
+            --text: #1e293b;
+            --text-light: #64748b; 
+            --text-lighter: #94a3b8;
+            --background: #f8fafc;
+            --card: #ffffff;
+            --border: #e2e8f0;
+            --shadow: rgba(0, 0, 0, 0.05);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         html, body {
             font-family: 'Kanit', sans-serif;
             line-height: 1.6;
-            padding: 20px;
-            background-color: #F3F4F6;
+            padding: 1.5rem;
+            background-color: var(--background);
+            color: var(--text);
             user-select: none;
+            min-height: 100vh;
         }
-
+        
         .container {
             max-width: 800px;
-            margin: auto;
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            margin: 0 auto;
+            background: var(--card);
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px var(--shadow);
         }
-
-        .title {
+        
+        .header {
+            margin-bottom: 2rem;
             text-align: center;
-            font-size: 24px;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 15px;
+            position: relative;
         }
-
-        .info {
-            background: #F9FAFB;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
+        
+        h1 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
         }
-
-        .info p {
-            margin: 5px 0;
-            font-size: 16px;
-            color: #333;
+        
+        .info-card {
+            background: var(--background);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border);
         }
-
-        .info p strong {
-            color: #1E3A8A;
+        
+        .info-row {
+            display: flex;
+            margin-bottom: 0.75rem;
+            align-items: flex-start;
         }
-
+        
+        .info-label {
+            flex: 0 0 35%;
+            font-weight: 500;
+            color: var(--text-light);
+            padding-right: 1rem;
+        }
+        
+        .info-value {
+            flex: 0 0 65%;
+            color: var(--text);
+        }
+        
+        .image-section {
+            margin-top: 1.5rem;
+        }
+        
+        .image-title {
+            font-weight: 500;
+            margin-bottom: 0.75rem;
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .image-title i {
+            color: var(--primary);
+        }
+        
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
         .image-container {
-            text-align: center;
-            margin: 15px 0;
+            aspect-ratio: 1;
+            overflow: hidden;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
         }
-
+        
         .image-container img {
             width: 100%;
-            max-width: 350px;
-            border-radius: 8px;
-            border: 2px solid #90CAF9;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
         }
-
+        
+        .image-container:hover img {
+            transform: scale(1.05);
+        }
+        
+        .divider {
+            height: 1px;
+            background-color: var(--border);
+            margin: 2rem 0;
+        }
+        
         .no-data {
-            color: red;
             text-align: center;
-            font-weight: bold;
+            padding: 2rem;
+            color: var(--danger);
+            background-color: rgba(239, 68, 68, 0.1);
+            border-radius: 0.5rem;
+            font-weight: 500;
         }
-
+        
         .response-box {
-            background: #EFF6FF;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 15px;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
         }
-
-        .response-box textarea {
+        
+        .response-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            gap: 0.5rem;
+        }
+        
+        .response-header i {
+            font-size: 1.25rem;
+        }
+        
+        .response-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        
+        .expert-response {
+            background-color: rgba(16, 185, 129, 0.1);
+        }
+        
+        .expert-response .response-header i,
+        .expert-response .response-title {
+            color: var(--success);
+        }
+        
+        .no-response {
+            background-color: rgba(245, 158, 11, 0.1);
+        }
+        
+        .no-response .response-header i,
+        .no-response .response-title {
+            color: var(--warning);
+        }
+        
+        .your-response {
+            background-color: rgba(59, 130, 246, 0.1);
+        }
+        
+        .your-response .response-header i,
+        .your-response .response-title {
+            color: var(--info);
+        }
+        
+        .response-item {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 0.5rem;
+        }
+        
+        .response-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        
+        .response-text {
+            margin-bottom: 0.5rem;
+        }
+        
+        .response-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-lighter);
+        }
+        
+        textarea {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #B0BEC5;
-            border-radius: 6px;
-            font-size: 14px;
-            resize: none;
-            height: 80px;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            font-family: 'Kanit', sans-serif;
+            font-size: 0.9375rem;
+            resize: vertical;
+            min-height: 120px;
+            margin-bottom: 1rem;
+            transition: border-color 0.2s ease;
         }
-
+        
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
         .btn {
-            background: #1D4ED8;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            background-color: var(--primary);
             color: white;
-            padding: 12px 15px;
             border: none;
-            border-radius: 6px;
-            font-size: 16px;
+            border-radius: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            font-family: 'Kanit', sans-serif;
+            font-size: 1rem;
+            font-weight: 500;
             cursor: pointer;
-            margin-top: 10px;
+            transition: all 0.2s ease;
             width: 100%;
-            text-align: center;
-            transition: 0.3s;
         }
-
+        
         .btn:hover {
-            background: #1E40AF;
+            filter: brightness(1.1);
+            transform: translateY(-2px);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .badge-date {
+            background-color: var(--primary-light);
+            color: var(--primary);
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 640px) {
+            .info-row {
+                flex-direction: column;
+            }
+            
+            .info-label {
+                flex: 0 0 100%;
+                margin-bottom: 0.25rem;
+            }
+            
+            .info-value {
+                flex: 0 0 100%;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1 class="title">รายละเอียดข้อมูลผิวหน้า</h1>
+        <div class="header">
+            <h1><i class="fas fa-user-circle"></i> รายละเอียดข้อมูลผิวหน้า</h1>
+        </div>
 
         {% for data in user_skin_data %}
-            <div class="info mb-6 p-4 border rounded">
-                <p><strong>ชื่อผู้ใช้:</strong> {{ data.user.username }}</p>
-                <p><strong>ประเภทผิว:</strong> {{ data.skin_type|default:"-" }}</p>
-                <p><strong>ปัญหาผิวหน้า:</strong> {{ data.concern|default:"-" }}</p>
-                <p><strong>อาการแพ้:</strong> {{ data.allergy_history|default:"-" }}</p>
-                <p><strong>ผลิตภัณฑ์ที่ใช้:</strong> {{ data.current_products|default:"-" }}</p>
-                <p><strong>เป้าหมายการดูแลผิว:</strong> {{ data.skincare_goal|default:"-" }}</p>
-                <p><strong>วันที่ส่ง:</strong> {{ data.submitted_at|date:"d M Y H:i" }}</p>
+            <div class="info-card">
+                <div class="info-row">
+                    <div class="info-label">ชื่อผู้ใช้</div>
+                    <div class="info-value">{{ data.user.username }}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">ประเภทผิว</div>
+                    <div class="info-value">{{ data.skin_type|default:"ไม่ระบุ" }}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">ปัญหาผิวหน้า</div>
+                    <div class="info-value">{{ data.concern|default:"ไม่ระบุ" }}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">อาการแพ้</div>
+                    <div class="info-value">{{ data.allergy_history|default:"ไม่ระบุ" }}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">ผลิตภัณฑ์ที่ใช้</div>
+                    <div class="info-value">{{ data.current_products|default:"ไม่ระบุ" }}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">เป้าหมายการดูแลผิว</div>
+                    <div class="info-value">{{ data.skincare_goal|default:"ไม่ระบุ" }}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">วันที่ส่ง</div>
+                    <div class="info-value">
+                        <span class="badge badge-date">
+                            <i class="fas fa-calendar-alt"></i>
+                            {{ data.submitted_at|date:"d M Y H:i" }}
+                        </span>
+                    </div>
+                </div>
 
                 {% if data.images.all %}
-                    <div class="image-container mt-4">
-                        <p><strong>ภาพผิวหน้าที่อัปโหลด:</strong></p>
-                        {% for image in data.images.all %}
-                            <img src="{{ image.image.url }}" alt="ภาพผิวหน้า" class="border rounded max-w-full">
-                        {% endfor %}
+                    <div class="image-section">
+                        <div class="image-title">
+                            <i class="fas fa-camera"></i> ภาพผิวหน้าที่อัปโหลด
+                        </div>
+                        <div class="image-grid">
+                            {% for image in data.images.all %}
+                                <div class="image-container">
+                                    <img src="{{ image.image.url }}" alt="ภาพผิวหน้า">
+                                </div>
+                            {% endfor %}
+                        </div>
                     </div>
                 {% else %}
-                    <p class="text-center text-red-500">ไม่มีข้อมูลที่ส่งมา</p>
+                    <div class="no-data">
+                        <i class="fas fa-exclamation-circle"></i> ไม่มีภาพผิวหน้าที่อัปโหลด
+                    </div>
                 {% endif %}
             </div>
         {% empty %}
-            <p class="text-center text-red-500">ไม่มีข้อมูลที่ส่งมา</p>
+            <div class="no-data">
+                <i class="fas fa-exclamation-circle"></i> ไม่มีข้อมูลที่ส่งมา
+            </div>
         {% endfor %}
 
-        <hr class="my-4">
+        <div class="divider"></div>
 
-        <!-- ✅ แสดงคำตอบของผู้เชี่ยวชาญ -->
+        <!-- แสดงคำตอบของผู้เชี่ยวชาญ -->
         {% if expert_responses %}
-        <div class="response-box bg-green-100 p-4 rounded mt-4">
-            <h2 class="text-lg font-bold text-green-700">คำตอบของผู้เชี่ยวชาญ</h2>
-            {% for response in expert_responses %}
-                <div class="p-3 border-b last:border-none">
-                    <p class="text-gray-800">{{ response.response_text }}</p>
-                    <p class="text-sm text-gray-500">โดย: {{ response.expert.username }} | {{ response.created_at|date:"d M Y H:i" }}</p>
+            <div class="response-box expert-response">
+                <div class="response-header">
+                    <i class="fas fa-comments"></i>
+                    <div class="response-title">คำตอบของผู้เชี่ยวชาญ</div>
                 </div>
-            {% endfor %}
-        </div>
-    {% else %}
-        <div class="response-box bg-yellow-100 p-4 rounded mt-4">
-            <h2 class="text-lg font-bold text-yellow-700">ยังไม่มีคำตอบ</h2>
-            <p class="mt-2 text-gray-600">ผู้เชี่ยวชาญยังไม่ได้ตอบกลับปัญหาผิวหน้านี้</p>
-        </div>
-    {% endif %}
+                {% for response in expert_responses %}
+                    <div class="response-item">
+                        <div class="response-text">{{ response.response_text }}</div>
+                        <div class="response-meta">
+                            <i class="fas fa-user"></i> {{ response.expert.username }}
+                            <i class="fas fa-clock"></i> {{ response.created_at|date:"d M Y H:i" }}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="response-box no-response">
+                <div class="response-header">
+                    <i class="fas fa-hourglass-half"></i>
+                    <div class="response-title">ยังไม่มีคำตอบ</div>
+                </div>
+                <p>ผู้เชี่ยวชาญยังไม่ได้ตอบกลับปัญหาผิวหน้านี้</p>
+            </div>
+        {% endif %}
 
-        <!-- ✅ ฟอร์มตอบกลับของผู้เชี่ยวชาญ -->
+        <!-- ฟอร์มตอบกลับของผู้เชี่ยวชาญ -->
         {% if expert_response %}
-            <div class="response-box bg-blue-100 p-4 rounded mt-4">
-                <h2 class="text-lg font-bold">คำตอบของคุณ</h2>
+            <div class="response-box your-response">
+                <div class="response-header">
+                    <i class="fas fa-pen"></i>
+                    <div class="response-title">คำตอบของคุณ</div>
+                </div>
                 <form method="POST">
                     {% csrf_token %}
-                    <textarea name="response_text" rows="3" class="w-full p-2 border rounded">{{ expert_response.response_text }}</textarea>
-                    <button type="submit" class="mt-2 bg-blue-500 text-white px-4 py-2 rounded">บันทึก</button>
+                    <textarea name="response_text" placeholder="พิมพ์คำแนะนำหรือคำตอบของคุณที่นี่...">{{ expert_response.response_text }}</textarea>
+                    <button type="submit" class="btn">
+                        <i class="fas fa-save"></i> บันทึกคำตอบ
+                    </button>
                 </form>
             </div>
         {% else %}
-            <div class="response-box bg-blue-100 p-4 rounded mt-4">
-                <h2 class="text-lg font-bold">ตอบกลับปัญหาผิวหน้า</h2>
+            <div class="response-box your-response">
+                <div class="response-header">
+                    <i class="fas fa-reply"></i>
+                    <div class="response-title">ตอบกลับปัญหาผิวหน้า</div>
+                </div>
                 <form method="POST">
                     {% csrf_token %}
                     {{ form.as_p }}
-                    <button type="submit" class="mt-2 bg-blue-500 text-white px-4 py-2 rounded">ส่งคำตอบ</button>
+                    <button type="submit" class="btn">
+                        <i class="fas fa-paper-plane"></i> ส่งคำตอบ
+                    </button>
                 </form>
             </div>
         {% endif %}
