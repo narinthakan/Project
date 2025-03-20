@@ -9,275 +9,114 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.0/feather.min.js"></script>
     <style>
-        * {
-            font-family: "Kanit", sans-serif;
-        }
-        body {
-            background-color: #f8fafc;
-            color: #334155;
-        }
-        .container {
-            max-width: 800px;
-        }
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            padding: 0.5rem 1.5rem;
-            border-radius: 0.375rem;
-            font-weight: 500;
-            transition: all 0.2s ease;
-        }
-        .btn-primary {
-            background-color: #0ea5e9;
-            color: white;
-        }
-        .btn-primary:hover {
-            background-color: #0284c7;
-        }
-        .btn-danger {
-            background-color: #f43f5e;
-            color: white;
-        }
-        .btn-danger:hover {
-            background-color: #e11d48;
-        }
-        .btn-outline {
-            border: 1px solid #cbd5e1;
-            color: #64748b;
-        }
-        .btn-outline:hover {
-            background-color: #f1f5f9;
-        }
-        .nav-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            color: #64748b;
-            font-weight: 500;
-            transition: all 0.2s ease;
-        }
-        .nav-link:hover {
-            color: #0ea5e9;
-        }
-        .card {
-            border-radius: 1rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-            transition: all 0.3s ease;
-        }
-        .card:hover {
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
-        }
-        .review-card {
-            border-radius: 0.75rem;
-            background-color: #f8fafc;
-            border: 1px solid #e2e8f0;
-            transition: all 0.2s ease;
-        }
-        .review-card:hover {
-            background-color: #f1f5f9;
-        }
-        .product-image {
-            border-radius: 1rem;
-            overflow: hidden;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
-        }
-        .section-title {
-            position: relative;
-            padding-bottom: 0.5rem;
-            margin-bottom: 1.5rem;
-        }
-        .section-title::after {
-            content: "";
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 3rem;
-            height: 3px;
-            background-color: #0ea5e9;
-            border-radius: 6px;
-        }
-        .badge {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 500;
-            background-color: #e0f2fe;
-            color: #0284c7;
-        }
-        textarea:focus, input:focus {
-            outline: none;
-            border-color: #0ea5e9;
-            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
-        }
-        .price {
-            color: #059669;
-            font-weight: 500;
-            font-size: 1.5rem;
-        }
-        .steps-list {
-            counter-reset: step;
-            list-style-type: none;
-            padding-left: 0;
-        }
-        .steps-list li {
-            position: relative;
-            padding-left: 2.5rem;
-            margin-bottom: 1rem;
-        }
-        .steps-list li::before {
-            counter-increment: step;
-            content: counter(step);
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 1.75rem;
-            height: 1.75rem;
-            background-color: #e0f2fe;
-            color: #0284c7;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 500;
-            font-size: 0.875rem;
-        }
+        * { font-family: "Kanit", sans-serif; }
+        body { background-color: #f8fafc; color: #334155; }
+        .container { max-width: 800px; }
+        .btn { display: inline-flex; align-items: center; padding: 0.5rem 1.5rem; border-radius: 0.375rem; font-weight: 500; transition: all 0.2s ease; }
+        .btn-primary { background-color: #0ea5e9; color: white; }
+        .btn-primary:hover { background-color: #0284c7; }
+        .btn-danger { background-color: #f43f5e; color: white; }
+        .btn-danger:hover { background-color: #e11d48; }
+        .review-card { border-radius: 0.75rem; background-color: #f8fafc; border: 1px solid #e2e8f0; transition: all 0.2s ease; }
+        .review-card:hover { background-color: #f1f5f9; }
+        .star { color: #FFD700; font-size: 1.2rem; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-700">
     <div class="container mx-auto px-4 py-8">
         <div class="card bg-white p-6 md:p-8">
+
             <!-- Navigation -->
             <nav class="mb-8">
-                <a href="{% url 'products' %}" class="nav-link">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left">
-                        <line x1="19" y1="12" x2="5" y2="12"></line>
-                        <polyline points="12 19 5 12 12 5"></polyline>
-                    </svg>
-                    กลับไปหน้าผลิตภัณฑ์
-                </a>
+                <a href="{% url 'products' %}" class="btn btn-outline">⬅ กลับไปหน้าผลิตภัณฑ์</a>
             </nav>
 
             <!-- Product Details -->
             <div class="grid md:grid-cols-2 gap-8 mb-12">
-                <!-- Product Image -->
-                <div class="product-image">
+                <div>
                     {% if product.image %}
                         <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-full h-auto object-cover">
-                    {% else %}
-                        <div class="w-full h-64 bg-gray-200 flex items-center justify-center text-gray-400">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                                <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                                <polyline points="21 15 16 10 5 21"></polyline>
-                            </svg>
-                        </div>
                     {% endif %}
                 </div>
-
-                <!-- Product Info -->
                 <div>
-                    <span class="badge mb-3">{{ product.category }}</span>
                     <h1 class="text-3xl font-medium mb-4">{{ product.name }}</h1>
-                    <p class="price mb-6">${{ product.price }}</p>
-                    <div class="mb-6">
-                        <h2 class="text-lg font-medium mb-3">รายละเอียดผลิตภัณฑ์</h2>
-                        <p class="text-gray-600 leading-relaxed">{{ product.description }}</p>
-                    </div>
-                    <a href="https://www.laroche-posay.us/our-products/face/face-moisturizer/toleriane-double-repair-face-moisturizer-tolerianedoublerepair.html?srsltid=AfmBOor7aPKD6gWNIQlvCw1MKxt3wYHJ1OBuEPHQg-CLihnCs8_drDNO" 
-                       target="_blank" 
-                       rel="noopener noreferrer" 
-                       class="btn btn-primary">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2">
-                            <circle cx="9" cy="21" r="1"></circle>
-                            <circle cx="20" cy="21" r="1"></circle>
-                            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-                        </svg>
-                        สั่งซื้อสินค้า
-                    </a>
+                    <p class="price mb-6 text-green-600 text-xl font-bold">${{ product.price }}</p>
+                    <p class="text-gray-600">{{ product.description }}</p>
                 </div>
-            </div>
-
-            <!-- Instructions -->
-            <div class="mb-12">
-                <h2 class="section-title text-xl font-medium">วิธีใช้</h2>
-                <ul class="steps-list">
-                    <li>ล้างหน้าให้สะอาดก่อนใช้ผลิตภัณฑ์</li>
-                    <li>ทาครีม La Roche-Posay Toleriane บริเวณใบหน้าและลำคอเป็นประจำทุกเช้าและก่อนนอน หรือเมื่อต้องการความชุ่มชื้น</li>
-                    <li>ควรนวดเบา ๆ ให้ครีมซึมเข้าสู่ผิว เคล็ดลับเพิ่มเติม: หากใช้ในเวลากลางวัน ควรตามด้วยครีมกันแดดเพื่อป้องกันแสงแดดที่อาจทำให้ผิวระคายเคืองเพิ่มขึ้น สามารถใช้ร่วมกับผลิตภัณฑ์ดูแลผิวอื่น ๆ ที่เหมาะกับผิวบอบบาง เช่นผลิตภัณฑ์ทำความสะอาดผิว Toleriane</li>
-                </ul>
             </div>
 
             <!-- Reviews Section -->
             <div class="mb-12">
-                <h2 class="section-title text-xl font-medium">รีวิวทั้งหมด</h2>
-                
+                <h2 class="section-title text-xl font-medium">
+                    รีวิวทั้งหมด ({{ reviews|length }} รีวิว)
+                </h2>
                 {% if reviews %}
                     <div class="space-y-4">
                         {% for review in reviews %}
                         <div class="review-card p-4">
                             <div class="flex items-center mb-2">
-                                <div class="w-8 h-8 rounded-full bg-sky-100 text-sky-500 flex items-center justify-center font-medium mr-3">
-                                    {{ review.user.username|first|upper }}
-                                </div>
                                 <p class="font-medium">{{ review.user.username }}</p>
                             </div>
+                            
+                            <!-- แสดงดาว -->
+                            <div class="flex mb-2">
+                                {% for i in "12345"|make_list %}
+                                    {% if review.rating >= i|add:"0" %}
+                                        <span class="star">★</span>
+                                    {% else %}
+                                        <span class="star text-gray-300">★</span>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+
                             <p class="text-gray-600 mb-3">{{ review.comment }}</p>
-                            {% if review.user == user %}
+
+                            <!-- ปุ่มลบรีวิว -->
+                            {% if request.user == review.user or request.user.is_staff %}
                             <form method="POST" action="{% url 'delete_review' review.id %}">
                                 {% csrf_token %}
-                                <button type="submit" class="text-sm text-red-500 hover:text-red-600 flex items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
-                                        <polyline points="3 6 5 6 21 6"></polyline>
-                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                    </svg>
-                                    ลบความคิดเห็น
-                                </button>
+                                <button type="submit" class="btn btn-danger text-sm">🗑 ลบความคิดเห็น</button>
                             </form>
                             {% endif %}
                         </div>
                         {% endfor %}
                     </div>
                 {% else %}
-                    <div class="text-center py-8 bg-gray-50 rounded-lg border border-gray-100">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="mx-auto mb-3 text-gray-300">
-                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                        </svg>
-                        <p class="text-gray-500">ยังไม่มีความคิดเห็นสำหรับผลิตภัณฑ์นี้</p>
-                    </div>
+                    <p class="text-gray-500">ยังไม่มีความคิดเห็นสำหรับผลิตภัณฑ์นี้</p>
                 {% endif %}
             </div>
 
             <!-- Add Review Section -->
             <div>
                 <h2 class="section-title text-xl font-medium">แสดงความคิดเห็น</h2>
-                
                 {% if user.is_authenticated %}
                 <form method="POST" action="{% url 'add_review' product.id %}" class="space-y-4">
                     {% csrf_token %}
+
+                    <!-- เลือกคะแนน -->
+                    <div class="relative">
+                        <label class="block text-gray-700 font-medium mb-2">ให้คะแนน (1-5 ดาว)</label>
+                        <select name="rating" class="w-full p-2 border border-gray-200 rounded-lg">
+                            <option value="5">⭐⭐⭐⭐⭐ - ยอดเยี่ยม</option>
+                            <option value="4">⭐⭐⭐⭐ - ดีมาก</option>
+                            <option value="3">⭐⭐⭐ - ปานกลาง</option>
+                            <option value="2">⭐⭐ - พอใช้</option>
+                            <option value="1">⭐ - แย่</option>
+                        </select>
+                    </div>
+
+                    <!-- พิมพ์คอมเมนต์ -->
                     <div class="relative">
                         <textarea name="comment" rows="4" placeholder="เขียนความคิดเห็นของคุณ" 
                             class="w-full p-4 border border-gray-200 rounded-lg focus:ring-2 focus:ring-sky-100 transition-all" required></textarea>
                     </div>
-                    <button type="submit" class="btn btn-primary">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2">
-                            <line x1="22" y1="2" x2="11" y2="13"></line>
-                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                        </svg>
-                        ส่งความคิดเห็น
-                    </button>
+
+                    <button type="submit" class="btn btn-primary">ส่งความคิดเห็น</button>
                 </form>
                 {% else %}
                 <div class="bg-gray-50 rounded-lg p-6 text-center">
                     <p class="mb-4">กรุณาเข้าสู่ระบบเพื่อแสดงความคิดเห็น</p>
-                    <a href="{% url 'login' %}" class="btn btn-outline">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2">
-                            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
-                            <polyline points="10 17 15 12 10 7"></polyline>
-                            <line x1="15" y1="12" x2="3" y2="12"></line>
-                        </svg>
-                        เข้าสู่ระบบ
-                    </a>
+                    <a href="{% url 'login' %}" class="btn btn-outline">เข้าสู่ระบบ</a>
                 </div>
                 {% endif %}
             </div>
@@ -285,7 +124,6 @@
     </div>
 
     <script>
-        // Initialize Feather icons
         if (typeof feather !== 'undefined') {
             feather.replace();
         }

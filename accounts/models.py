@@ -37,6 +37,26 @@ def create_user_profile(sender, instance, created, **kwargs):
 def save_user_profile(sender, instance, **kwargs):
     instance.profile.save()
 
+#โมเดลสำหรับอนุมันคำขอ
+class ApprovalRequest(models.Model):
+    REQUEST_TYPE_CHOICES = [
+        ('Expert', 'Expert'),
+        ('Seller', 'Seller'),
+    ]
+    STATUS_CHOICES = [
+        ('รอดำเนินการ', 'รอดำเนินการ'),
+        ('อนุมัติ', 'อนุมัติแล้ว'),
+        ('ปฏิเสธ', 'ปฏิเสธ'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='approval_requests')  # ผู้ส่งคำขอ
+    request_type = models.CharField(max_length=20, choices=REQUEST_TYPE_CHOICES)  # ประเภทคำขอ
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')  # สถานะของคำขอ
+    created_at = models.DateTimeField(auto_now_add=True)  # วันที่ส่งคำขอ
+
+    def __str__(self):
+        return f"{self.user.username} requests {self.request_type} ({self.status})"
+
 
 # โมเดลสำหรับผู้เชี่ยวชาญ
 class Expert(models.Model):
@@ -81,11 +101,11 @@ class Seller(models.Model):
 # โมเดลสำหรับสินค้า
 class Product(models.Model):
     TYPE_CHOICES = [
-        ('Mask', 'sohk'),
-        ('oily', 'ผิวมัน'),
-        ('dry', 'ผิวแห้ง'),
-        ('combination', 'ผิวผสม'),
-        ('sensitive', 'ผิวแพ้ง่าย'),
+        ('Cleansers', 'คลีนซิ่ง'),
+        ('Toners', 'โทนเนอร์'),
+        ('Serums', 'เซรั่ม'),
+        ('Moisturizers', 'มอยส์เจอไรเซอร์'),
+        ('Sunscreens', 'ครีมกันแดด'),
     ]
     name = models.CharField(max_length=200)  # ชื่อสินค้า
     description = models.TextField(blank=True, null=True)  # คำอธิบายสินค้า
@@ -94,7 +114,7 @@ class Product(models.Model):
     category = models.CharField(max_length=100, choices=TYPE_CHOICES)# หมวดหมู่สินค้า
     usage = models.TextField(blank=True, null=True)  # วิธีใช้
     link = models.URLField(max_length=500, blank=True, null=True)  # ลิงก์สำหรับซื้อสินค้า
-    added_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="products")  # ผู้เพิ่มสินค้า
+    user_id = models.ForeignKey(User, on_delete=models.CASCADE, related_name="products")  # ผู้เพิ่มสินค้า
     rating = models.DecimalField(max_digits=3, decimal_places=1, blank=True, null=True)  # คะแนนเฉลี่ย
     popular = models.BooleanField(default=False)  # เป็นสินค้ายอดนิยมหรือไม่
     created_at = models.DateTimeField(auto_now_add=True)  # วันที่สร้างสินค้า

@@ -18,15 +18,22 @@
     <!-- รายการบทความ -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {% for article in articles %}
-            <div class="bg-white p-4 rounded-lg shadow-md">
-                <h3 class="text-xl font-bold">{{ article.title }}</h3>
-                <p class="text-gray-600">{{ article.description|truncatechars:100 }}</p>
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <!-- ชื่อบทความ -->
+                <h3 class="text-xl font-bold text-gray-800">{{ article.title }}</h3>
 
+                <!-- รูปบทความ -->
                 {% if article.image %}
-                    <img src="{{ article.image.url }}" class="mt-2 rounded-lg w-full h-40 object-cover">
+                    <img src="{{ article.image.url }}" class="mt-3 rounded-lg w-full h-40 object-cover">
                 {% endif %}
 
-                <p class="text-sm text-gray-500 mt-2">🖊 โดย {{ article.expert.username }} | 📅 {{ article.created_at|date:"d M Y" }}</p>
+                <!-- เนื้อหาบทความ -->
+                <p class="text-gray-700 mt-4 leading-relaxed">{{ article.content|linebreaks }}</p>
+
+                <!-- ข้อมูลเพิ่มเติม -->
+                <p class="text-sm text-gray-500 mt-4">
+                    🖊 โดย {{ article.expert.username }} | 📅 {{ article.created_at|date:"d M Y" }}
+                </p>
 
                 <!-- ปุ่มแก้ไข/ลบ (เฉพาะเจ้าของบทความ) -->
                 {% if user == article.expert %}

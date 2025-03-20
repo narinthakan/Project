@@ -61,28 +61,30 @@
     <div class="certificate-container">
         <h1 class="certificate-title">ใบรับรองผู้เชี่ยวชาญ</h1>
 
-        {% if certificate %}
-            <p><strong>ชื่อผู้เชี่ยวชาญ:</strong> {{ expert.username }}</p>
-            <p><strong>ระดับใบเกียรติบัตร:</strong> {{ certificate.certification_level }}</p>
+            {% if certificate.total_reviews >= 30 and certificate.average_rating >= 4 %}
+            <p><strong>ชื่อผู้เชี่ยวชาญ:</strong> {{ expert.full_name }}</p>
+            {% comment %} <p><strong>ชื่อผู้เชี่ยวชาญ:</strong> {{ expert.user.username }}</p> {% endcomment %}
+            {% comment %} <p><strong>ระดับใบเกียรติบัตร:</strong> {{ certificate.certification_level }}</p> {% endcomment %}
             <p><strong>คะแนนเฉลี่ย:</strong> {{ certificate.average_rating }}</p>
             <p><strong>จำนวนรีวิว:</strong> {{ certificate.total_reviews }}</p>
             <p><strong>วันที่ออกใบเกียรติบัตร:</strong> {{ certificate.issue_date|date:"d M Y" }}</p>
 
+            
             <div class="certificate-footer">
                 <h3>ใบเกียรติบัตร PDF</h3>
                 
                 {% if pdf_url %}
                     <!-- แสดง PDF ในหน้าเว็บ -->
-                    <iframe src="{% static 'pdf/Certificate.pdf' %}"></iframe>
+                    <iframe src="{% static 'certificates/' %}{{ expert.user.username }}_certificate.pdf"></iframe>
                     
                     <!-- ปุ่มดาวน์โหลด -->
-                    <a href="{% static 'pdf/Certificate.pdf' %}" class="download-link" download>ดาวน์โหลดใบเกียรติบัตร</a>
+                    <a href="{% static 'certificates/' %}{{ expert.user.username }}_certificate.pdf" class="download-link" download>ดาวน์โหลดใบเกียรติบัตร</a>
                 {% else %}
                     <p>ยังไม่มีใบเกียรติบัตร</p>
                 {% endif %}
 
                 <!-- ปุ่มสำหรับแก้ไขชื่อ -->
-                <a href="{% url 'edit_expert_name' %}" class="edit-button">แก้ไขชื่อผู้เชี่ยวชาญ</a>
+                {% comment %} <a href="{% url 'edit_expert_name' %}" class="edit-button">แก้ไขชื่อผู้เชี่ยวชาญ</a> {% endcomment %}
             </div>
         {% else %}
             <p>คุณยังไม่ผ่านเกณฑ์การรับใบเกียรติบัตร</p>

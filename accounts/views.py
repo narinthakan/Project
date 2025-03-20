@@ -27,6 +27,8 @@ from django.http import FileResponse
 import base64
 import uuid
 import os 
+import re
+from django.core.files import File
 
 
 # Helper function to check if user is an expert or admin
@@ -438,7 +440,7 @@ def expert_logout(request):
         messages.success(request, "ออกจากระบบสำเร็จ!")
     return redirect('home')  # กลับไปที่หน้าหลัก
 
-
+#อัปเดตข้อมูลโปรไปล์
 @login_required
 def submit_profile_view(request):
     if request.method == 'POST':
@@ -760,7 +762,7 @@ def general_advice(request):
     
     
 # ฟังก์ชันสำหรับเพิ่มรีวิวผู้เชี่ยวชาญ
-@login_required
+#@login_required
 def review_expert(request, expert_id):
     expert = get_object_or_404(User, id=expert_id)
 
@@ -790,19 +792,22 @@ def review_expert(request, expert_id):
 
 
 # ฟังก์ชันลบรีวิวผู้เชี่ยวชาญ
-@login_required
+#@login_required
 def delete_expert_review(request, review_id):
-    review = get_object_or_404(ExpertReview, id=review_id, user=request.user)  # ตรวจสอบว่าเป็นเจ้าของรีวิว
-    if request.user == review.user:
-        review.delete()  # ลบรีวิว
-        messages.success(request, 'ความคิดเห็นของคุณถูกลบแล้ว')
+    review = get_object_or_404(ExpertReview, id=review_id)
+    
+    # อนุญาตให้ลบได้ถ้าเป็นเจ้าของรีวิวหรือเป็นแอดมิน
+    if request.user == review.user or request.user.is_staff:
+        review.delete()
+        messages.success(request, "ลบรีวิวเรียบร้อยแล้ว")
     else:
-        messages.error(request, 'คุณไม่สามารถลบความคิดเห็นนี้ได้')
-    return redirect('reviews_list')  # กลับไปยังหน้าคำแนะนำ
+        messages.error(request, "คุณไม่มีสิทธิ์ลบความคิดเห็นนี้")
+
+    return redirect('expert_detail', expert_id=review.expert.id)  # กลับไปยังหน้าผู้เชี่ยวชาญ
 
 
 
-@login_required
+#@login_required
 def review_list(request):
     # ดึงผู้เชี่ยวชาญที่มีรีวิว
     experts = User.objects.filter(reviews__isnull=False).distinct()
@@ -823,7 +828,7 @@ def review_list(request):
     })
     
 #ดึงข้อมูลผู้เชี่ยวชาญ (User) ที่คุณต้องการมาแสดงเป็นรายการ    
-@login_required
+#@login_required
 def expert_list(request):
     # สมมุติว่าคุณจะดึงผู้เชี่ยวชาญที่เป็น User ทุกคน
     # หรือถ้ามี field ระบุว่า user นี้เป็นผู้เชี่ยวชาญ ให้กรองตามนั้น
@@ -835,7 +840,7 @@ def expert_list(request):
     })
 
 #ดึงข้อมูล “ผู้เชี่ยวชาญ” และ “รีวิว” ทั้งหมดของเขา
-@login_required
+#@login_required
 def expert_detail(request, expert_id):
     # ดึงข้อมูล Expert ตาม user_id (จะใช้ expert_id จาก URL)
     expert = get_object_or_404(Expert, user_id=expert_id)
@@ -895,7 +900,7 @@ def add_text_to_certificate_template(input_pdf, output_pdf, expert, certificate)
         if not os.path.exists(font_path):
             print(f"❌ ไม่พบฟอนต์: {font_path}")
             return False
-
+        
         # ลงทะเบียนฟอนต์ Sarabun
         pdfmetrics.registerFont(TTFont("Sarabun", font_path))
 
@@ -907,14 +912,40 @@ def add_text_to_certificate_template(input_pdf, output_pdf, expert, certificate)
         # สร้างไฟล์ PDF ใหม่
         packet = BytesIO()
         canvas_obj = canvas.Canvas(packet, pagesize=letter)
-        canvas_obj.setFont("Sarabun", 36)
+        canvas_obj.setFont("Sarabun", 30)
+        
+        print(f"🔹 ชื่อผู้เชี่ยวชาญ: {expert.full_name}")
 
         # เพิ่มข้อมูลลงในใบเกียรติบัตร
-        canvas_obj.drawString(280, 500, expert.user.get_full_name)  # ชื่อผู้เชี่ยวชาญ
-        canvas_obj.drawString(280, 460, certificate.certification_level)  # ระดับเกียรติบัตร
-        canvas_obj.drawString(280, 420, f"คะแนนเฉลี่ย: {certificate.average_rating}")  # คะแนนเฉลี่ย
-        canvas_obj.drawString(280, 380, f"จำนวนรีวิว: {certificate.total_reviews}")  # จำนวนรีวิว
-        canvas_obj.drawString(280, 340, f"วันที่ออก: {certificate.issue_date.strftime('%d %B %Y')}")  # วันที่ออก
+        canvas_obj.drawString(340, 300, expert.full_name)  # ชื่อผู้เชี่ยวชาญ
+
+        canvas_obj.setFont("Sarabun",15)
+        canvas_obj.drawString(375, 223, f"{round(certificate.average_rating, 2)}")  # คะแนนเฉลี่ย
+        canvas_obj.drawString(550, 223, f"{certificate.total_reviews}")  # จำนวนรีวิว
+        
+        issue_date = certificate.issue_date.strftime('%d %m %Y')  # วันที่ในรูปแบบภาษาอังกฤษ
+
+        # แปลงปี ค.ศ. เป็น พ.ศ.
+        day, month, year = issue_date.split(' ')
+        year_buddhist = int(year) + 543  # คำนวณปี พ.ศ.
+        issue_date_th = f"{day} {month} {year_buddhist}"
+
+        # แทนที่เดือนในรูปแบบภาษาอังกฤษเป็นภาษาไทย
+        month_map = {
+            '01': 'มกราคม', '02': 'กุมภาพันธ์', '03': 'มีนาคม', 
+            '04': 'เมษายน', '05': 'พฤษภาคม', '06': 'มิถุนายน',
+            '07': 'กรกฎาคม', '08': 'สิงหาคม', '09': 'กันยายน',
+            '10': 'ตุลาคม', '11': 'พฤศจิกายน', '12': 'ธันวาคม'
+        }
+
+        # แทนที่เดือนภาษาอังกฤษเป็นภาษาไทย
+        for month_num, month_th in month_map.items():
+            if month_num in issue_date_th:
+                issue_date_th = issue_date_th.replace(month_num, month_th)
+
+        canvas_obj.setFont("Sarabun",20)
+        canvas_obj.drawString(440, 177, issue_date_th)        
+        # canvas_obj.drawString(280, 340, f"{certificate.issue_date.strftime('%d %B %Y')}")  # วันที่ออก
 
         # บันทึกการเพิ่มข้อความลงใน PDF
         canvas_obj.save()
@@ -926,7 +957,7 @@ def add_text_to_certificate_template(input_pdf, output_pdf, expert, certificate)
         page.merge_page(overlay_page)
         pdf_writer.add_page(page)
 
-        # บันทึกไฟล์ PDF ใหม่
+        # บันทึกไฟล์ PDF ใหม่ทับไฟล์เดิม
         with open(output_pdf, "wb") as output_file:
             pdf_writer.write(output_file)
 
@@ -936,6 +967,8 @@ def add_text_to_certificate_template(input_pdf, output_pdf, expert, certificate)
     except Exception as e:
         print(f"❌ Error: {e}")
         return False
+    
+
 
 
 # 🔹 ฟังก์ชันสร้างไฟล์ PDF สำหรับใบเกียรติบัตรและแสดงในหน้าเว็บ
@@ -964,11 +997,11 @@ def generate_and_view_certificate(request, expert_id):
     print(f" มีรีวิวทั้งหมด: {total_reviews} | คะแนนเฉลี่ย: {average_rating}")
 
     #  4. ตรวจสอบว่าเพราะอะไรถึงไม่ได้ใบเกียรติบัตร
-    if total_reviews < 30:
-        return HttpResponse(" ไม่สามารถออกใบเกียรติบัตรได้: จำนวนรีวิวไม่ถึง 30", status=400)
+    # if total_reviews < 30:
+    #     return HttpResponse(" ไม่สามารถออกใบเกียรติบัตรได้: จำนวนรีวิวไม่ถึง 30", status=400)
 
-    if average_rating < 4:
-        return HttpResponse(" ไม่สามารถออกใบเกียรติบัตรได้: คะแนนเฉลี่ยต่ำกว่า 4.0", status=400)
+    # if average_rating < 4:
+    #     return HttpResponse(" ไม่สามารถออกใบเกียรติบัตรได้: คะแนนเฉลี่ยต่ำกว่า 4.0", status=400)
 
     #  5. ถ้ายังไม่มีใบเกียรติบัตร → สร้างใหม่
     if not certificate:
@@ -985,6 +1018,7 @@ def generate_and_view_certificate(request, expert_id):
 
         certificate.save()
         print(f"✅ บันทึกใบเกียรติบัตรสำเร็จ!")
+        
 
 
     #  6. อัปเดตใบเกียรติบัตรถ้าข้อมูลเปลี่ยนแปลง
@@ -1004,6 +1038,10 @@ def generate_and_view_certificate(request, expert_id):
 
     certificate_exists = os.path.exists(output_pdf)
     print(f" ตรวจสอบไฟล์ PDF: {'พบ' if certificate_exists else 'ไม่พบ'}")
+    
+    success = add_text_to_certificate_template(input_pdf, output_pdf, expert, certificate)
+    if not success:
+            return HttpResponse(" เกิดข้อผิดพลาดในการสร้างใบเกียรติบัตร", status=500)
 
     #  9. ถ้าไม่มีไฟล์ PDF → สร้างใหม่
     if not certificate_exists:
@@ -1012,10 +1050,12 @@ def generate_and_view_certificate(request, expert_id):
             return HttpResponse(" ไม่พบไฟล์เทมเพลต PDF", status=404)
 
         print(f"🔹 กำลังสร้างไฟล์ PDF สำหรับ {expert.user.username}")
-        success = add_text_to_certificate_template(input_pdf, output_pdf, expert, certificate)
+        # success = add_text_to_certificate_template(input_pdf, output_pdf, expert, certificate)
 
-        if not success:
-            return HttpResponse(" เกิดข้อผิดพลาดในการสร้างใบเกียรติบัตร", status=500)
+        # if not success:
+        #     return HttpResponse(" เกิดข้อผิดพลาดในการสร้างใบเกียรติบัตร", status=500)
+        
+        
 
     #  10. คืนค่า URL ของใบเกียรติบัตร
     pdf_url = f"{settings.STATIC_URL}certificates/{expert.user.username}_certificate.pdf"
@@ -1029,18 +1069,24 @@ def generate_and_view_certificate(request, expert_id):
 
 # 🔹 ฟังก์ชันแสดงใบเกียรติบัตรเป็น PDF
 def view_certificate(request, expert_id):
-    """
-    แสดงใบเกียรติบัตรเป็น PDF
-    """
     expert = get_object_or_404(Expert, id=expert_id)
-    certificate_path = os.path.join(settings.BASE_DIR, "static", "certificates", f"{expert.user.username}_certificate.pdf")
+
+    # ตรวจสอบสิทธิ์
+    if request.user != expert.user and not request.user.is_staff:
+        return HttpResponse("คุณไม่มีสิทธิ์เข้าถึงใบเกียรติบัตรนี้", status=403)
+
+    # แปลง username ให้ปลอดภัย
+    safe_username = re.sub(r'[^\w.-]', '_', expert.user.username)
+    certificate_path = os.path.join(settings.BASE_DIR, "static", "certificates", f"{safe_username}_certificate.pdf")
 
     if not os.path.exists(certificate_path):
-        return HttpResponse(" ไม่พบไฟล์ใบเกียรติบัตร", status=404)
+        return HttpResponse("ไม่พบไฟล์ใบเกียรติบัตร", status=404)
 
-    # เปิดไฟล์ PDF ในโหมด 'rb' และส่งให้ผู้ใช้
-    with open(certificate_path, "rb") as f:
-        return FileResponse(f, content_type="application/pdf")
+    # ✅ ส่งไฟล์ PDF พร้อมเฮดเดอร์ให้ดาวน์โหลด
+    response = FileResponse(open(certificate_path, "rb"), content_type="application/pdf")
+    response["Content-Disposition"] = f'attachment; filename="{safe_username}_certificate.pdf"'
+    
+    return response
     
 
 # 🔹 ฟังก์ชันแสดงใบเกียรติบัตรในหน้าเว็บ
@@ -1096,6 +1142,7 @@ def edit_expert_name(request):
                 if os.path.exists(input_pdf):
                     if os.path.exists(output_pdf):
                         os.remove(output_pdf)  # ลบไฟล์เก่าก่อนสร้างใหม่
+                    print('activate add_text_to_certificate_template')
                     add_text_to_certificate_template(input_pdf, output_pdf, expert, certificate)
 
             return redirect('expert_certificate_view')
@@ -1387,24 +1434,44 @@ def delete_product(request, product_id):
 @login_required
 def add_review(request, product_id):
     product = get_object_or_404(Product, id=product_id)
+    
     if request.method == 'POST':
         comment = request.POST.get('comment')
-        Review.objects.create(user=request.user, product=product, comment=comment)
+        rating = request.POST.get('rating')  # รับค่าคะแนนจากฟอร์ม
+        
+        # ตรวจสอบว่าคะแนนอยู่ในช่วง 1-5 หรือไม่
+        if not rating or int(rating) not in range(1, 6):
+            messages.error(request, "กรุณาเลือกคะแนนระหว่าง 1-5 ดาว")
+            return redirect("product_detail", product_id=product.id)
+
+        # บันทึกรีวิวลงฐานข้อมูล
+        Review.objects.create(
+            user=request.user,
+            product=product,
+            comment=comment,
+            rating=int(rating),  # แปลงเป็น integer ก่อนบันทึก
+        )
+
         messages.success(request, 'เพิ่มรีวิวสำเร็จ!')
+    
     return redirect('product_detail', product_id=product_id)
+
 
 # ฟังก์ชันลบรีวิว
 @login_required
 def delete_review(request, review_id):
-    review = get_object_or_404(Review, id=review_id, user=request.user) #ตรวจสอบว่าเป็นเจ้าของรีวิว
-    if request.user == review.user:
-        product_id = review.product.id
-        review.delete()  #ลบรีวิว
-        messages.success(request, 'ความคิดเห็นของคุณถูกลบแล้ว')
-        return redirect('product_detail', product_id=product_id)
+    review = get_object_or_404(Review, id=review_id)  # ดึงรีวิวมาโดยไม่จำกัดเฉพาะเจ้าของ
+    product_id = review.product.id
+
+    # อนุญาตให้ลบได้หากเป็นเจ้าของรีวิวหรือเป็นแอดมิน
+    if request.user == review.user or request.user.is_staff:
+        review.delete()
+        messages.success(request, 'ความคิดเห็นถูกลบแล้ว')
     else:
-        messages.error(request, 'คุณไม่สามารถลบความคิดเห็นนี้ได้')
-        return redirect('product_detail', product_id=review.product.id)
+        messages.error(request, 'คุณไม่มีสิทธิ์ลบความคิดเห็นนี้')
+
+    return redirect('product_detail', product_id=product_id)
+
     
 #เพิ่มรีวิวในฐานข้อมูล    
 @login_required

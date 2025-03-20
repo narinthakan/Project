@@ -143,7 +143,7 @@
         
         <!-- เพิ่มปุ่มดูใบเกียรติบัตร -->
         <div class="flex justify-center mt-8">
-            <a href="{% url 'expert_certificate_view' %}" class="certificate-button">
+            <a href="{% url 'generate_certificate' expert_profile.id %}" class="certificate-button">
                 ดูใบเกียรติบัตรของคุณ
             </a>
         </div>
