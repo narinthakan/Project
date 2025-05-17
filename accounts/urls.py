@@ -54,7 +54,7 @@ urlpatterns = [
     path('expert_profile/', views.expert_profile, name='expert_profile'),
     path('edit-profile/', views.edit_profile, name='edit_profile'),  # ฟังก์ชันแก้ไขโปรไฟล์ใหม่
     path('edit_expert_profile/', views.edit_expert_profile, name='edit_expert_profile'),
-    # path('edit_seller_profile/', views.edit_seller_profile, name='edit_seller_profile'),
+    path('edit_seller_profile/', views.edit_seller_profile, name='edit_seller_profile'),
 
     # เส้นทางสำหรับหน้าแดชบอร์ด
     path('dashboard/', views.user_dashboard, name='user_dashboard'),
@@ -101,7 +101,7 @@ urlpatterns = [
     path('expert-view/<int:skin_data_id>/', views.expert_view_detail, name='expert_view_detail'),  # เส้นทางสำหรับดูรายละเอียด
     #path('expert-response/<int:skin_data_id>/', views.expert_response, name='expert_response'),
     path('expert-dashboard/', expert_view, name='expert_dashboard'),
-    
+ 
     # เส้นทางสำหรับรีวิวผู้เชี่ยวชาญ
     path('reviews/', views.review_list, name='reviews'),  # แสดงรายการรีวิวทั้งหมด
     path('reviews/', views.review_list, name='reviews_list'),

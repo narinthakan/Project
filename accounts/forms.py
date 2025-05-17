@@ -102,6 +102,27 @@ class SellerRegistrationForm(forms.ModelForm):
 
         return seller
 
+class SellerProfileForm(forms.ModelForm):
+    email = forms.EmailField(required=True, label="อีเมล")  # ดึงจาก User
+
+    class Meta:
+        model = Seller
+        fields = ['full_name', 'business_name', 'product_category', 'website', 'phone_number', 'profile_picture']
+
+    def __init__(self, *args, **kwargs):
+        super(SellerProfileForm, self).__init__(*args, **kwargs)
+        if self.instance and self.instance.user:
+            self.fields['email'].initial = self.instance.user.email
+
+    def save(self, commit=True):
+        seller = super().save(commit=False)
+        if self.cleaned_data.get('email'):
+            seller.user.email = self.cleaned_data['email']
+            seller.user.username = self.cleaned_data['email']  # Sync username = email
+            seller.user.save()
+        if commit:
+            seller.save()
+        return seller
 
 
 # ฟอร์มสำหรับสินค้า (Product Form)
@@ -147,11 +168,20 @@ class ProductForm(forms.ModelForm):
             'popular': 'สินค้ายอดนิยม',
         }
         widgets = {
-            'category': forms.Select(choices=Product.TYPE_CHOICES),  # ใช้ Select สำหรับหมวดหมู่
-            'price': forms.NumberInput(attrs={'step': '0.01'}),  # กำหนดรูปแบบราคาที่มีจุดทศนิยม 2 ตำแหน่ง
-            'rating': forms.NumberInput(attrs={'min': '0', 'max': '5'}),  # กำหนดช่วงคะแนนให้เป็น 0-5
-            'popular': forms.CheckboxInput(),  # ใช้ Checkbox สำหรับสินค้ายอดนิยม
+            'category': forms.Select(choices=Product.TYPE_CHOICES),
+            'price': forms.NumberInput(attrs={'step': '0.01'}),
+            'rating': forms.NumberInput(attrs={'min': '0', 'max': '5'}),
+            'popular': forms.CheckboxInput(),
         }
+
+    def save(self, commit=True, user=None):
+        product = super().save(commit=False)
+        product.user = user  # ใช้ user ที่ส่งมาจาก views.py
+        if commit:
+            product.save()
+        return product
+
+      
 
 # ฟอร์มแก้ไขโปรไฟล์ผู้ใช้ (Profile Form)
 class ProfileForm(forms.ModelForm):
@@ -182,6 +212,7 @@ class ProfileForm(forms.ModelForm):
 def validate_image_count(images):
     if len(images) < 2:
         raise ValidationError("❌ กรุณาอัปโหลดหรือถ่ายภาพอย่างน้อย 2 ภาพ")
+
 
 # Custom Widget สำหรับอัปโหลดหลายไฟล์
 class MultipleFileInput(forms.ClearableFileInput):
@@ -264,7 +295,7 @@ class ExpertReviewForm(forms.ModelForm):
 class ExpertArticleForm(forms.ModelForm):
     class Meta:
         model = ExpertArticle
-        fields = ['title', 'content', 'image', 'description', 'how_to_check']
+        fields = ['title', 'description', 'content', 'image' ]
         
 
 #สำหรับแก้ไขชื่อในใบเกียรติบัตร

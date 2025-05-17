@@ -1,13 +1,132 @@
-{% extends "base.html" %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>โปรไฟล์ผู้ขาย</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@100;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * {
+            font-family: "Kanit", sans-serif;
+        }
 
-{% block title %}โปรไฟล์ผู้ขาย{% endblock %}
+        .profile-container {
+            background-color: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            max-width: 500px;
+            margin: 40px auto;
+            text-align: center;
+        }
 
-{% block content %}
-<div class="bg-white p-6 rounded-lg shadow-md">
-    <h2 class="text-2xl font-bold mb-4">โปรไฟล์ผู้ขาย</h2>
-    <p><strong>ชื่อ-สกุล:</strong> {{ seller.full_name }}</p>
-    <p><strong>ชื่อธุรกิจ:</strong> {{ seller.business_name }}</p>
-    <p><strong>หมวดหมู่สินค้า:</strong> {{ seller.product_category }}</p>
-    <a href="{% url 'edit_seller_profile' %}" class="text-blue-500 hover:underline">แก้ไขข้อมูล</a>
-</div>
-{% endblock %}
+        .profile-picture {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin: 0 auto 20px;
+            border: 3px solid #A0AEC0;
+            background-color: #E2E8F0;
+        }
+
+        .profile-picture img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .user-info label {
+            color: #4A5568;
+            font-weight: 600;
+            display: inline-block;
+            width: 150px;
+        }
+
+        .user-info div {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        .back-button {
+            color: #3182CE;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        .back-button:hover {
+            text-decoration: underline;
+        }
+
+        .edit-button {
+            margin-top: 20px;
+            background-color: #3182CE;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .edit-button:hover {
+            background-color: #2B6CB0;
+        }
+    </style>
+</head>
+<body class="bg-blue-100">
+    <!-- ปุ่มกลับ -->
+    <div class="p-4">
+        <a href="{% url 'user_home' %}" class="back-button">&lt; กลับหน้าหลัก</a>
+    </div>
+
+    <!-- ส่วนโปรไฟล์ -->
+    <div class="profile-container">
+        <div class="flex flex-col items-center">
+            <div class="profile-picture relative">
+                {% if seller.profile_picture %}
+                    <img src="{{ seller.profile_picture.url }}" alt="Profile Picture">
+                {% else %}
+                    <img src="{% static 'images/user-icon.png' %}" alt="Default Profile Picture">
+                {% endif %}
+            </div>
+
+            <div class="user-info mt-6">
+                <div>
+                    <label>ชื่อ-นามสกุล:</label>
+                    <span>{{ seller.full_name|default:"-" }}</span>
+                </div>
+                <div>
+                    <label>ชื่อธุรกิจ:</label>
+                    <span>{{ seller.business_name|default:"-" }}</span>
+                </div>
+                <div>
+                    <label>หมวดหมู่สินค้า:</label>
+                    <span>{{ seller.product_category|default:"-" }}</span>
+                </div>
+                <div>
+                    <label>เว็บไซต์/โซเชียลมีเดีย:</label>
+                    <span>{{ seller.website|default:"-" }}</span>
+                </div>
+                <div>
+                    <label>เบอร์โทรศัพท์:</label>
+                    <span>{{ seller.phone_number|default:"-" }}</span>
+                </div>
+                <div>
+                    <label>อีเมล:</label>
+                    <span>{{ seller.user.email|default:"-" }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ปุ่มแก้ไข -->
+        <div class="text-center mt-4">
+            <a href="{% url 'edit_seller_profile' %}" class="edit-button">แก้ไขข้อมูลส่วนตัว</a>
+        </div>
+    </div>
+</body>
+</html>

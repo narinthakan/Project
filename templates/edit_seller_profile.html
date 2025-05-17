@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แก้ไขโปรไฟล์ผู้ขาย</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * {
+            font-family: "Kanit", sans-serif;
+        }
+
+        body {
+            background-color: #EFF6FF;
+            background-image: radial-gradient(circle at 20% 20%, #BFDBFE 0%, transparent 40%), 
+                             radial-gradient(circle at 80% 80%, #93C5FD 0%, transparent 40%);
+            min-height: 100vh;
+        }
+
+        .form-container {
+            background-color: white;
+            padding: 40px;
+            max-width: 650px;
+            margin: 30px auto;
+            border-radius: 0;
+            box-shadow: none;
+        }
+
+        .form-header {
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #EBF5FF;
+        }
+
+        .form-header h1 {
+            color: #1E40AF;
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        .form-header p {
+            color: #64748B;
+            margin-top: 5px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            color: #334155;
+            font-weight: 500;
+            margin-bottom: 8px;
+            font-size: 1.05rem;
+            display: block;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            padding-left: 8px;
+            border-radius: 10px;
+            border: 1.5px solid #E2E8F0;
+            background-color: #F8FAFC;
+            font-size: 1rem;
+        }
+
+        .form-control:focus {
+            border-color: #3B82F6;
+            background-color: white;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+            outline: none;
+        }
+
+        .btn-primary {
+            background-color: #2563EB;
+            color: white;
+            padding: 14px 28px;
+            border-radius: 10px;
+            font-size: 1.05rem;
+            font-weight: 500;
+            width: 100%;
+            box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: #1D4ED8;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(37, 99, 235, 0.25);
+        }
+
+        .current-image {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .current-image img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 15px;
+            border: 2px solid #E2E8F0;
+        }
+    </style>
+</head>
+<body class="py-8">
+    <div class="form-container">
+        <div class="form-header text-center">
+            <h1>แก้ไขโปรไฟล์ผู้ขาย</h1>
+            <p>อัปเดตข้อมูลของคุณเพื่อให้ผู้ใช้ได้รู้จักคุณมากขึ้น</p>
+        </div>
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="id_full_name" class="form-label">ชื่อ-นามสกุล</label>
+                <input type="text" name="full_name" id="id_full_name" class="form-control" placeholder="กรอกชื่อ-นามสกุล" value="{{ form.full_name.value }}">
+            </div>
+
+            <div class="form-group">
+                <label for="id_business_name" class="form-label">ชื่อธุรกิจ</label>
+                <input type="text" name="business_name" id="id_business_name" class="form-control" placeholder="กรอกชื่อธุรกิจ" value="{{ form.business_name.value }}">
+            </div>
+
+            <div class="form-group">
+                <label for="id_product_category" class="form-label">หมวดหมู่สินค้า</label>
+                <input type="text" name="product_category" id="id_product_category" class="form-control" placeholder="กรอกหมวดหมู่สินค้า" value="{{ form.product_category.value }}">
+            </div>
+
+            <div class="form-group">
+                <label for="id_website" class="form-label">เว็บไซต์/โซเชียลมีเดีย</label>
+                <input type="url" name="website" id="id_website" class="form-control" placeholder="กรอกเว็บไซต์/โซเชียลมีเดีย" value="{{ form.website.value }}">
+            </div>
+
+            <div class="form-group">
+                <label for="id_phone_number" class="form-label">เบอร์โทรศัพท์</label>
+                <input type="text" name="phone_number" id="id_phone_number" class="form-control" placeholder="กรอกเบอร์โทรศัพท์" value="{{ form.phone_number.value }}">
+            </div>
+
+            <div class="form-group">
+                <label for="id_profile_picture" class="form-label">รูปโปรไฟล์</label>
+                <div class="current-image">
+                    {% if form.instance.profile_picture %}
+                        <img src="{{ form.instance.profile_picture.url }}" alt="รูปโปรไฟล์">
+                    {% endif %}
+                </div>
+                {{ form.profile_picture }}
+            </div>
+
+            <div class="form-group">
+                <label for="id_product_samples" class="form-label">ตัวอย่างสินค้า</label>
+                {{ form.product_samples }}
+            </div>
+
+            <div class="mt-8">
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-save mr-2"></i> บันทึกข้อมูล
+                </button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

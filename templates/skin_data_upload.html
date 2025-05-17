@@ -13,7 +13,7 @@
 
         <form id="uploadForm" method="POST" enctype="multipart/form-data" action="{% url 'skin_data_upload' %}" onsubmit="return validateUpload()" class="px-8 py-6 space-y-6">
             {% csrf_token %}
-
+            
             <!-- ประเภทผิว -->
             <div>
                 <label class="block text-sm font-medium text-blue-800 mb-2">ประเภทผิว</label>
@@ -165,28 +165,36 @@
         closeCamera.classList.add("hidden");
     });
 
-    // ถ่ายภาพ
-    captureButton.addEventListener("click", () => {
-        const context = canvas.getContext("2d");
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    // ✅ ถ่ายภาพจากกล้อง
+captureButton.addEventListener('click', () => {
+    const context = canvas.getContext('2d');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-        canvas.toBlob(blob => {
-            const imageFile = new File([blob], `capture-${Date.now()}.png`, { type: "image/png" });
-            selectedFiles.push(imageFile);
-            
-            const imgContainer = document.createElement("div");
-            imgContainer.className = "relative";
-            
-            const imgElement = document.createElement("img");
-            imgElement.src = URL.createObjectURL(blob);
-            imgElement.className = "w-20 h-20 object-cover rounded border border-blue-200";
-            
-            imgContainer.appendChild(imgElement);
-            capturedPreview.appendChild(imgContainer);
-        }, "image/png");
-    });
+    // แปลง canvas → Blob → File
+    canvas.toBlob(blob => {
+        const imageFile = new File([blob], `capture-${Date.now()}.png`, { type: 'image/png' });
+
+        // เก็บแค่ 1 ไฟล์เท่านั้น (ลบภาพเก่าออกก่อน)
+        selectedFiles = [imageFile];  // ลบภาพเก่าแล้วเก็บใหม่
+
+        // เคลียร์การแสดงภาพเก่า
+        capturedPreview.innerHTML = "";  // ลบภาพที่แสดงอยู่
+
+        // แสดงภาพใหม่
+        const imgElement = document.createElement('img');
+        imgElement.src = URL.createObjectURL(blob);
+        imgElement.classList.add('preview-container');
+        capturedPreview.appendChild(imgElement);
+
+        // ⚠️ สำคัญ: อัปเดต fileInput.files ใหม่
+        const dataTransfer = new DataTransfer();
+        selectedFiles.forEach(f => dataTransfer.items.add(f));
+        fileInput.files = dataTransfer.files;
+
+    }, 'image/png');
+});
 
     // ตรวจสอบก่อนส่งฟอร์ม
     function validateUpload() {

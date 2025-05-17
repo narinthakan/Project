@@ -60,7 +60,7 @@
                         <div class="bg-white p-4 rounded-lg shadow-sm gradient-border pl-6">
                             <h3 class="text-blue-600 text-sm font-medium mb-2 flex items-center">
                                 <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2"></path>
                                 </svg>
                                 ลักษณะผิว
                             </h3>
@@ -70,7 +70,7 @@
                                         <span class="w-28 text-gray-500">ประเภทผิว:</span> 
                                         <span class="font-medium text-gray-700">{{ response.skin_data.skin_type }}</span>
                                     </p>
-                                
+                                  
                                     <p class="flex items-center mt-1">
                                         <span class="w-28 text-gray-500">อาการแพ้:</span> 
                                         <span class="font-medium text-gray-700">{{ response.skin_data.allergy_history }}</span>
@@ -87,27 +87,26 @@
                             </div>
                         </div>
 
-                            {% if response.skin_data.skin_image %}
-                            <div class="mt-2">
-                                <h3 class="text-blue-600 text-sm font-medium mb-2 flex items-center">
-                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                    </svg>
-                                    ภาพผิวหน้า
-                                </h3>
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    <div class="relative overflow-hidden rounded-lg shadow-sm">
-                                        <img src="{{ response.skin_data.skin_image.url }}" alt="ภาพผิวหน้า" class="w-full h-auto rounded-lg transition-transform hover:scale-105 duration-300">
-                                    </div>
-                                    {% if response.skin_data.skin_image_secondary %}
-                                    <div class="relative overflow-hidden rounded-lg shadow-sm">
-                                        <img src="{{ response.skin_data.skin_image_secondary.url }}" alt="ภาพผิวหน้า (มุมที่ 2)" class="w-full h-auto rounded-lg transition-transform hover:scale-105 duration-300">
-                                    </div>
-                                    {% endif %}
+                        {% if response.skin_data.skin_image %}
+                        <div class="mt-2">
+                            <h3 class="text-blue-600 text-sm font-medium mb-2 flex items-center">
+                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                                ภาพผิวหน้า
+                            </h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div class="relative overflow-hidden rounded-lg shadow-sm">
+                                    <img src="{{ response.skin_data.skin_image.url }}" alt="ภาพผิวหน้า" class="w-full h-auto rounded-lg transition-transform hover:scale-105 duration-300">
                                 </div>
+                                {% if response.skin_data.skin_image_secondary %}
+                                <div class="relative overflow-hidden rounded-lg shadow-sm">
+                                    <img src="{{ response.skin_data.skin_image_secondary.url }}" alt="ภาพผิวหน้า (มุมที่ 2)" class="w-full h-auto rounded-lg transition-transform hover:scale-105 duration-300">
+                                </div>
+                                {% endif %}
                             </div>
-                            {% endif %}
                         </div>
+                        {% endif %}
                     </div>
 
                     <div class="p-5">
@@ -175,94 +174,6 @@
                     </p>
                 </div>
             {% endif %}
-                {% if expert_reviews %}
-                    <div class="space-y-3">
-                    {% for review in expert_reviews %}
-                        <div class="bg-white p-4 rounded-lg border shadow-sm hover-lift">
-                            <div class="flex justify-between items-start">
-                                <div class="flex items-start">
-                                    <div class="w-8 h-8 bg-blue-100 rounded-full mr-2 flex items-center justify-center">
-                                        <span class="text-blue-600 font-medium">
-                                            {{ review.user.username|slice:":1"|upper }}
-                                        </span>
-                                    </div>
-                                    <div>
-                                        <p class="font-medium text-gray-800">{{ review.user.username }}</p>
-                                        <div class="flex items-center mt-1 mb-1">
-                                            <div class="flex text-yellow-400">
-                                                {% for i in '12345'|make_list %}
-                                                    {% if forloop.counter <= review.rating %}
-                                                        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                                                            <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-                                                        </svg>
-                                                    {% else %}
-                                                        <svg class="w-4 h-4 fill-current text-gray-200" viewBox="0 0 24 24">
-                                                            <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-                                                        </svg>
-                                                    {% endif %}
-                                                {% endfor %}
-                                            </div>
-                                            <span class="ml-1 text-sm text-gray-500">ผู้เชี่ยวชาญ: {{ review.expert.username }}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <span class="text-xs text-gray-400 bg-gray-50 px-2 py-1 rounded-full">{{ review.created_at|date:"d M Y" }}</span>
-                            </div>
-                            
-                            <div class="pl-10">
-                                <p class="text-gray-700 mt-2 leading-relaxed">{{ review.comment }}</p>
-                            
-                                {% if review.user == request.user %}
-                                <div class="mt-2 text-right">
-                                    <form method="POST" action="{% url 'delete_review' review.id %}">
-                                        {% csrf_token %}
-                                        <button type="submit" class="text-sm text-red-500 hover:text-red-700 flex items-center ml-auto">
-                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                            </svg>
-                                            ลบความคิดเห็น
-                                        </button>
-                                    </form>
-                                </div>
-                                {% endif %}
-                            </div>
-                        </div>
-                    {% endfor %}
-                    </div>
-                {% else %}
-                {% endif %}
-            </div>  
-                {% if experts_reviewable %}
-                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                        {% for expert in experts_reviewable %}
-                            <div class="bg-white border border-gray-100 rounded-lg p-4 text-center shadow-sm hover-lift">
-                                <div class="w-16 h-16 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full mx-auto mb-3 flex items-center justify-center shadow-sm">
-                                    <span class="text-blue-600 font-medium text-lg">
-                                        {{ expert.username|slice:":1"|upper }}
-                                    </span>
-                                </div>
-                                <p class="font-medium text-gray-800 mb-3">{{ expert.username }}</p>
-                                <a href="{% url 'review_expert' expert.id %}" 
-                                   class="block w-full bg-blue-500 hover:bg-blue-600 transition-colors text-white py-2 rounded-lg text-sm shadow-sm flex items-center justify-center">
-                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                    </svg>
-                                    เขียนรีวิว
-                                </a>
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    {% comment %} <div class="flex items-center justify-center h-24 text-gray-500 bg-blue-50/50 rounded-lg shadow-sm">
-                        <p class="flex items-center">
-                            <svg class="w-5 h-5 mr-2 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                            </svg>
-                            ยังไม่มีผู้เชี่ยวชาญที่สามารถรีวิวได้
-                        </p>
-                    </div> {% endcomment %}
-                {% endif %}
-            </div>
         </div>
     </div>
 </body>

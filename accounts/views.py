@@ -7,7 +7,7 @@ from django.core.files.storage import default_storage
 from django.contrib import messages
 from django.conf import settings
 from django.db.models import Avg, Count
-from .forms import RegistrationForm, LoginForm, ProfileForm, ProductForm, ExpertLoginForm, ExpertVerificationForm, SellerRegistrationForm, ExpertRegistrationForm, ExpertProfileForm, SkinDataForm, ExpertResponseForm, ExpertReviewForm, SkinImageForm, ExpertArticleForm, ExpertNameEditForm
+from .forms import RegistrationForm, LoginForm, ProfileForm, ProductForm, ExpertLoginForm, ExpertVerificationForm, SellerRegistrationForm,SellerProfileForm, ExpertRegistrationForm, ExpertProfileForm, SkinDataForm, ExpertResponseForm, ExpertReviewForm, SkinImageForm, ExpertArticleForm, ExpertNameEditForm
 from .models import Product, Profile, Review, User, Expert, Seller, SkinUpload, SkinProfile, SkinData, ExpertResponse, ExpertReview, SkinImage, ExpertArticle, Certificate
 from django.contrib.auth.models import User, Group
 from django.db.models import Q
@@ -499,6 +499,28 @@ def edit_expert_profile(request):
 
     return render(request, 'edit_expert_profile.html', {'form': form})
 
+# ฟังก์ชันแก้ไขโปรไฟล์ผู้ขาย
+@login_required
+def edit_seller_profile(request):
+    try:
+        seller = Seller.objects.get(user=request.user)
+    except Seller.DoesNotExist:
+        messages.error(request, "ไม่พบข้อมูลผู้ขาย")
+        return redirect('seller_profile')
+
+    if request.method == 'POST':
+        form = SellerProfileForm(request.POST, request.FILES, instance=seller)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "แก้ไขโปรไฟล์สำเร็จแล้ว!")
+            return redirect('seller_profile')
+    else:
+        form = SellerProfileForm(instance=seller)
+
+    return render(request, 'edit_seller_profile.html', {'form': form})
+
+
+
 # #ฟังก์ชันกรอกข้อมูลผิวหน้า
 # def skin_data_form(request):
 #     return render(request, 'skin_data_form.html')
@@ -680,6 +702,7 @@ def expert_view(request):
         'skin_data_with_status': skin_data_with_status
     })
     
+    
 
 # ฟังก์ชันสำหรับดูรายละเอียดข้อมูลผิวหน้า
 @login_required
@@ -714,6 +737,7 @@ def expert_view_detail(request, user_id):
     if request.method == "POST":
         form = ExpertResponseForm(request.POST)
         if form.is_valid():
+            # บันทึกคำตอบใหม่จากผู้เชี่ยวชาญ
             ExpertResponse.objects.create(
                 skin_data=latest_skin_data,
                 expert=request.user,
@@ -997,11 +1021,11 @@ def generate_and_view_certificate(request, expert_id):
     print(f" มีรีวิวทั้งหมด: {total_reviews} | คะแนนเฉลี่ย: {average_rating}")
 
     #  4. ตรวจสอบว่าเพราะอะไรถึงไม่ได้ใบเกียรติบัตร
-    # if total_reviews < 30:
-    #     return HttpResponse(" ไม่สามารถออกใบเกียรติบัตรได้: จำนวนรีวิวไม่ถึง 30", status=400)
+    if total_reviews < 30:
+        return HttpResponse(" ไม่สามารถออกใบเกียรติบัตรได้: จำนวนรีวิวไม่ถึง 30", status=400)
 
-    # if average_rating < 4:
-    #     return HttpResponse(" ไม่สามารถออกใบเกียรติบัตรได้: คะแนนเฉลี่ยต่ำกว่า 4.0", status=400)
+    if average_rating < 4:
+        return HttpResponse(" ไม่สามารถออกใบเกียรติบัตรได้: คะแนนเฉลี่ยต่ำกว่า 4.0", status=400)
 
     #  5. ถ้ายังไม่มีใบเกียรติบัตร → สร้างใหม่
     if not certificate:
@@ -1066,6 +1090,7 @@ def generate_and_view_certificate(request, expert_id):
         'pdf_url': pdf_url,
         'expert': expert
     })
+
 
 # 🔹 ฟังก์ชันแสดงใบเกียรติบัตรเป็น PDF
 def view_certificate(request, expert_id):
@@ -1388,7 +1413,7 @@ def add_product(request):
         form = ProductForm(request.POST, request.FILES)
         if form.is_valid():
             product = form.save(commit=False)
-            product.added_by = request.user
+            product.user = request.user  # กำหนด user โดยตรงที่นี่
             product.save()
             messages.success(request, 'เพิ่มผลิตภัณฑ์สำเร็จ!')
             return redirect('products')
@@ -1396,7 +1421,9 @@ def add_product(request):
             messages.error(request, 'ฟอร์มมีข้อผิดพลาด กรุณาตรวจสอบข้อมูลอีกครั้ง')
     else:
         form = ProductForm()
+
     return render(request, 'add_product.html', {'form': form})
+
 
 
 # แก้ไขผลิตภัณฑ์
@@ -1407,7 +1434,10 @@ def edit_product(request, product_id):
     if request.method == 'POST':
         form = ProductForm(request.POST, request.FILES, instance=product)
         if form.is_valid():
-            form.save()
+            product = form.save(commit=False)
+            product.user = request.user  # กำหนด user โดยตรงที่นี่
+            product.save()
+            
             messages.success(request, 'แก้ไขผลิตภัณฑ์สำเร็จ!')
             return redirect('products')
     else:

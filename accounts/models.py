@@ -15,7 +15,7 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')  # เชื่อมกับ User
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='User')  # บทบาทของผู้ใช้
     address = models.CharField(max_length=255, blank=True, null=True)  # ที่อยู่
-    phone_number = models.CharField(max_length=20, blank=True, null=True)  # เบอร์โทรศัพท์
+    phone_number = models.CharField(max_length=10, blank=True, null=True)  # เบอร์โทรศัพท์
     skin_problem = models.TextField(blank=True, null=True)  # ปัญหาผิว
     image = models.ImageField(upload_to='profile_pics/', blank=True, null=True)  # รูปโปรไฟล์
     age = models.IntegerField(blank=True, null=True)  # อายุ
@@ -90,14 +90,6 @@ class Seller(models.Model):
         return self.business_name
 
 
-# หมวดหมู่สินค้า
-# class Category(models.Model):
-#     name = models.CharField(max_length=100, verbose_name="ชื่อหมวดหมู่")
-
-#     def __str__(self):
-#         return self.name
-
-
 # โมเดลสำหรับสินค้า
 class Product(models.Model):
     TYPE_CHOICES = [
@@ -114,7 +106,7 @@ class Product(models.Model):
     category = models.CharField(max_length=100, choices=TYPE_CHOICES)# หมวดหมู่สินค้า
     usage = models.TextField(blank=True, null=True)  # วิธีใช้
     link = models.URLField(max_length=500, blank=True, null=True)  # ลิงก์สำหรับซื้อสินค้า
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE, related_name="products")  # ผู้เพิ่มสินค้า
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="products")  # ผู้เพิ่มสินค้า
     rating = models.DecimalField(max_digits=3, decimal_places=1, blank=True, null=True)  # คะแนนเฉลี่ย
     popular = models.BooleanField(default=False)  # เป็นสินค้ายอดนิยมหรือไม่
     created_at = models.DateTimeField(auto_now_add=True)  # วันที่สร้างสินค้า
@@ -164,6 +156,8 @@ class SkinData(models.Model):
     current_products = models.TextField(blank=True, null=True)
     skincare_goal = models.TextField(blank=True, null=True)
     submitted_at = models.DateTimeField(auto_now_add=True)
+    
+    image = models.ImageField(upload_to='skin_data', blank=True, null=True)  # ฟิลด์สำหรับอัปโหลดภาพผิวหน้า
 
     def __str__(self):
         return f"SkinData of {self.user.username}"
